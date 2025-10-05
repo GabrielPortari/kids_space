@@ -59,7 +59,7 @@ class LoginScreen extends StatelessWidget {
 														ScaffoldMessenger.of(context).showSnackBar(
 															const SnackBar(content: Text('Login realizado!')),
 														);
-														Navigator.pushNamed(context, '/home');
+														Navigator.pushNamed(context, '/app_bottom_nav');
 													},
 													child: const Text('Entrar'),
 												),

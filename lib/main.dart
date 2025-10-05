@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kids_space/view/app_bottom_nav.dart';
 import 'package:kids_space/view/company_selection.dart';
 import 'package:kids_space/view/home_screen.dart';
 import 'package:kids_space/view/login_screen.dart';
@@ -18,13 +19,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      initialRoute: '/splash',
+      initialRoute: '/app_bottom_nav',
       routes: {
         '/splash': (context) => const SplashScreen(),
         '/home': (context) => const HomeScreen(),
         '/company_selection': (context) => const CompanySelectionScreen(),
         '/register': (context) => const RegisterScreen(),
         '/login': (context) => const LoginScreen(companyName: 'Empresa Exemplo'),
+        '/app_bottom_nav': (context) => const AppBottomNav(),
       },
     );
   }
