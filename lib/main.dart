@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:kids_space/view/company_selection.dart';
 import 'package:kids_space/view/home_screen.dart';
+import 'package:kids_space/view/login_screen.dart';
+import 'package:kids_space/view/register_screen.dart';
 import 'package:kids_space/view/splash_screen.dart';
 
 void main() {
@@ -21,6 +23,8 @@ class MyApp extends StatelessWidget {
         '/splash': (context) => const SplashScreen(),
         '/home': (context) => const HomeScreen(),
         '/company_selection': (context) => const CompanySelectionScreen(),
+        '/register': (context) => const RegisterScreen(),
+        '/login': (context) => const LoginScreen(companyName: 'Empresa Exemplo'),
       },
     );
   }
