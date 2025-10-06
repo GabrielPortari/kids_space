@@ -72,26 +72,75 @@ class HomeScreen extends StatelessWidget {
       children: [
         _infoCompanyCard(),
         const SizedBox(height: 8),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 4.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Crianças presentes: ${childrenPresent.length}',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pushNamed('/all_active_children');
-                },
-                child: const Text('Ver mais'),
-              ),
-            ],
-          ),
-        ),
+		_checkInAndOutButtons(),
+        _listLabel(childrenPresent, context),
         _childrenPresentList(childrenPresent),
       ],
+    );
+  }
+
+	Widget _checkInAndOutButtons() {
+	return Padding(
+	  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+	  child: Row(
+		mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+		children: [
+          ElevatedButton.icon(
+            onPressed: () {
+              // Ação de check-in
+            },
+            icon: const Icon(Icons.login, color: Colors.white),
+            label: const Text('Check-In', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              textStyle: const TextStyle(fontSize: 16),
+              backgroundColor: Colors.deepPurple,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              // Ação de check-out
+            },
+            icon: const Icon(Icons.logout, color: Colors.white),
+            label: const Text('Check-Out', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              textStyle: const TextStyle(fontSize: 16),
+              backgroundColor: Colors.deepPurple,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+		],
+	  ),
+	);
+  }
+
+  Widget _listLabel(
+    List<Map<String, String>> childrenPresent,
+    BuildContext context,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Crianças presentes: ${childrenPresent.length}',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pushNamed('/all_active_children');
+            },
+            child: const Text('Ver mais'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -100,9 +149,7 @@ class HomeScreen extends StatelessWidget {
       height: 320,
       child: Card(
         elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
