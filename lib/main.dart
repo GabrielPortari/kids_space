@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:kids_space/view/all_active_children_screen.dart';
 import 'package:kids_space/view/app_bottom_nav.dart';
-import 'package:kids_space/view/company_selection.dart';
+import 'package:kids_space/view/company_selection_screen.dart';
 import 'package:kids_space/view/home_screen.dart';
 import 'package:kids_space/view/login_screen.dart';
 import 'package:kids_space/view/register_screen.dart';
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      initialRoute: '/app_bottom_nav',
+      initialRoute: '/splash',
       routes: {
         '/splash': (context) => const SplashScreen(),
         '/home': (context) => const HomeScreen(),
@@ -27,6 +28,8 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const RegisterScreen(),
         '/login': (context) => const LoginScreen(companyName: 'Empresa Exemplo'),
         '/app_bottom_nav': (context) => const AppBottomNav(),
+        '/all_active_children': (context) => const AllActiveChildrenScreen(),
+        
       },
     );
   }
