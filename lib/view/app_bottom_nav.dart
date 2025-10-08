@@ -23,12 +23,12 @@ class _AppBottomNavState extends State<AppBottomNav> {
       label: 'Home',
     ),
     BottomNavigationBarItem(
-      icon: Icon(Icons.business),
-      label: 'Empresas',
+      icon: Icon(Icons.person),
+      label: 'Usuários',
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.settings),
-      label: 'Configurações',
+      label: 'Relatórios',
     ),
   ];
 
@@ -56,7 +56,7 @@ class CompanyScreen extends StatelessWidget {
   const CompanyScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('empresas'));
+    return const Center(child: Text('Clientes'));
   }
 }
 
@@ -64,6 +64,6 @@ class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('configurações'));
+    return const Center(child: Text('Configurações'));
   }
 }
