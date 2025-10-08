@@ -78,6 +78,10 @@ class HomeScreen extends StatelessWidget {
           _checkInAndOutButtons(),
           const SizedBox(height: 8),
           _activeChildrenInfoCard(childrenPresent),
+          const SizedBox(height: 8),
+          Expanded(
+            child: _inAndOutList(),
+          ),
         ],
       ),
     );
@@ -244,6 +248,85 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+  Widget _inAndOutList(){
+    // Exemplo de log dos 30 últimos eventos
+    final List<Map<String, String>> log = [
+      // Os dados reais viriam de uma fonte dinâmica
+      {'name': 'Lucas Silva', 'type': 'checkin', 'time': '10:15', 'date': '07/10/2025'},
+      {'name': 'Maria Souza', 'type': 'checkout', 'time': '10:16', 'date': '07/10/2025'},
+      {'name': 'João Pereira', 'type': 'checkin', 'time': '10:17', 'date': '07/10/2025'},
+      {'name': 'Beatriz Lima', 'type': 'checkout', 'time': '10:18', 'date': '07/10/2025'},
+      {'name': 'Rafael Costa', 'type': 'checkin', 'time': '10:19', 'date': '07/10/2025'},
+      {'name': 'Sofia Martins', 'type': 'checkout', 'time': '10:20', 'date': '07/10/2025'},
+      {'name': 'Pedro Alves', 'type': 'checkin', 'time': '10:21', 'date': '07/10/2025'},
+      {'name': 'Larissa Rocha', 'type': 'checkout', 'time': '10:22', 'date': '07/10/2025'},
+      {'name': 'Gabriel Mendes', 'type': 'checkin', 'time': '10:23', 'date': '07/10/2025'},
+      {'name': 'Camila Torres', 'type': 'checkout', 'time': '10:24', 'date': '07/10/2025'},
+      {'name': 'Felipe Barros', 'type': 'checkin', 'time': '10:25', 'date': '07/10/2025'},
+      {'name': 'Isabela Ramos', 'type': 'checkout', 'time': '10:26', 'date': '07/10/2025'},
+      // ... até 30 itens
+    ];
+    final List<Map<String, String>> logDesc = List.from(log.reversed);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Card(
+        elevation: 3,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Log de presença (últimos 30)',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: logDesc.length,
+                  separatorBuilder: (context, index) => const Divider(height: 12),
+                  itemBuilder: (context, index) {
+                    final item = logDesc[index];
+                    final isCheckin = item['type'] == 'checkin';
+                    return Row(
+                      children: [
+                        Icon(
+                          isCheckin ? Icons.login : Icons.logout,
+                          color: isCheckin ? Colors.green : Colors.red,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            item['name'] ?? '',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          item['date'] ?? '',
+                          style: const TextStyle(fontSize: 15, color: Colors.grey),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          item['time'] ?? '',
+                          style: const TextStyle(fontSize: 15, color: Colors.grey),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
