@@ -286,7 +286,6 @@ class HomeScreen extends StatelessWidget {
                 'Log de presença (últimos 30)',
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 12),
               Expanded(
                 child: ListView.separated(
                   itemCount: logDesc.length,
