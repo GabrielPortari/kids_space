@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kids_space/view/home_screen.dart';
+import 'package:kids_space/view/users_screen.dart';
 
 class AppBottomNav extends StatefulWidget {
   const AppBottomNav({super.key});
@@ -13,7 +14,7 @@ class _AppBottomNavState extends State<AppBottomNav> {
 
   static final List<Widget> _pages = <Widget>[
     const HomeScreen(),
-    const CompanyScreen(),
+    const UsersScreen(),
     const SettingsScreen(),
   ];
 
@@ -52,18 +53,10 @@ class _AppBottomNavState extends State<AppBottomNav> {
   }
 }
 
-class CompanyScreen extends StatelessWidget {
-  const CompanyScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Clientes'));
-  }
-}
-
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Configurações'));
+    return const Center(child: Text('Em desenvolvimento'));
   }
 }

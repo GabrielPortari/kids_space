@@ -6,6 +6,7 @@ import 'package:kids_space/view/home_screen.dart';
 import 'package:kids_space/view/login_screen.dart';
 import 'package:kids_space/view/register_screen.dart';
 import 'package:kids_space/view/splash_screen.dart';
+import 'package:kids_space/view/users_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Kids Space',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
         '/company_selection': (context) => const CompanySelectionScreen(),
         '/register': (context) => const RegisterScreen(),
         '/login': (context) => const LoginScreen(companyName: 'Empresa Exemplo'),
+        '/users': (context) => const UsersScreen(),
         '/app_bottom_nav': (context) => const AppBottomNav(),
         '/all_active_children': (context) => const AllActiveChildrenScreen(),
         
