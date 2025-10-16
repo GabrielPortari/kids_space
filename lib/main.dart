@@ -4,8 +4,10 @@ import 'package:kids_space/view/app_bottom_nav.dart';
 import 'package:kids_space/view/company_selection_screen.dart';
 import 'package:kids_space/view/home_screen.dart';
 import 'package:kids_space/view/login_screen.dart';
+import 'package:kids_space/view/profile_screen.dart';
 import 'package:kids_space/view/register_screen.dart';
 import 'package:kids_space/view/splash_screen.dart';
+import 'package:kids_space/view/user_profile_screen.dart';
 import 'package:kids_space/view/users_screen.dart';
 
 void main() {
@@ -30,6 +32,8 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(companyName: 'Empresa Exemplo'),
         '/users': (context) => const UsersScreen(),
         '/app_bottom_nav': (context) => const AppBottomNav(),
+        '/profile': (context) => const ProfileScreen(),
+        '/user_profile_screen': (context) => const UserProfileScreen(),
         '/all_active_children': (context) => const AllActiveChildrenScreen(),
         
       },

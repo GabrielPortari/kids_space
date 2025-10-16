@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-
   @override
   Widget build(BuildContext context) {
     final List<Map<String, String>> childrenPresent = [
@@ -79,9 +78,7 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 8),
           _activeChildrenInfoCard(childrenPresent),
           const SizedBox(height: 8),
-          Expanded(
-            child: _inAndOutList(),
-          ),
+          Expanded(child: _inAndOutList()),
         ],
       ),
     );
@@ -101,9 +98,7 @@ class HomeScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Card(
         elevation: 3,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
           child: Row(
@@ -118,6 +113,11 @@ class HomeScreen extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        const Text(
+                          'Ativos',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 22, color: Colors.grey),
+                        ),
                         Text(
                           '$activeCount',
                           textAlign: TextAlign.center,
@@ -128,9 +128,12 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                         const Text(
-                          'Ativos',
+                          'Ver mais',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 22, color: Colors.grey),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.deepPurple,
+                          ),
                         ),
                       ],
                     ),
@@ -148,7 +151,10 @@ class HomeScreen extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(
                           'Último check-in:',
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),
@@ -163,7 +169,10 @@ class HomeScreen extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             lastCheckIn['time']!,
-                            style: const TextStyle(fontSize: 15, color: Colors.grey),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              color: Colors.grey,
+                            ),
                           ),
                         ],
                       ),
@@ -175,7 +184,10 @@ class HomeScreen extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(
                           'Último check-out:',
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),
@@ -190,7 +202,10 @@ class HomeScreen extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             lastCheckOut['time']!,
-                            style: const TextStyle(fontSize: 15, color: Colors.grey),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              color: Colors.grey,
+                            ),
                           ),
                         ],
                       ),
@@ -204,7 +219,7 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _checkInAndOutButtons() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
@@ -251,22 +266,83 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-  Widget _inAndOutList(){
+
+  Widget _inAndOutList() {
     // Exemplo de log dos 30 últimos eventos
     final List<Map<String, String>> log = [
       // Os dados reais viriam de uma fonte dinâmica
-      {'name': 'Lucas Silva', 'type': 'checkin', 'time': '10:15', 'date': '07/10/2025'},
-      {'name': 'Maria Souza', 'type': 'checkout', 'time': '10:16', 'date': '07/10/2025'},
-      {'name': 'João Pereira', 'type': 'checkin', 'time': '10:17', 'date': '07/10/2025'},
-      {'name': 'Beatriz Lima', 'type': 'checkout', 'time': '10:18', 'date': '07/10/2025'},
-      {'name': 'Rafael Costa', 'type': 'checkin', 'time': '10:19', 'date': '07/10/2025'},
-      {'name': 'Sofia Martins', 'type': 'checkout', 'time': '10:20', 'date': '07/10/2025'},
-      {'name': 'Pedro Alves', 'type': 'checkin', 'time': '10:21', 'date': '07/10/2025'},
-      {'name': 'Larissa Rocha', 'type': 'checkout', 'time': '10:22', 'date': '07/10/2025'},
-      {'name': 'Gabriel Mendes', 'type': 'checkin', 'time': '10:23', 'date': '07/10/2025'},
-      {'name': 'Camila Torres', 'type': 'checkout', 'time': '10:24', 'date': '07/10/2025'},
-      {'name': 'Felipe Barros', 'type': 'checkin', 'time': '10:25', 'date': '07/10/2025'},
-      {'name': 'Isabela Ramos', 'type': 'checkout', 'time': '10:26', 'date': '07/10/2025'},
+      {
+        'name': 'Lucas Silva',
+        'type': 'checkin',
+        'time': '10:15',
+        'date': '07/10/2025',
+      },
+      {
+        'name': 'Maria Souza',
+        'type': 'checkout',
+        'time': '10:16',
+        'date': '07/10/2025',
+      },
+      {
+        'name': 'João Pereira',
+        'type': 'checkin',
+        'time': '10:17',
+        'date': '07/10/2025',
+      },
+      {
+        'name': 'Beatriz Lima',
+        'type': 'checkout',
+        'time': '10:18',
+        'date': '07/10/2025',
+      },
+      {
+        'name': 'Rafael Costa',
+        'type': 'checkin',
+        'time': '10:19',
+        'date': '07/10/2025',
+      },
+      {
+        'name': 'Sofia Martins',
+        'type': 'checkout',
+        'time': '10:20',
+        'date': '07/10/2025',
+      },
+      {
+        'name': 'Pedro Alves',
+        'type': 'checkin',
+        'time': '10:21',
+        'date': '07/10/2025',
+      },
+      {
+        'name': 'Larissa Rocha',
+        'type': 'checkout',
+        'time': '10:22',
+        'date': '07/10/2025',
+      },
+      {
+        'name': 'Gabriel Mendes',
+        'type': 'checkin',
+        'time': '10:23',
+        'date': '07/10/2025',
+      },
+      {
+        'name': 'Camila Torres',
+        'type': 'checkout',
+        'time': '10:24',
+        'date': '07/10/2025',
+      },
+      {
+        'name': 'Felipe Barros',
+        'type': 'checkin',
+        'time': '10:25',
+        'date': '07/10/2025',
+      },
+      {
+        'name': 'Isabela Ramos',
+        'type': 'checkout',
+        'time': '10:26',
+        'date': '07/10/2025',
+      },
       // ... até 30 itens
     ];
     final List<Map<String, String>> logDesc = List.from(log.reversed);
@@ -274,9 +350,7 @@ class HomeScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Card(
         elevation: 3,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
           child: Column(
@@ -289,7 +363,8 @@ class HomeScreen extends StatelessWidget {
               Expanded(
                 child: ListView.separated(
                   itemCount: logDesc.length,
-                  separatorBuilder: (context, index) => const Divider(height: 12),
+                  separatorBuilder: (context, index) =>
+                      const Divider(height: 12),
                   itemBuilder: (context, index) {
                     final item = logDesc[index];
                     final isCheckin = item['type'] == 'checkin';
@@ -304,19 +379,28 @@ class HomeScreen extends StatelessWidget {
                         Expanded(
                           child: Text(
                             item['name'] ?? '',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 10),
                         Text(
                           item['date'] ?? '',
-                          style: const TextStyle(fontSize: 15, color: Colors.grey),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Colors.grey,
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Text(
                           item['time'] ?? '',
-                          style: const TextStyle(fontSize: 15, color: Colors.grey),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Colors.grey,
+                          ),
                         ),
                       ],
                     );
@@ -351,16 +435,21 @@ class HomeScreen extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        CircleAvatar(
-                          radius: 32,
-                          backgroundImage: const AssetImage(
-                            'assets/images/company_logo_placeholder.png',
-                          ),
-                          backgroundColor: Colors.deepPurple[50],
-                          child: const Icon(
-                            Icons.business,
-                            size: 32,
-                            color: Colors.deepPurple,
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pushNamed('/profile');
+                          },
+                          child: CircleAvatar(
+                            radius: 32,
+                            backgroundImage: const AssetImage(
+                              'assets/images/company_logo_placeholder.png',
+                            ),
+                            backgroundColor: Colors.deepPurple[50],
+                            child: const Icon(
+                              Icons.business,
+                              size: 32,
+                              color: Colors.deepPurple,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 20),
@@ -380,7 +469,10 @@ class HomeScreen extends StatelessWidget {
                               const SizedBox(height: 2),
                               const Text(
                                 'Colaborador: João Oliveira',
-                                style: TextStyle(fontSize: 16, color: Colors.deepPurple),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.deepPurple,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 2),
@@ -389,17 +481,33 @@ class HomeScreen extends StatelessWidget {
                                 children: [
                                   const Text(
                                     'id: e3a7c9b2f4d84...',
-                                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey,
+                                    ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(width: 6),
                                   InkWell(
-                                    child: const Icon(Icons.copy, size: 18, color: Colors.grey),
+                                    child: const Icon(
+                                      Icons.copy,
+                                      size: 18,
+                                      color: Colors.grey,
+                                    ),
                                     onTap: () async {
-                                      await Clipboard.setData(const ClipboardData(text: 'e3a7c9b2f4d84a1c9e6b7d2a5f8c3e1b'));
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      await Clipboard.setData(
+                                        const ClipboardData(
+                                          text:
+                                              'e3a7c9b2f4d84a1c9e6b7d2a5f8c3e1b',
+                                        ),
+                                      );
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         const SnackBar(
-                                          content: Text('ID copiado para a área de transferência!'),
+                                          content: Text(
+                                            'ID copiado para a área de transferência!',
+                                          ),
                                           duration: Duration(seconds: 2),
                                         ),
                                       );
