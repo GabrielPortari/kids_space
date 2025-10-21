@@ -120,7 +120,10 @@ class _UsersScreenState extends State<UsersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Usuários Cadastrados')),
+      appBar: AppBar(
+        title: const Text('Usuários Cadastrados'),
+        automaticallyImplyLeading: false,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -135,24 +138,38 @@ class _UsersScreenState extends State<UsersScreen> {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: ListView.builder(
-                itemCount: _filteredUsers.length,
-                itemBuilder: (context, index) {
-                  final user = _filteredUsers[index];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      title: Text(user['name'] ?? ''),
-                      leading: const Icon(Icons.person),
-                      onTap: () {
-                        Navigator.of(context).pushNamed(
-                          '/user_profile_screen',
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
+              child: _searchController.text.isEmpty
+                  ? Center(
+                      child: Text(
+                        'Digite para buscar um usuário',
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                    )
+                  : _filteredUsers.isEmpty
+                      ? Center(
+                          child: Text(
+                            'Nenhum usuário encontrado',
+                            style: TextStyle(color: Colors.grey, fontSize: 16),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: _filteredUsers.length,
+                          itemBuilder: (context, index) {
+                            final user = _filteredUsers[index];
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              child: ListTile(
+                                title: Text(user['name'] ?? ''),
+                                leading: const Icon(Icons.person),
+                                onTap: () {
+                                  Navigator.of(context).pushNamed(
+                                    '/user_profile_screen',
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
             ),
             const SizedBox(height: 16),
             SizedBox(
