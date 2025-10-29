@@ -1,13 +1,19 @@
 // Serviço de autenticação
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kids_space/model/mock/model_mock.dart';
 
 class AuthService {
 
-  // Simulação de autenticação
+  // Simulação de autenticação usando mockCollaborators
   Future<bool> login(String email, String password) async {
     await Future.delayed(Duration(seconds: 1));
-    bool success = email == 'admin@admin.com' && password == '123456';
-    return success;
+
+    final exists = mockCollaborators.any(
+      (c) => c.email == email && c.password == password,
+    );
+
+    return exists;
+
   }
 
   Future<bool> logout() async {

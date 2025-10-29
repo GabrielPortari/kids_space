@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kids_space/controller/auth_controller.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final AuthController _authController = GetIt.I<AuthController>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Perfil'),
@@ -72,10 +76,10 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.pop(context);
+                          _authController.logout();
                           Navigator.of(context).pushNamedAndRemoveUntil(
-                            '/login',
-                            (route) => route.settings.name == '/company_selection',
+                            '/company_selection',
+                            (route) => false,
                           );
                         },
                         child: const Text('Deslogar'),

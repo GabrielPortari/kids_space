@@ -1,17 +1,29 @@
 // Serviço de colaboradores
 import 'package:kids_space/model/collaborator.dart';
+import 'package:kids_space/model/mock/model_mock.dart';
 
 class CollaboratorService {
- // Simulação: busca colaborador pelo email
+  // Busca colaborador pelo email e senha
+  Future<Collaborator?> loginCollaborator(String email, String password) async {
+    await Future.delayed(Duration(milliseconds: 500));
+    try {
+      return mockCollaborators.firstWhere(
+        (c) => c.email == email && c.password == password,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Busca colaborador apenas pelo email
   Future<Collaborator?> getCollaboratorByEmail(String email) async {
     await Future.delayed(Duration(milliseconds: 500));
-    if (email == 'admin@admin.com') {
-      return Collaborator(
-        id: '1',
-        name: 'Administrador',
-        companyId: 'company1',
+    try {
+      return mockCollaborators.firstWhere(
+        (c) => c.email == email,
       );
+    } catch (_) {
+      return null;
     }
-    return null;
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kids_space/model/company.dart';
 import '../controller/auth_controller.dart';
 import '../controller/company_controller.dart';
 
@@ -17,8 +18,12 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _loadCompanies();
-    _checkLoggedUser();
+    _startSplashFlow();
+  }
+
+  Future<void> _startSplashFlow() async {
+  await _loadCompanies();
+  await _checkLoggedUser();
   }
 
   @override
@@ -48,9 +53,22 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkLoggedUser() async {
     await _authController.checkLoggedUser();
+    final loggedUser = _authController.loggedUser;
+    Company? company = _companyController.companySelected;
+
+    if (loggedUser != null) {
+      try {
+        company = _companyController.companies.firstWhere(
+          (c) => c.id == loggedUser.companyId,
+        );
+        _companyController.selectCompany(company);
+      } catch (_) {
+        company = null;
+      }
+    }
     await Future.delayed(const Duration(seconds: 3));
-    if (await _authController.checkLoggedUser()) {
-      Navigator.pushReplacementNamed(context, '/home');
+    if (loggedUser != null && company != null) {
+      Navigator.pushReplacementNamed(context, '/app_bottom_nav');
     } else {
       Navigator.pushReplacementNamed(context, '/company_selection');
     }

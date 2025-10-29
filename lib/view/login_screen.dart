@@ -1,9 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
+import 'package:kids_space/controller/auth_controller.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final AuthController _authController = GetIt.I<AuthController>();
+  bool _loading = false;
+
+  void _login() async {
+    setState(() => _loading = true);
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final success = await _authController.login(email, password);
+    setState(() => _loading = false);
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login realizado!')),
+      );
+      Navigator.pushNamed(context, '/app_bottom_nav');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Usuário ou senha inválidos!')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +68,7 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 32),
                 TextField(
+                  controller: _emailController,
                   decoration: const InputDecoration(
                     labelText: 'Usuário',
                     border: OutlineInputBorder(),
@@ -46,6 +76,7 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 TextField(
+                  controller: _passwordController,
                   obscureText: true,
                   decoration: const InputDecoration(
                     labelText: 'Senha',
@@ -56,14 +87,14 @@ class LoginScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      // ação de login
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Login realizado!')),
-                      );
-                      Navigator.pushNamed(context, '/app_bottom_nav');
-                    },
-                    child: const Text('Entrar'),
+                    onPressed: _loading ? null : _login,
+                    child: _loading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('Entrar'),
                   ),
                 ),
                 const SizedBox(height: 24),
