@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kids_space/util/getit_factory.dart';
 import 'package:kids_space/view/all_active_children_screen.dart';
 import 'package:kids_space/view/app_bottom_nav.dart';
 import 'package:kids_space/view/company_selection_screen.dart';
@@ -12,6 +14,9 @@ import 'package:kids_space/view/users_screen.dart';
 
 void main() {
   runApp(const MyApp());
+
+  setup(GetIt.I);
+
 }
 
 class MyApp extends StatelessWidget {
@@ -29,7 +34,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomeScreen(),
         '/company_selection': (context) => const CompanySelectionScreen(),
         '/register': (context) => const RegisterScreen(),
-        '/login': (context) => const LoginScreen(companyName: 'Empresa Exemplo'),
+        '/login': (context) => const LoginScreen(),
         '/users': (context) => const UsersScreen(),
         '/app_bottom_nav': (context) => const AppBottomNav(),
         '/profile': (context) => const ProfileScreen(),

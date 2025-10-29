@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import '../controller/auth_controller.dart';
+import '../controller/company_controller.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -8,12 +11,14 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  final AuthController _authController = GetIt.I<AuthController>();
+  final CompanyController _companyController = GetIt.I<CompanyController>();
+
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pushReplacementNamed(context, '/company_selection');
-    });
+    _loadCompanies();
+    _checkLoggedUser();
   }
 
   @override
@@ -36,4 +41,19 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
     );
   }
+
+  Future<void> _loadCompanies() async {
+    await _companyController.loadCompanies();
+  }
+
+  Future<void> _checkLoggedUser() async {
+    await _authController.checkLoggedUser();
+    await Future.delayed(const Duration(seconds: 3));
+    if (await _authController.checkLoggedUser()) {
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      Navigator.pushReplacementNamed(context, '/company_selection');
+    }
+  }
+
 }

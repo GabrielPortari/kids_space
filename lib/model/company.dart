@@ -5,15 +5,15 @@ import 'package:kids_space/model/user.dart';
 class Company {
   final String id;
   final String name;
-  final List<Collaborator> collaborators;
-  final List<User> users;
-  final List<Child> children;
+  final List<Collaborator>? collaborators;
+  final List<User>? users;
+  final List<Child>? children;
 
   Company({
     required this.id,
     required this.name,
-    required this.collaborators,
-    required this.users,
-    required this.children,
+    this.collaborators,
+    this.users,
+    this.children,
   });
 }
