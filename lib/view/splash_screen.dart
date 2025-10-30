@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kids_space/controller/collaborator_controller.dart';
+import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/model/company.dart';
 import '../controller/auth_controller.dart';
 import '../controller/company_controller.dart';
@@ -14,10 +16,12 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   final AuthController _authController = GetIt.I<AuthController>();
   final CompanyController _companyController = GetIt.I<CompanyController>();
+  final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
 
   @override
   void initState() {
     super.initState();
+    //_authController.logout();
     _startSplashFlow();
   }
 
@@ -53,7 +57,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkLoggedUser() async {
     await _authController.checkLoggedUser();
-    final loggedUser = _authController.loggedUser;
+    final loggedUser = _collaboratorController.loggedCollaborator;
     Company? company = _companyController.companySelected;
 
     if (loggedUser != null) {

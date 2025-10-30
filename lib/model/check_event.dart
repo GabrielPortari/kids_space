@@ -8,6 +8,7 @@ enum CheckType {
 
 class CheckEvent {
   final String id;
+  final String companyId;
   final Child child;
   final Collaborator collaborator;
   final DateTime timestamp;
@@ -15,6 +16,7 @@ class CheckEvent {
   
   CheckEvent({
     required this.id,
+    required this.companyId,
     required this.child,
     required this.collaborator,
     required this.timestamp,

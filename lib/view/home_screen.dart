@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kids_space/controller/collaborator_controller.dart';
+import 'package:kids_space/controller/company_controller.dart';
+import 'package:kids_space/controller/check_event_controller.dart';
+import 'package:kids_space/model/check_event.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kids_space/util/date_hour_util.dart';
+
+final CompanyController _companyController = GetIt.I<CompanyController>();
+final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
+final CheckEventController _checkEventController = GetIt.I<CheckEventController>();
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
+  
   @override
   Widget build(BuildContext context) {
     final List<Map<String, String>> childrenPresent = [
@@ -76,7 +86,7 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 8),
           _checkInAndOutButtons(),
           const SizedBox(height: 8),
-          _activeChildrenInfoCard(childrenPresent),
+          _activeChildrenInfoCard(),
           const SizedBox(height: 8),
           Expanded(child: _inAndOutList()),
         ],
@@ -84,16 +94,16 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _activeChildrenInfoCard(List<Map<String, String>> childrenPresent) {
-    final int activeCount = childrenPresent.length;
-    final Map<String, String> lastCheckIn = {
-      'childName': 'Isabela Ramos',
-      'time': '10:42',
-    };
-    final Map<String, String> lastCheckOut = {
-      'childName': 'Lucas Silva',
-      'time': '10:15',
-    };
+  Widget _activeChildrenInfoCard() {
+    final company = _companyController.companySelected;
+    final companyId = company?.id;
+    if (companyId != null) {
+      _checkEventController.loadEventsForCompany(companyId);
+    }
+    final lastCheckIn = _checkEventController.loadedLastCheckIn;
+    final lastCheckOut = _checkEventController.loadedLastCheckOut;
+    final int activeCount = _checkEventController.getActiveCheckins(companyId!).length;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Card(
@@ -149,9 +159,9 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         const Icon(Icons.login, color: Colors.green, size: 20),
                         const SizedBox(width: 6),
-                        Text(
+                        const Text(
                           'Último check-in:',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
                           ),
@@ -160,31 +170,33 @@ class HomeScreen extends StatelessWidget {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 32.0, top: 2.0),
-                      child: Row(
-                        children: [
-                          Text(
-                            lastCheckIn['childName']!,
-                            style: const TextStyle(fontSize: 15),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            lastCheckIn['time']!,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
+                      child: lastCheckIn != null
+                          ? Row(
+                              children: [
+                                Text(
+                                  lastCheckIn.child.name,
+                                  style: const TextStyle(fontSize: 15),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  formatTime(lastCheckIn.timestamp),
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : const Text('Nenhum check-in registrado'),
                     ),
                     const Divider(height: 20),
                     Row(
                       children: [
                         const Icon(Icons.logout, color: Colors.red, size: 20),
                         const SizedBox(width: 6),
-                        Text(
+                        const Text(
                           'Último check-out:',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
                           ),
@@ -193,22 +205,24 @@ class HomeScreen extends StatelessWidget {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 32.0, top: 2.0),
-                      child: Row(
-                        children: [
-                          Text(
-                            lastCheckOut['childName']!,
-                            style: const TextStyle(fontSize: 15),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            lastCheckOut['time']!,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
+                      child: lastCheckOut != null
+                          ? Row(
+                              children: [
+                                Text(
+                                  lastCheckOut.child.name,
+                                  style: const TextStyle(fontSize: 15),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  formatTime(lastCheckOut.timestamp),
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : const Text('Nenhum check-out registrado'),
                     ),
                   ],
                 ),
@@ -219,6 +233,7 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+
 
   Widget _checkInAndOutButtons() {
     return Padding(
@@ -268,84 +283,11 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _inAndOutList() {
-    // Exemplo de log dos 30 últimos eventos
-    final List<Map<String, String>> log = [
-      // Os dados reais viriam de uma fonte dinâmica
-      {
-        'name': 'Lucas Silva',
-        'type': 'checkin',
-        'time': '10:15',
-        'date': '07/10/2025',
-      },
-      {
-        'name': 'Maria Souza',
-        'type': 'checkout',
-        'time': '10:16',
-        'date': '07/10/2025',
-      },
-      {
-        'name': 'João Pereira',
-        'type': 'checkin',
-        'time': '10:17',
-        'date': '07/10/2025',
-      },
-      {
-        'name': 'Beatriz Lima',
-        'type': 'checkout',
-        'time': '10:18',
-        'date': '07/10/2025',
-      },
-      {
-        'name': 'Rafael Costa',
-        'type': 'checkin',
-        'time': '10:19',
-        'date': '07/10/2025',
-      },
-      {
-        'name': 'Sofia Martins',
-        'type': 'checkout',
-        'time': '10:20',
-        'date': '07/10/2025',
-      },
-      {
-        'name': 'Pedro Alves',
-        'type': 'checkin',
-        'time': '10:21',
-        'date': '07/10/2025',
-      },
-      {
-        'name': 'Larissa Rocha',
-        'type': 'checkout',
-        'time': '10:22',
-        'date': '07/10/2025',
-      },
-      {
-        'name': 'Gabriel Mendes',
-        'type': 'checkin',
-        'time': '10:23',
-        'date': '07/10/2025',
-      },
-      {
-        'name': 'Camila Torres',
-        'type': 'checkout',
-        'time': '10:24',
-        'date': '07/10/2025',
-      },
-      {
-        'name': 'Felipe Barros',
-        'type': 'checkin',
-        'time': '10:25',
-        'date': '07/10/2025',
-      },
-      {
-        'name': 'Isabela Ramos',
-        'type': 'checkout',
-        'time': '10:26',
-        'date': '07/10/2025',
-      },
-      // ... até 30 itens
-    ];
-    final List<Map<String, String>> logDesc = List.from(log.reversed);
+    final company = _companyController.companySelected;
+    final companyId = company?.id;
+    final List<CheckEvent> logEvents =
+        companyId != null ? 
+        _checkEventController.getLastEventsByCompany(companyId, limit: 30) : [];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Card(
@@ -362,12 +304,11 @@ class HomeScreen extends StatelessWidget {
               ),
               Expanded(
                 child: ListView.separated(
-                  itemCount: logDesc.length,
-                  separatorBuilder: (context, index) =>
-                      const Divider(height: 12),
+                  itemCount: logEvents.length,
+                  separatorBuilder: (context, index) => const Divider(height: 12),
                   itemBuilder: (context, index) {
-                    final item = logDesc[index];
-                    final isCheckin = item['type'] == 'checkin';
+                    final event = logEvents[index];
+                    final isCheckin = event.checkType == CheckType.checkIn;
                     return Row(
                       children: [
                         Icon(
@@ -378,7 +319,7 @@ class HomeScreen extends StatelessWidget {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            item['name'] ?? '',
+                            event.child.name,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -388,7 +329,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          item['date'] ?? '',
+                          formatTime(event.timestamp),
                           style: const TextStyle(
                             fontSize: 15,
                             color: Colors.grey,
@@ -396,7 +337,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          item['time'] ?? '',
+                          formatDate(event.timestamp),
                           style: const TextStyle(
                             fontSize: 15,
                             color: Colors.grey,
@@ -458,8 +399,9 @@ class HomeScreen extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Tech Kids',
+                              Text(
+                                _companyController.companySelected?.name ??
+                                    'Nome da Empresa',
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -467,8 +409,9 @@ class HomeScreen extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 2),
-                              const Text(
-                                'Colaborador: João Oliveira',
+                              Text(
+                                'Colaborador: ${_collaboratorController.loggedCollaborator?.name ?? 
+                                "Nome do Colaborador"}',
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.deepPurple,
@@ -479,8 +422,8 @@ class HomeScreen extends StatelessWidget {
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Text(
-                                    'id: e3a7c9b2f4d84...',
+                                  Text(
+                                    'id: ${_collaboratorController.loggedCollaborator?.id ?? "ID do Colaborador"}',
                                     style: TextStyle(
                                       fontSize: 16,
                                       color: Colors.grey,
@@ -496,9 +439,9 @@ class HomeScreen extends StatelessWidget {
                                     ),
                                     onTap: () async {
                                       await Clipboard.setData(
-                                        const ClipboardData(
+                                        ClipboardData(
                                           text:
-                                              'e3a7c9b2f4d84a1c9e6b7d2a5f8c3e1b',
+                                              _collaboratorController.loggedCollaborator?.id ?? "0",
                                         ),
                                       );
                                       ScaffoldMessenger.of(

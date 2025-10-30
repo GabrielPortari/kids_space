@@ -16,11 +16,6 @@ class AuthService {
 
   }
 
-  Future<bool> logout() async {
-    await Future.delayed(Duration(milliseconds: 500));
-    return true;
-  }
-
   Future<String?> getLoggedUser() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('logged_user');

@@ -13,10 +13,8 @@ import 'package:kids_space/view/user_profile_screen.dart';
 import 'package:kids_space/view/users_screen.dart';
 
 void main() {
-  runApp(const MyApp());
-
   setup(GetIt.I);
-
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
