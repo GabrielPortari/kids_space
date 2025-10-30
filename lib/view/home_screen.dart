@@ -16,68 +16,6 @@ class HomeScreen extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, String>> childrenPresent = [
-      {
-        'childName': 'Lucas Silva',
-        'responsibleName': 'Ana Silva',
-        'phone': '(11) 91234-5678',
-      },
-      {
-        'childName': 'Maria Souza',
-        'responsibleName': 'Carlos Souza',
-        'phone': '(11) 99876-5432',
-      },
-      {
-        'childName': 'João Pereira',
-        'responsibleName': 'Fernanda Pereira',
-        'phone': '(11) 98765-4321',
-      },
-      {
-        'childName': 'Beatriz Lima',
-        'responsibleName': 'Paulo Lima',
-        'phone': '(11) 91111-2222',
-      },
-      {
-        'childName': 'Rafael Costa',
-        'responsibleName': 'Juliana Costa',
-        'phone': '(11) 93333-4444',
-      },
-      {
-        'childName': 'Sofia Martins',
-        'responsibleName': 'Roberto Martins',
-        'phone': '(11) 95555-6666',
-      },
-      {
-        'childName': 'Pedro Alves',
-        'responsibleName': 'Patrícia Alves',
-        'phone': '(11) 97777-8888',
-      },
-      {
-        'childName': 'Larissa Rocha',
-        'responsibleName': 'Marcelo Rocha',
-        'phone': '(11) 99999-0000',
-      },
-      {
-        'childName': 'Gabriel Mendes',
-        'responsibleName': 'Simone Mendes',
-        'phone': '(11) 90000-1111',
-      },
-      {
-        'childName': 'Camila Torres',
-        'responsibleName': 'Eduardo Torres',
-        'phone': '(11) 92222-3333',
-      },
-      {
-        'childName': 'Felipe Barros',
-        'responsibleName': 'Aline Barros',
-        'phone': '(11) 94444-5555',
-      },
-      {
-        'childName': 'Isabela Ramos',
-        'responsibleName': 'Gustavo Ramos',
-        'phone': '(11) 96666-7777',
-      },
-    ];
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
