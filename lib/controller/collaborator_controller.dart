@@ -16,7 +16,6 @@ class CollaboratorController {
         id: collaborator.id,
         name: collaborator.name,
         email: collaborator.email,
-        password: '', // senha removida
         companyId: collaborator.companyId,
         // adicione outros campos se houver
       );

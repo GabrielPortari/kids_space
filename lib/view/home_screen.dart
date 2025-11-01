@@ -226,6 +226,7 @@ class HomeScreen extends StatelessWidget {
     final List<CheckEvent> logEvents =
         companyId != null ? 
         _checkEventController.getLastEventsByCompany(companyId, limit: 30) : [];
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Card(

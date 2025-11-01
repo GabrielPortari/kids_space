@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/auth_controller.dart';
+import 'package:kids_space/controller/collaborator_controller.dart';
+import 'package:kids_space/model/collaborator.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -8,7 +10,8 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AuthController _authController = GetIt.I<AuthController>();
-
+    final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
+    final Collaborator? loggedCollaborator = _collaboratorController.loggedCollaborator;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Perfil'),
@@ -20,9 +23,9 @@ class ProfileScreen extends StatelessWidget {
                 showDialog(
                   context: context,
                   builder: (context) {
-                    final nameController = TextEditingController(text: 'João Oliveira');
-                    final emailController = TextEditingController(text: 'joao.oliveira@email.com');
-                    final phoneController = TextEditingController(text: '(11) 91234-5678');
+                    final nameController = TextEditingController(text: loggedCollaborator?.name ?? '');
+                    final emailController = TextEditingController(text: loggedCollaborator?.email ?? '');
+                    final phoneController = TextEditingController(text: loggedCollaborator?.phoneNumber ?? '');
                     return AlertDialog(
                       title: const Text('Editar perfil'),
                       content: SingleChildScrollView(
@@ -148,13 +151,13 @@ class ProfileScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-            const Text(
-              'João Oliveira',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            Text(
+              loggedCollaborator != null ? loggedCollaborator.name : 'Nome do Colaborador',
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
-              'Colaborador',
+              'Colaborador', //user type
               style: TextStyle(fontSize: 18, color: Colors.deepPurple),
             ),
             const SizedBox(height: 24),
@@ -170,37 +173,40 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text('Nome:', style: TextStyle(fontSize: 16)),
-                        SizedBox(width: 8),
-                        Text('João Oliveira', style: TextStyle(fontSize: 16)),
+                        const Text('Nome:', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 8),
+                        Text(loggedCollaborator != null ? loggedCollaborator.name : 'Nome do Colaborador', style: const TextStyle(fontSize: 16)),
                       ],
                     ),
-                    Divider(),
+                    const Divider(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text('Email:', style: TextStyle(fontSize: 16)),
-                        SizedBox(width: 8),
+                        const Text('Email:', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 8),
                         Text(
-                          'joao.oliveira@email.com',
-                          style: TextStyle(fontSize: 16),
+                          loggedCollaborator != null ? loggedCollaborator.email : 'email@placeholder.com',
+                          style: const TextStyle(fontSize: 16),
                         ),
                       ],
                     ),
-                    Divider(),
+                    const Divider(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text('Telefone:', style: TextStyle(fontSize: 16)),
-                        SizedBox(width: 8),
-                        Text('(11) 91234-5678', style: TextStyle(fontSize: 16)),
+                        const Text('Telefone:', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 8),
+                        Text(
+                          loggedCollaborator != null && loggedCollaborator.phoneNumber != null ?
+                          loggedCollaborator.phoneNumber! : '(11) 1234 5678',
+                        style: const TextStyle(fontSize: 16)),
                       ],
                     ),
-                    Divider(),
+                    const Divider(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -208,10 +214,10 @@ class ProfileScreen extends StatelessWidget {
                           'ID:',
                           style: TextStyle(fontSize: 16, color: Colors.grey),
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Text(
-                          'e3a7c9b2f4d84a1c9e6b7d2a5f8c3e1b',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                          loggedCollaborator != null ? loggedCollaborator.id : 'ID do Colaborador',
+                          style: const TextStyle(fontSize: 16, color: Colors.grey),
                         ),
                       ],
                     ),
