@@ -12,10 +12,10 @@ final mockCollaborators = [
 ];
 
 final mockUsers = [
-  User(id: 'u1', name: 'Maria', companyId: '1'),
-  User(id: 'u2', name: 'Carlos', companyId: '1'),
-  User(id: 'u3', name: 'Fernanda', companyId: '1'),
-  User(id: 'u4', name: 'Rafael', companyId: '1'),
+  User(id: 'u1', name: 'Maria', companyId: '1', email: 'maria@techkids.com', phone: '123456789', document: '12345678901'),
+  User(id: 'u2', name: 'Carlos', companyId: '1', email: 'carlos@techkids.com', phone: '987654321', document: '10987654321'),
+  User(id: 'u3', name: 'Fernanda', companyId: '1', email: 'fernanda@techkids.com', phone: '456789123', document: '45678912345'),
+  User(id: 'u4', name: 'Rafael', companyId: '1', email: 'rafael@techkids.com', phone: '321654987', document: '32165498765'),
 ];
 
 final mockChildren = [

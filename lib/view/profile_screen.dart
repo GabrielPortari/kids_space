@@ -9,9 +9,9 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AuthController _authController = GetIt.I<AuthController>();
-    final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
-    final Collaborator? loggedCollaborator = _collaboratorController.loggedCollaborator;
+    final AuthController authController = GetIt.I<AuthController>();
+    final CollaboratorController collaboratorController = GetIt.I<CollaboratorController>();
+    final Collaborator? loggedCollaborator = collaboratorController.loggedCollaborator;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Perfil'),
@@ -79,7 +79,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          _authController.logout();
+                          authController.logout();
                           Navigator.of(context).pushNamedAndRemoveUntil(
                             '/company_selection',
                             (route) => false,

@@ -1,7 +1,27 @@
+import 'package:get_it/get_it.dart';
+import 'package:kids_space/controller/user_controller.dart';
+import 'package:kids_space/model/user.dart';
 import 'package:flutter/material.dart';
 
-class UserProfileScreen extends StatelessWidget {
+class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
+
+  @override
+  State<UserProfileScreen> createState() => _UserProfileScreenState();
+}
+
+class _UserProfileScreenState extends State<UserProfileScreen> {
+  final UserController _userController = GetIt.I<UserController>();
+  User? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    final userId = _userController.selectedUserId;
+    if (userId != null) {
+      _user = _userController.getUserById(userId);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,9 +73,9 @@ class UserProfileScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Ana Souza',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            Text(
+              _user?.name ?? 'Nome não encontrado',
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -75,64 +95,49 @@ class UserProfileScreen extends StatelessWidget {
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text('Nome:', style: TextStyle(fontSize: 16)),
-                        SizedBox(width: 8),
-                        Text('Ana Souza', style: TextStyle(fontSize: 16)),
+                        const Text('Nome:', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 8),
+                        Text(_user?.name ?? '-', style: const TextStyle(fontSize: 16)),
                       ],
                     ),
-                    Divider(),
+                    const Divider(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text('Email:', style: TextStyle(fontSize: 16)),
-                        SizedBox(width: 8),
-                        Text(
-                          'ana.souza@email.com',
-                          style: TextStyle(fontSize: 16),
-                        ),
+                        const Text('Email:', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 8),
+                        Text(_user?.email ?? '-', style: const TextStyle(fontSize: 16)), // Substitua por _user?.email se disponível
                       ],
                     ),
-                    Divider(),
+                    const Divider(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text('Telefone:', style: TextStyle(fontSize: 16)),
-                        SizedBox(width: 8),
-                        Text('(11) 98765-4321', style: TextStyle(fontSize: 16)),
+                        const Text('Telefone:', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 8),
+                        Text(_user?.phone ?? '-', style: const TextStyle(fontSize: 16)),
                       ],
                     ),
-                    Divider(),
+                    const Divider(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text(
-                          'Documento:',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          '123.456.789-00',
-                          style: TextStyle(fontSize: 16),
-                        ),
+                        const Text('Documento:', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 8),
+                        Text(_user?.document ?? '-', style: const TextStyle(fontSize: 16)),
                       ],
                     ),
-                    Divider(),
+                    const Divider(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text(
-                          'ID:',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'a1b2c3d4e5f6g7h8',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
+                        const Text('ID:', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                        const SizedBox(width: 8),
+                        Text(_user?.id ?? '-', style: const TextStyle(fontSize: 16, color: Colors.grey)),
                       ],
                     ),
                   ],
@@ -161,45 +166,11 @@ class UserProfileScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    ...['Lucas Andrade', 'Marina Souza', 'Pedro Lima'].map(
-                      (child) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.child_care,
-                              color: Colors.deepPurple,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(child, style: const TextStyle(fontSize: 16)),
-                          ],
-                        ),
-                      ),
-                    ),
+                    // Aqui você pode buscar as crianças do usuário se necessário
                   ],
                 ),
               ),
             ),
-            const Spacer(),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.edit),
-                label: const Text('Editar usuário'),
-                onPressed: () {
-                  // TODO: Implementar edição de usuário
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  textStyle: const TextStyle(fontSize: 18),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
           ],
         ),
       ),
