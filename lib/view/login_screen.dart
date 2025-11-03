@@ -98,27 +98,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                const Divider(),
-                const SizedBox(height: 16),
-                /*Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('Não é cadastrado? '),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(context, '/register');
-                      },
-                      child: Text(
-                        'Registre-se agora',
-                        style: TextStyle(
-                          color: Colors.deepPurple,
-                          fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),*/
               ],
             ),
           ),

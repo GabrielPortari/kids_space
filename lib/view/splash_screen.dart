@@ -69,6 +69,7 @@ class _SplashScreenState extends State<SplashScreen> {
         company = null;
       }
     }
+    
     await Future.delayed(const Duration(seconds: 3));
     if (loggedUser != null && company != null) {
       Navigator.pushReplacementNamed(context, '/app_bottom_nav');

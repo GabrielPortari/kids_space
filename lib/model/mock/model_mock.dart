@@ -11,55 +11,93 @@ final mockCollaborators = [
   Collaborator(id: 'c4', name: 'Juliana', companyId: '4', email: 'juliana@mundoinfantil.com', password: 'juliana1'),
 ];
 
-final mockUsers = [
-  User(id: 'u1', name: 'Maria', companyId: '1', email: 'maria@techkids.com', phone: '123456789', document: '12345678901'),
-  User(id: 'u2', name: 'Carlos', companyId: '1', email: 'carlos@techkids.com', phone: '987654321', document: '10987654321'),
-  User(id: 'u3', name: 'Fernanda', companyId: '1', email: 'fernanda@techkids.com', phone: '456789123', document: '45678912345'),
-  User(id: 'u4', name: 'Rafael', companyId: '1', email: 'rafael@techkids.com', phone: '321654987', document: '32165498765'),
+final List<User> mockUsers = [
+  User(
+    id: 'u1',
+    name: 'Maria',
+    companyId: '1',
+    email: 'maria@techkids.com',
+    phone: '123456789',
+    document: '12345678901',
+    childrenIds: ['ch1', 'ch5', 'ch6'], // Lucas, Marina, Enzo
+  ),
+  User(
+    id: 'u2',
+    name: 'Carlos',
+    companyId: '1',
+    email: 'carlos@techkids.com',
+    phone: '987654321',
+    document: '10987654321',
+    childrenIds: ['ch2'], // Sofia
+  ),
+  User(
+    id: 'u3',
+    name: 'Fernanda',
+    companyId: '1',
+    email: 'fernanda@techkids.com',
+    phone: '456789123',
+    document: '45678912345',
+    childrenIds: ['ch3'], // Gabriel
+  ),
+  User(
+    id: 'u4',
+    name: 'Rafael',
+    companyId: '1',
+    email: 'rafael@techkids.com',
+    phone: '321654987',
+    document: '32165498765',
+    childrenIds: ['ch4'], // Beatriz
+  ),
 ];
 
-final mockChildren = [
+final List<Child> mockChildren = [
+  // Lucas: Último evento é checkOut (e2, 1h atrás) => isActive: false
   Child(
     id: 'ch1',
     name: 'Lucas',
     companyId: '1',
-    responsibleUsers: [mockUsers[0]],
-    checkEvents: [],
+    responsibleUserIds: ['u1'],
+    isActive: false,
   ),
+  // Sofia: Último evento é checkOut (e6, 30min atrás) => isActive: false
   Child(
     id: 'ch2',
     name: 'Sofia',
     companyId: '1',
-    responsibleUsers: [mockUsers[1]],
-    checkEvents: [],
+    responsibleUserIds: ['u2'],
+    isActive: false,
   ),
+  // Gabriel: Último evento é checkIn (e4, 3h atrás) => isActive: true
   Child(
     id: 'ch3',
     name: 'Gabriel',
     companyId: '1',
-    responsibleUsers: [mockUsers[2]],
-    checkEvents: [],
+    responsibleUserIds: ['u3'],
+    isActive: true,
   ),
+  // Beatriz: Último evento é checkIn (e5, 2h atrás) => isActive: true
   Child(
     id: 'ch4',
     name: 'Beatriz',
     companyId: '1',
-    responsibleUsers: [mockUsers[3]],
-    checkEvents: [],
+    responsibleUserIds: ['u4'],
+    isActive: true,
   ),
+  // Marina: sem eventos => isActive: false
   Child(
     id: 'ch5',
     name: 'Marina',
     companyId: '1',
-    responsibleUsers: [mockUsers[0]],
-    checkEvents: [],
+    responsibleUserIds: ['u1'],
+    isActive: false,
   ),
+  // Enzo: sem eventos => isActive: false
   Child(
     id: 'ch6',
     name: 'Enzo',
     companyId: '1',
-    responsibleUsers: [mockUsers[0]],
-    checkEvents: [],
+    responsibleUserIds: ['u1'],
+    isActive: false,
   ),
 ];
 
