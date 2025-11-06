@@ -2,44 +2,49 @@ import 'package:kids_space/model/check_event.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/service/check_event_service.dart';
+import 'package:mobx/mobx.dart';
 
 class CheckEventController {
   final CheckEventService _service = CheckEventService();
 
   /// Lista de eventos carregados
+  @observable
   List<CheckEvent> events = [];
+
+  @observable
+  List<CheckEvent>? activeCheckins;
+
+  @observable
   CheckEvent? lastCheckIn;
+
+  @observable
   CheckEvent? lastCheckOut;
+
+  @observable
+  List<CheckEvent> logEvents = [];
+
   List<CheckEvent> get loadedEvents => events;
   CheckEvent? get loadedLastCheckIn => lastCheckIn;
   CheckEvent? get loadedLastCheckOut => lastCheckOut;
-
-  /// Atualiza a lista de eventos e os últimos check-in/check-out para uma empresa
-  void loadEventsForCompany(String companyId, {int limit = 30}) {
-    events = _service.getLastEventsByCompany(companyId, limit: limit);
+  List<CheckEvent>? get loadedActiveCheckins => activeCheckins;
+  List<CheckEvent> get loadedLogEvents => logEvents;
+  
+  void loadEvents(String companyId){
+    events = _service.getEventsByCompany(companyId);
+  }
+  
+  void loadLastCheckinAndOut(String companyId){
     final lastMap = _service.getLastCheckinAndCheckout(companyId);
     lastCheckIn = lastMap[CheckType.checkIn];
     lastCheckOut = lastMap[CheckType.checkOut];
   }
 
-  /// Registra um novo evento de check-in/check-out
-  CheckEvent registerEvent({
-    required String companyId,
-    required Child child,
-    required Collaborator collaborator,
-    required CheckType checkType,
-    DateTime? timestamp,
-  }) {
-    final event = _service.registerEvent(
-      companyId: companyId,
-      child: child,
-      collaborator: collaborator,
-      checkType: checkType,
-      timestamp: timestamp,
-    );
-    // Atualiza lista e últimos eventos após registrar
-    loadEventsForCompany(companyId);
-    return event;
+  void loadActiveCheckins(String companyId) {
+    activeCheckins = getActiveCheckins(companyId);
+  }
+
+  void loadLog(String companyId, {int limit = 30}){
+    logEvents = _service.getLastEventsByCompany(companyId, limit: limit);
   }
 
   /// Lista todos os eventos
