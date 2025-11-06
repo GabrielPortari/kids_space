@@ -4,8 +4,22 @@ import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/service/check_event_service.dart';
 import 'package:mobx/mobx.dart';
 
+
 class CheckEventController {
   final CheckEventService _service = CheckEventService();
+
+  // Loading states
+  @observable
+  bool isLoadingEvents = false;
+
+  @observable
+  bool isLoadingActiveCheckins = false;
+
+  @observable
+  bool isLoadingLastCheck = false;
+
+  @observable
+  bool isLoadingLog = false;
 
   /// Lista de eventos carregados
   @observable
@@ -29,22 +43,30 @@ class CheckEventController {
   List<CheckEvent>? get loadedActiveCheckins => activeCheckins;
   List<CheckEvent> get loadedLogEvents => logEvents;
   
-  void loadEvents(String companyId){
+  void loadEvents(String companyId) {
+    isLoadingEvents = true;
     events = _service.getEventsByCompany(companyId);
+    isLoadingEvents = false;
   }
-  
-  void loadLastCheckinAndOut(String companyId){
+
+  void loadLastCheckinAndOut(String companyId) {
+    isLoadingLastCheck = true;
     final lastMap = _service.getLastCheckinAndCheckout(companyId);
     lastCheckIn = lastMap[CheckType.checkIn];
     lastCheckOut = lastMap[CheckType.checkOut];
+    isLoadingLastCheck = false;
   }
 
   void loadActiveCheckins(String companyId) {
+    isLoadingActiveCheckins = true;
     activeCheckins = getActiveCheckins(companyId);
+    isLoadingActiveCheckins = false;
   }
 
-  void loadLog(String companyId, {int limit = 30}){
+  void loadLog(String companyId, {int limit = 30}) {
+    isLoadingLog = true;
     logEvents = _service.getLastEventsByCompany(companyId, limit: limit);
+    isLoadingLog = false;
   }
 
   /// Lista todos os eventos

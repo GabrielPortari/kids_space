@@ -22,8 +22,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool isLoading = false;
-
   @override
   void initState() {
     super.initState();
@@ -31,9 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadData() async {
-    setState(() {
-      isLoading = true;
-    });
     final companyId = _companyController.companySelected?.id;
     if (companyId != null) {
       _checkEventController.loadEvents(companyId);
@@ -41,25 +36,27 @@ class _HomeScreenState extends State<HomeScreen> {
       _checkEventController.loadActiveCheckins(companyId);
       _checkEventController.loadLog(companyId, limit: 30);
     }
-    setState(() {
-      isLoading = false;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          _infoCompanyCard(),
-          const SizedBox(height: 8),
-          _checkInAndOutButtons(),
-          const SizedBox(height: 8),
-          _activeChildrenInfoCard(),
-          const SizedBox(height: 8),
-          Expanded(child: _inAndOutList()),
-        ],
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[500],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            _infoCompanyCard(),
+            const SizedBox(height: 8),
+            _checkInAndOutButtons(),
+            const SizedBox(height: 8),
+            _activeChildrenInfoCard(),
+            const SizedBox(height: 8),
+            Expanded(child: _inAndOutList()),
+          ],
+        ),
       ),
     );
   }
@@ -67,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _infoCompanyCard() {
     return Observer(
       builder: (_) => Skeletonizer(
-        enabled: isLoading,
+        enabled: _checkEventController.isLoadingEvents,
         child: Builder(
           builder: (context) {
             return Padding(
@@ -186,8 +183,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _checkInAndOutButtons() {
+    var allLoaded = _checkEventController.isLoadingActiveCheckins &&
+        _checkEventController.isLoadingLastCheck &&
+        _checkEventController.isLoadingLog &&
+        _checkEventController.isLoadingEvents;
     return Skeletonizer(
-      enabled: isLoading,
+      enabled: allLoaded,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
         child: Row(
@@ -245,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Observer(
       builder: (_) {
         return Skeletonizer(
-          enabled: isLoading,
+          enabled: _checkEventController.isLoadingActiveCheckins || _checkEventController.isLoadingLastCheck,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Card(
@@ -423,7 +424,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Observer(
       builder: (_) {
         return Skeletonizer(
-          enabled: isLoading,
+          enabled: _checkEventController.isLoadingLog,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Card(
@@ -434,7 +435,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   vertical: 16,
-                  horizontal: 20,
+                  horizontal: 16,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -442,11 +443,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Text(
                       'Log de presença (últimos 30)',
                       style: TextStyle(
-                        fontSize: 17,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Expanded(
+                    Flexible(
                       child: ListView.separated(
                         itemCount: _checkEventController.loadedLogEvents.length,
                         separatorBuilder: (context, index) =>
