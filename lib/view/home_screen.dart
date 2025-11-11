@@ -153,12 +153,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                       const SizedBox(width: 6),
                                       InkWell(
                                         onTap: () async {
-                                          final id = _collaboratorController.loggedCollaborator?.id ?? '0';
-                                          debugPrint('HomeScreen.copyId tapped -> $id');
+                                          final id =
+                                              _collaboratorController
+                                                  .loggedCollaborator
+                                                  ?.id ??
+                                              '0';
+                                          debugPrint(
+                                            'HomeScreen.copyId tapped -> $id',
+                                          );
                                           await Clipboard.setData(
-                                            ClipboardData(
-                                              text: id,
-                                            ),
+                                            ClipboardData(text: id),
                                           );
                                           ScaffoldMessenger.of(
                                             context,
@@ -197,13 +201,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _checkInAndOutButtons() {
-    var allLoaded = _checkEventController.isLoadingActiveCheckins &&
-        _checkEventController.isLoadingLastCheck &&
-        _checkEventController.isLoadingLog &&
-        _checkEventController.isLoadingEvents;
-
     return Skeletonizer(
-      enabled: allLoaded,
+      enabled: _checkEventController.allLoaded,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
         child: Row(
@@ -263,7 +262,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Observer(
       builder: (_) {
         return Skeletonizer(
-          enabled: _checkEventController.isLoadingActiveCheckins || _checkEventController.isLoadingLastCheck,
+          enabled:
+              _checkEventController.isLoadingActiveCheckins ||
+              _checkEventController.isLoadingLastCheck,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Card(
@@ -281,7 +282,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     Builder(
                       builder: (context) => GestureDetector(
                         onTap: () {
-                          debugPrint('HomeScreen.navigate -> /all_active_children');
+                          debugPrint(
+                            'HomeScreen.navigate -> /all_active_children',
+                          );
                           Navigator.of(
                             context,
                           ).pushNamed('/all_active_children');
@@ -348,18 +351,24 @@ class _HomeScreenState extends State<HomeScreen> {
                               left: 32.0,
                               top: 2.0,
                             ),
-                            child:
-                                _checkEventController.lastCheckIn != null
+                            child: _checkEventController.lastCheckIn != null
                                 ? Row(
                                     children: [
                                       Text(
-                                        _checkEventController.lastCheckIn?.child.name ?? '-',
+                                        _checkEventController
+                                                .lastCheckIn
+                                                ?.child
+                                                .name ??
+                                            '-',
                                         style: const TextStyle(fontSize: 15),
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
                                         formatTime(
-                                          _checkEventController.lastCheckIn?.timestamp ?? DateTime.now(),
+                                          _checkEventController
+                                                  .lastCheckIn
+                                                  ?.timestamp ??
+                                              DateTime.now(),
                                         ),
                                         style: const TextStyle(
                                           fontSize: 15,
@@ -393,18 +402,24 @@ class _HomeScreenState extends State<HomeScreen> {
                               left: 32.0,
                               top: 2.0,
                             ),
-                            child:
-                                _checkEventController.lastCheckOut != null
+                            child: _checkEventController.lastCheckOut != null
                                 ? Row(
                                     children: [
                                       Text(
-                                        _checkEventController.lastCheckOut?.child.name ?? '-',
+                                        _checkEventController
+                                                .lastCheckOut
+                                                ?.child
+                                                .name ??
+                                            '-',
                                         style: const TextStyle(fontSize: 15),
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
                                         formatTime(
-                                          _checkEventController.lastCheckOut?.timestamp ?? DateTime.now(),
+                                          _checkEventController
+                                                  .lastCheckOut
+                                                  ?.timestamp ??
+                                              DateTime.now(),
                                         ),
                                         style: const TextStyle(
                                           fontSize: 15,
@@ -461,11 +476,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: _checkEventController.logEvents.length,
-                      separatorBuilder: (context, index) => const Divider(height: 12),
+                      separatorBuilder: (context, index) =>
+                          const Divider(height: 12),
                       itemBuilder: (context, index) {
                         final event = _checkEventController.logEvents[index];
                         final isCheckin = event.checkType == CheckType.checkIn;
-                        debugPrint('HomeScreen.log itemBuilder index=$index child=${event.child.name}');
+                        debugPrint(
+                          'HomeScreen.log itemBuilder index=$index child=${event.child.name}',
+                        );
                         return Row(
                           children: [
                             Icon(

@@ -9,6 +9,14 @@ part of 'check_event_controller.dart';
 // ignore_for_file: non_constant_identifier_names, unnecessary_brace_in_string_interps, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic, no_leading_underscores_for_local_identifiers
 
 mixin _$CheckEventController on _CheckEventController, Store {
+  Computed<bool>? _$allLoadedComputed;
+
+  @override
+  bool get allLoaded => (_$allLoadedComputed ??= Computed<bool>(
+    () => super.allLoaded,
+    name: '_CheckEventController.allLoaded',
+  )).value;
+
   late final _$isLoadingEventsAtom = Atom(
     name: '_CheckEventController.isLoadingEvents',
     context: context,
@@ -82,24 +90,6 @@ mixin _$CheckEventController on _CheckEventController, Store {
   set isLoadingLog(bool value) {
     _$isLoadingLogAtom.reportWrite(value, super.isLoadingLog, () {
       super.isLoadingLog = value;
-    });
-  }
-
-  late final _$allLoadedAtom = Atom(
-    name: '_CheckEventController.allLoaded',
-    context: context,
-  );
-
-  @override
-  bool get allLoaded {
-    _$allLoadedAtom.reportRead();
-    return super.allLoaded;
-  }
-
-  @override
-  set allLoaded(bool value) {
-    _$allLoadedAtom.reportWrite(value, super.allLoaded, () {
-      super.allLoaded = value;
     });
   }
 
@@ -246,12 +236,12 @@ isLoadingEvents: ${isLoadingEvents},
 isLoadingActiveCheckins: ${isLoadingActiveCheckins},
 isLoadingLastCheck: ${isLoadingLastCheck},
 isLoadingLog: ${isLoadingLog},
-allLoaded: ${allLoaded},
 events: ${events},
 activeCheckins: ${activeCheckins},
 lastCheckIn: ${lastCheckIn},
 lastCheckOut: ${lastCheckOut},
-logEvents: ${logEvents}
+logEvents: ${logEvents},
+allLoaded: ${allLoaded}
     ''';
   }
 }
