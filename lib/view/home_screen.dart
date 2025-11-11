@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/company_controller.dart';
@@ -25,40 +26,54 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    debugPrint('HomeScreen.initState');
     _loadData();
+  }
+
+  Future<void> _onRefresh() async {
+    debugPrint('HomeScreen._onRefresh called');
+    await _loadData();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: _onRefresh,
+      child: SizedBox.expand(
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _infoCompanyCard(),
+                const SizedBox(height: 8),
+                _checkInAndOutButtons(),
+                const SizedBox(height: 8),
+                _activeChildrenInfoCard(),
+                const SizedBox(height: 8),
+                _inAndOutList(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _loadData() async {
     final companyId = _companyController.companySelected?.id;
     if (companyId != null) {
-      _checkEventController.loadEvents(companyId);
-      _checkEventController.loadLastCheckinAndOut(companyId);
-      _checkEventController.loadActiveCheckins(companyId);
-      _checkEventController.loadLog(companyId, limit: 30);
+      debugPrint('HomeScreen._loadData START for $companyId');
+      await Future.wait([
+        _checkEventController.loadEvents(companyId),
+        _checkEventController.loadLastCheckinAndOut(companyId),
+        _checkEventController.loadActiveCheckins(companyId),
+        _checkEventController.loadLog(companyId, limit: 30),
+      ]);
+      debugPrint('HomeScreen._loadData DONE');
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[500],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            _infoCompanyCard(),
-            const SizedBox(height: 8),
-            _checkInAndOutButtons(),
-            const SizedBox(height: 8),
-            _activeChildrenInfoCard(),
-            const SizedBox(height: 8),
-            Expanded(child: _inAndOutList()),
-          ],
-        ),
-      ),
-    );
   }
 
   Widget _infoCompanyCard() {
@@ -87,6 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             GestureDetector(
                               onTap: () {
+                                debugPrint('HomeScreen.navigate -> /profile');
                                 Navigator.of(context).pushNamed('/profile');
                               },
                               child: CircleAvatar(
@@ -137,13 +153,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                       const SizedBox(width: 6),
                                       InkWell(
                                         onTap: () async {
+                                          final id = _collaboratorController.loggedCollaborator?.id ?? '0';
+                                          debugPrint('HomeScreen.copyId tapped -> $id');
                                           await Clipboard.setData(
                                             ClipboardData(
-                                              text:
-                                                  _collaboratorController
-                                                      .loggedCollaborator
-                                                      ?.id ??
-                                                  "0",
+                                              text: id,
                                             ),
                                           );
                                           ScaffoldMessenger.of(
@@ -187,6 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _checkEventController.isLoadingLastCheck &&
         _checkEventController.isLoadingLog &&
         _checkEventController.isLoadingEvents;
+
     return Skeletonizer(
       enabled: allLoaded,
       child: Padding(
@@ -196,6 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             ElevatedButton.icon(
               onPressed: () {
+                debugPrint('HomeScreen.checkIn button pressed');
                 // Ação de check-in
               },
               icon: const Icon(Icons.login, color: Colors.white),
@@ -217,6 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ElevatedButton.icon(
               onPressed: () {
+                debugPrint('HomeScreen.checkOut button pressed');
                 // Ação de check-out
               },
               icon: const Icon(Icons.logout, color: Colors.white),
@@ -264,6 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Builder(
                       builder: (context) => GestureDetector(
                         onTap: () {
+                          debugPrint('HomeScreen.navigate -> /all_active_children');
                           Navigator.of(
                             context,
                           ).pushNamed('/all_active_children');
@@ -282,7 +300,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               Text(
-                                '${_checkEventController.loadedActiveCheckins?.length ?? 0}',
+                                '${_checkEventController.activeCheckins?.length ?? 0}',
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   fontSize: 56,
@@ -331,22 +349,17 @@ class _HomeScreenState extends State<HomeScreen> {
                               top: 2.0,
                             ),
                             child:
-                                _checkEventController.loadedLastCheckIn != null
+                                _checkEventController.lastCheckIn != null
                                 ? Row(
                                     children: [
                                       Text(
-                                        _checkEventController
-                                            .loadedLastCheckIn!
-                                            .child
-                                            .name,
+                                        _checkEventController.lastCheckIn?.child.name ?? '-',
                                         style: const TextStyle(fontSize: 15),
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
                                         formatTime(
-                                          _checkEventController
-                                              .loadedLastCheckIn!
-                                              .timestamp,
+                                          _checkEventController.lastCheckIn?.timestamp ?? DateTime.now(),
                                         ),
                                         style: const TextStyle(
                                           fontSize: 15,
@@ -381,22 +394,17 @@ class _HomeScreenState extends State<HomeScreen> {
                               top: 2.0,
                             ),
                             child:
-                                _checkEventController.loadedLastCheckOut != null
+                                _checkEventController.lastCheckOut != null
                                 ? Row(
                                     children: [
                                       Text(
-                                        _checkEventController
-                                            .loadedLastCheckOut!
-                                            .child
-                                            .name,
+                                        _checkEventController.lastCheckOut?.child.name ?? '-',
                                         style: const TextStyle(fontSize: 15),
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
                                         formatTime(
-                                          _checkEventController
-                                              .loadedLastCheckOut!
-                                              .timestamp,
+                                          _checkEventController.lastCheckOut?.timestamp ?? DateTime.now(),
                                         ),
                                         style: const TextStyle(
                                           fontSize: 15,
@@ -447,54 +455,54 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Flexible(
-                      child: ListView.separated(
-                        itemCount: _checkEventController.loadedLogEvents.length,
-                        separatorBuilder: (context, index) =>
-                            const Divider(height: 12),
-                        itemBuilder: (context, index) {
-                          final event =
-                              _checkEventController.loadedLogEvents[index];
-                          final isCheckin =
-                              event.checkType == CheckType.checkIn;
-                          return Row(
-                            children: [
-                              Icon(
-                                isCheckin ? Icons.login : Icons.logout,
-                                color: isCheckin ? Colors.green : Colors.red,
-                                size: 22,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  event.child.name,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                formatTime(event.timestamp),
+                    ListView.separated(
+                      padding: const EdgeInsets.all(8.0),
+                      primary: false,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _checkEventController.logEvents.length,
+                      separatorBuilder: (context, index) => const Divider(height: 12),
+                      itemBuilder: (context, index) {
+                        final event = _checkEventController.logEvents[index];
+                        final isCheckin = event.checkType == CheckType.checkIn;
+                        debugPrint('HomeScreen.log itemBuilder index=$index child=${event.child.name}');
+                        return Row(
+                          children: [
+                            Icon(
+                              isCheckin ? Icons.login : Icons.logout,
+                              color: isCheckin ? Colors.green : Colors.red,
+                              size: 22,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                event.child.name,
                                 style: const TextStyle(
-                                  fontSize: 15,
-                                  color: Colors.grey,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
                                 ),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(width: 10),
-                              Text(
-                                formatDate(event.timestamp),
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  color: Colors.grey,
-                                ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              formatTime(event.timestamp),
+                              style: const TextStyle(
+                                fontSize: 15,
+                                color: Colors.grey,
                               ),
-                            ],
-                          );
-                        },
-                      ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              formatDate(event.timestamp),
+                              style: const TextStyle(
+                                fontSize: 15,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),

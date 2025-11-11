@@ -22,11 +22,12 @@ class _UsersScreenState extends State<UsersScreen> {
   @override
   void initState() {
     super.initState();
-    _allUsers.addAll(
-      _userController.getUsersByCompanyId(
-        _companyController.companySelected!.id,
-      ),
-    );
+    final companyId = _companyController.companySelected?.id;
+    if (companyId != null) {
+      _allUsers.addAll(_userController.getUsersByCompanyId(companyId));
+    } else {
+      // No company selected yet — leave user list empty. It will update if user navigates after selection.
+    }
     _filteredUsers = List<User>.from(_allUsers);
     _searchController.addListener(_onSearchChanged);
   }
