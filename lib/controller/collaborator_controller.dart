@@ -9,6 +9,7 @@ part 'collaborator_controller.g.dart';
 class CollaboratorController = _CollaboratorController with _$CollaboratorController;
 
 abstract class _CollaboratorController with Store {
+  
   @observable
   Collaborator? loggedCollaborator;
 

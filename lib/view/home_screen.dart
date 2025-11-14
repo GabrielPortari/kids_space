@@ -11,10 +11,8 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 
 final CompanyController _companyController = GetIt.I<CompanyController>();
-final CollaboratorController _collaboratorController =
-    GetIt.I<CollaboratorController>();
-final CheckEventController _checkEventController =
-    GetIt.I<CheckEventController>();
+final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
+final CheckEventController _checkEventController = GetIt.I<CheckEventController>();
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,12 +24,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    debugPrint('HomeScreen.initState');
+    debugPrint('DebuggerLog: HomeScreen.initState');
     _loadData();
   }
 
   Future<void> _onRefresh() async {
-    debugPrint('HomeScreen._onRefresh called');
+    debugPrint('DebuggerLog: HomeScreen._onRefresh called');
     await _loadData();
   }
 
@@ -65,14 +63,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadData() async {
     final companyId = _companyController.companySelected?.id;
     if (companyId != null) {
-      debugPrint('HomeScreen._loadData START for $companyId');
+      debugPrint('DebuggerLog: HomeScreen._loadData START for $companyId');
       await Future.wait([
         _checkEventController.loadEvents(companyId),
         _checkEventController.loadLastCheckinAndOut(companyId),
         _checkEventController.loadActiveCheckins(companyId),
         _checkEventController.loadLog(companyId, limit: 30),
       ]);
-      debugPrint('HomeScreen._loadData DONE');
+      debugPrint('DebuggerLog: HomeScreen._loadData DONE');
     }
   }
 
@@ -102,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             GestureDetector(
                               onTap: () {
-                                debugPrint('HomeScreen.navigate -> /profile');
+                                debugPrint('DebuggerLog: HomeScreen.navigate -> /profile');
                                 Navigator.of(context).pushNamed('/profile');
                               },
                               child: CircleAvatar(
@@ -138,51 +136,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(height: 2),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        'id: ${_collaboratorController.loggedCollaborator?.id ?? "ID do Colaborador"}',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.grey,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      InkWell(
-                                        onTap: () async {
-                                          final id =
-                                              _collaboratorController
-                                                  .loggedCollaborator
-                                                  ?.id ??
-                                              '0';
-                                          debugPrint(
-                                            'HomeScreen.copyId tapped -> $id',
-                                          );
-                                          await Clipboard.setData(
-                                            ClipboardData(text: id),
-                                          );
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'ID copiado para a área de transferência!',
-                                              ),
-                                              duration: Duration(seconds: 2),
-                                            ),
-                                          );
-                                        },
-                                        child: const Icon(
-                                          Icons.copy,
-                                          size: 18,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
                                 ],
                               ),
                             ),
@@ -210,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             ElevatedButton.icon(
               onPressed: () {
-                debugPrint('HomeScreen.checkIn button pressed');
+                debugPrint('DebuggerLog: HomeScreen.checkIn button pressed');
                 // Ação de check-in
               },
               icon: const Icon(Icons.login, color: Colors.white),
@@ -232,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ElevatedButton.icon(
               onPressed: () {
-                debugPrint('HomeScreen.checkOut button pressed');
+                debugPrint('DebuggerLog: HomeScreen.checkOut button pressed');
                 // Ação de check-out
               },
               icon: const Icon(Icons.logout, color: Colors.white),
@@ -482,7 +435,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         final event = _checkEventController.logEvents[index];
                         final isCheckin = event.checkType == CheckType.checkIn;
                         debugPrint(
-                          'HomeScreen.log itemBuilder index=$index child=${event.child.name}',
+                          'DebuggerLog: HomeScreen.log itemBuilder index=$index child=${event.child.name}',
                         );
                         return Row(
                           children: [

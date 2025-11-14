@@ -25,7 +25,7 @@ abstract class _CheckEventController with Store {
   bool isLoadingLog = false;
 
   @computed
-  bool get allLoaded => !isLoadingEvents && !isLoadingActiveCheckins && !isLoadingLastCheck && !isLoadingLog;
+  bool get allLoaded => isLoadingEvents && isLoadingActiveCheckins && isLoadingLastCheck && isLoadingLog;
   
   // Data
   @observable
@@ -46,13 +46,13 @@ abstract class _CheckEventController with Store {
   @action
   Future<void> loadEvents(String companyId) async {
     isLoadingEvents = true;
-    debugPrint('CheckEventController.loadEvents START for $companyId');
+  debugPrint('DebuggerLog: CheckEventController.loadEvents START for $companyId');
     try {
       final res = await _service.getEventsByCompany(companyId);
       events = res;
-      debugPrint('CheckEventController.loadEvents DONE (${events?.length})');
+  debugPrint('DebuggerLog: CheckEventController.loadEvents DONE (${events?.length})');
     } catch (e, st) {
-      debugPrint('CheckEventController.loadEvents ERROR: $e\n$st');
+  debugPrint('DebuggerLog: CheckEventController.loadEvents ERROR: $e\n$st');
       rethrow;
     } finally {
       isLoadingEvents = false;
@@ -62,16 +62,16 @@ abstract class _CheckEventController with Store {
   @action
   Future<void> loadLastCheckinAndOut(String companyId) async {
     isLoadingLastCheck = true;
-    debugPrint('CheckEventController.loadLastCheckinAndOut START for $companyId');
+  debugPrint('DebuggerLog: CheckEventController.loadLastCheckinAndOut START for $companyId');
     try {
       lastCheckIn = null;
       lastCheckOut = null;
       final lastMap = await _service.getLastCheckinAndCheckout(companyId);
       lastCheckIn = lastMap[CheckType.checkIn];
       lastCheckOut = lastMap[CheckType.checkOut];
-      debugPrint('CheckEventController.loadLastCheckinAndOut DONE');
+  debugPrint('DebuggerLog: CheckEventController.loadLastCheckinAndOut DONE');
     } catch (e, st) {
-      debugPrint('CheckEventController.loadLastCheckinAndOut ERROR: $e\n$st');
+  debugPrint('DebuggerLog: CheckEventController.loadLastCheckinAndOut ERROR: $e\n$st');
       rethrow;
     } finally {
       isLoadingLastCheck = false;
@@ -81,13 +81,13 @@ abstract class _CheckEventController with Store {
   @action
   Future<void> loadActiveCheckins(String companyId) async {
     isLoadingActiveCheckins = true;
-    debugPrint('CheckEventController.loadActiveCheckins START for $companyId');
+  debugPrint('DebuggerLog: CheckEventController.loadActiveCheckins START for $companyId');
     try {
       final list = await getActiveCheckins(companyId);
       activeCheckins = list;
-      debugPrint('CheckEventController.loadActiveCheckins DONE (${activeCheckins?.length})');
+  debugPrint('DebuggerLog: CheckEventController.loadActiveCheckins DONE (${activeCheckins?.length})');
     } catch (e, st) {
-      debugPrint('CheckEventController.loadActiveCheckins ERROR: $e\n$st');
+  debugPrint('DebuggerLog: CheckEventController.loadActiveCheckins ERROR: $e\n$st');
       rethrow;
     } finally {
       isLoadingActiveCheckins = false;
@@ -97,13 +97,13 @@ abstract class _CheckEventController with Store {
   @action
   Future<void> loadLog(String companyId, {int limit = 30}) async {
     isLoadingLog = true;
-    debugPrint('CheckEventController.loadLog START for $companyId');
+  debugPrint('DebuggerLog: CheckEventController.loadLog START for $companyId');
     try {
       final res = await _service.getLastEventsByCompany(companyId, limit: limit);
       logEvents = res;
-      debugPrint('CheckEventController.loadLog DONE (${logEvents.length})');
+  debugPrint('DebuggerLog: CheckEventController.loadLog DONE (${logEvents.length})');
     } catch (e, st) {
-      debugPrint('CheckEventController.loadLog ERROR: $e\n$st');
+  debugPrint('DebuggerLog: CheckEventController.loadLog ERROR: $e\n$st');
       rethrow;
     } finally {
       isLoadingLog = false;
