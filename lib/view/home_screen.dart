@@ -100,7 +100,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             GestureDetector(
                               onTap: () {
-                                debugPrint('DebuggerLog: HomeScreen.navigate -> /profile');
+                                debugPrint(
+                                  'DebuggerLog: HomeScreen.navigate -> /profile',
+                                );
                                 Navigator.of(context).pushNamed('/profile');
                               },
                               child: CircleAvatar(
@@ -154,60 +156,71 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _checkInAndOutButtons() {
-    return Skeletonizer(
-      enabled: _checkEventController.allLoaded,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            ElevatedButton.icon(
-              onPressed: () {
-                debugPrint('DebuggerLog: HomeScreen.checkIn button pressed');
-                // Ação de check-in
-              },
-              icon: const Icon(Icons.login, color: Colors.white),
-              label: const Text(
-                'Check-In',
-                style: TextStyle(color: Colors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                textStyle: const TextStyle(fontSize: 16),
-                backgroundColor: Colors.deepPurple,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
+    return Observer(
+      builder: (_) {
+        return Skeletonizer(
+          enabled: !_checkEventController.allLoaded,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 8.0,
             ),
-            ElevatedButton.icon(
-              onPressed: () {
-                debugPrint('DebuggerLog: HomeScreen.checkOut button pressed');
-                // Ação de check-out
-              },
-              icon: const Icon(Icons.logout, color: Colors.white),
-              label: const Text(
-                'Check-Out',
-                style: TextStyle(color: Colors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                textStyle: const TextStyle(fontSize: 16),
-                backgroundColor: Colors.deepPurple,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    debugPrint(
+                      'DebuggerLog: HomeScreen.checkIn button pressed',
+                    );
+                    // Ação de check-in
+                  },
+                  icon: const Icon(Icons.login, color: Colors.white),
+                  label: const Text(
+                    'Check-In',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    textStyle: const TextStyle(fontSize: 16),
+                    backgroundColor: Colors.deepPurple,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    debugPrint(
+                      'DebuggerLog: HomeScreen.checkOut button pressed',
+                    );
+                    // Ação de check-out
+                  },
+                  icon: const Icon(Icons.logout, color: Colors.white),
+                  label: const Text(
+                    'Check-Out',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    textStyle: const TextStyle(fontSize: 16),
+                    backgroundColor: Colors.deepPurple,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

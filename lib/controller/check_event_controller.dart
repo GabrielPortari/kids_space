@@ -25,7 +25,7 @@ abstract class _CheckEventController with Store {
   bool isLoadingLog = false;
 
   @computed
-  bool get allLoaded => isLoadingEvents && isLoadingActiveCheckins && isLoadingLastCheck && isLoadingLog;
+  bool get allLoaded => !isLoadingEvents && !isLoadingActiveCheckins && !isLoadingLastCheck && !isLoadingLog;
   
   // Data
   @observable

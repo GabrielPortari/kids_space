@@ -4,10 +4,9 @@ import 'package:get_it/get_it.dart';
 import 'package:flutter/services.dart';
 import 'package:kids_space/controller/auth_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
-import 'package:kids_space/model/collaborator.dart';
 
 final AuthController authController = GetIt.I<AuthController>();
-final CollaboratorController collaboratorController =
+final CollaboratorController _collaboratorController =
     GetIt.I<CollaboratorController>();
 
 class ProfileScreen extends StatefulWidget {
@@ -26,6 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('DebuggerLog: ProfileScreen.build');
     return Scaffold(
       appBar: AppBar(
         title: const Text('Perfil'),
@@ -43,6 +43,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ],
             onSelected: (value) {
+                debugPrint('DebuggerLog: ProfileScreen.menu selected -> $value');
               if (value == 'edit_profile') {
                 _onEditProfile();
               }
@@ -64,8 +65,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _collaboratorProfileInfo(),
                 const SizedBox(height: 24),
                 Text(
-                  collaboratorController.loggedCollaborator != null
-                      ? collaboratorController.loggedCollaborator!.name
+                  _collaboratorController.loggedCollaborator != null
+                      ? _collaboratorController.loggedCollaborator!.name
                       : 'Nome do Colaborador',
                   style: const TextStyle(
                     fontSize: 24,
@@ -104,6 +105,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: InkWell(
               borderRadius: BorderRadius.circular(20),
               onTap: () {
+                  debugPrint('DebuggerLog: ProfileScreen.addPhoto tapped');
                 // TODO: Implementar ação para adicionar foto
               },
               child: Container(
@@ -140,8 +142,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const Text('Nome:', style: TextStyle(fontSize: 16)),
                 const SizedBox(width: 8),
                 Text(
-                  collaboratorController.loggedCollaborator != null
-                      ? collaboratorController.loggedCollaborator!.name
+                  _collaboratorController.loggedCollaborator != null
+                      ? _collaboratorController.loggedCollaborator!.name
                       : 'Nome do Colaborador',
                   style: const TextStyle(fontSize: 16),
                 ),
@@ -154,8 +156,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const Text('Email:', style: TextStyle(fontSize: 16)),
                 const SizedBox(width: 8),
                 Text(
-                  collaboratorController.loggedCollaborator != null
-                      ? collaboratorController.loggedCollaborator!.email
+                  _collaboratorController.loggedCollaborator != null
+                      ? _collaboratorController.loggedCollaborator!.email
                       : 'email@placeholder.com',
                   style: const TextStyle(fontSize: 16),
                 ),
@@ -168,12 +170,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const Text('Telefone:', style: TextStyle(fontSize: 16)),
                 const SizedBox(width: 8),
                 Text(
-                  collaboratorController.loggedCollaborator != null &&
-                          collaboratorController
+                  _collaboratorController.loggedCollaborator != null &&
+                          _collaboratorController
                                   .loggedCollaborator!
                                   .phoneNumber !=
                               null
-                      ? collaboratorController.loggedCollaborator!.phoneNumber!
+                      ? _collaboratorController.loggedCollaborator!.phoneNumber!
                       : '(11) 1234 5678',
                   style: const TextStyle(fontSize: 16),
                 ),
@@ -191,8 +193,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      collaboratorController.loggedCollaborator != null
-                          ? collaboratorController.loggedCollaborator!.id
+                      _collaboratorController.loggedCollaborator != null
+                          ? _collaboratorController.loggedCollaborator!.id
                           : 'ID do Colaborador',
                       style: const TextStyle(fontSize: 16, color: Colors.grey),
                       overflow: TextOverflow.ellipsis,
@@ -203,7 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 InkWell(
                   onTap: () async {
                     final id =
-                        collaboratorController.loggedCollaborator?.id ?? '';
+                        _collaboratorController.loggedCollaborator?.id ?? '';
                     debugPrint(
                       'DebuggerLog: ProfileScreen.copyId tapped -> $id',
                     );
@@ -235,14 +237,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return showDialog(
       context: context,
       builder: (context) {
+        debugPrint('DebuggerLog: ProfileScreen.openEditDialog -> collaboratorId=${_collaboratorController.loggedCollaborator?.id ?? 'none'}');
         final nameController = TextEditingController(
-          text: collaboratorController.loggedCollaborator?.name ?? '',
+          text: _collaboratorController.loggedCollaborator?.name ?? '',
         );
         final emailController = TextEditingController(
-          text: collaboratorController.loggedCollaborator?.email ?? '',
+          text: _collaboratorController.loggedCollaborator?.email ?? '',
         );
         final phoneController = TextEditingController(
-          text: collaboratorController.loggedCollaborator?.phoneNumber ?? '',
+          text: _collaboratorController.loggedCollaborator?.phoneNumber ?? '',
         );
         return AlertDialog(
           title: const Text('Editar perfil'),
@@ -269,12 +272,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                debugPrint('DebuggerLog: ProfileScreen.editDialog.cancel');
+                Navigator.pop(context);
+              },
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
               onPressed: () {
-                // TODO: Salvar alterações
+                debugPrint('DebuggerLog: ProfileScreen.saveProfile -> name=${nameController.text}, email=${emailController.text}, phone=${phoneController.text}');
+                // TODO: Salvar alterações (persistir via _collaboratorController)
                 Navigator.pop(context);
               },
               child: const Text('Salvar'),
@@ -293,11 +300,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         content: const Text('Deseja deslogar o usuário?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              debugPrint('DebuggerLog: ProfileScreen.logout.cancel');
+              Navigator.pop(context);
+            },
             child: const Text('Cancelar'),
           ),
           TextButton(
             onPressed: () {
+              debugPrint('DebuggerLog: ProfileScreen.logout.confirm');
               authController.logout();
               Navigator.of(
                 context,
