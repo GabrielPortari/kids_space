@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/model/company.dart';
-import 'package:kids_space/view/login_screen.dart';
+import 'package:kids_space/view/screens/login_screen.dart';
 
 class CompanySelectionScreen extends StatefulWidget {
 	const CompanySelectionScreen({super.key});

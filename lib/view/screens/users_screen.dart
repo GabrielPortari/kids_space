@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
+import 'package:kids_space/view/widgets/add_user_dialog.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 
 class UsersScreen extends StatefulWidget {
@@ -10,6 +11,8 @@ class UsersScreen extends StatefulWidget {
   @override
   State<UsersScreen> createState() => _UsersScreenState();
 }
+
+
 
 class _UsersScreenState extends State<UsersScreen> {
   final TextEditingController _searchController = TextEditingController();
@@ -71,9 +74,13 @@ class _UsersScreenState extends State<UsersScreen> {
                 child: Observer(builder: (_) {
                   final all = _userController.users;
                   final filter = _searchController.text.trim().toLowerCase();
-                  final filtered = filter.isEmpty
+                    final filtered = filter.isEmpty
                       ? all
-                      : all.where((u) => u.name.toLowerCase().contains(filter)).toList();
+                      : all.where((u) {
+                        final nameMatch = u.name.toLowerCase().contains(filter);
+                        final docMatch = u.document.toLowerCase().contains(filter);
+                        return nameMatch || docMatch;
+                      }).toList();
 
                   debugPrint('DebuggerLog: UsersScreen.Observer -> total=${all.length} filtered=${filtered.length} filter="$filter"');
 
@@ -131,21 +138,19 @@ class _UsersScreenState extends State<UsersScreen> {
 
   void _onAddUser() {
     debugPrint('DebuggerLog: UsersScreen.onAddUser pressed');
-    // TODO: Implementar cadastro de novo usuário
-    showDialog(
+
+    showDialog<bool>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Cadastrar novo usuário'),
-          content: const Text('Funcionalidade de cadastro em desenvolvimento.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Fechar'),
-            ),
-          ],
-        );
-      },
-    );
+      barrierDismissible: false,
+      builder: (context) => AddUserDialog(
+        companyController: _companyController,
+        userController: _userController,
+      ),
+    ).then((created) {
+      if (created == true) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Usuário cadastrado')));
+      }
+    });
   }
 }

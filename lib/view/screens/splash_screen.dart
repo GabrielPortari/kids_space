@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/model/company.dart';
-import '../controller/auth_controller.dart';
-import '../controller/company_controller.dart';
+import '../../controller/auth_controller.dart';
+import '../../controller/company_controller.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

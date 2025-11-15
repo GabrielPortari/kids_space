@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/util/getit_factory.dart';
-import 'package:kids_space/view/all_active_children_screen.dart';
-import 'package:kids_space/view/app_bottom_nav.dart';
-import 'package:kids_space/view/company_selection_screen.dart';
-import 'package:kids_space/view/home_screen.dart';
-import 'package:kids_space/view/login_screen.dart';
-import 'package:kids_space/view/profile_screen.dart';
-import 'package:kids_space/view/register_screen.dart';
-import 'package:kids_space/view/splash_screen.dart';
-import 'package:kids_space/view/user_profile_screen.dart';
-import 'package:kids_space/view/users_screen.dart';
+import 'package:kids_space/view/screens/all_active_children_screen.dart';
+import 'package:kids_space/view/widgets/app_bottom_nav.dart';
+import 'package:kids_space/view/screens/company_selection_screen.dart';
+import 'package:kids_space/view/screens/home_screen.dart';
+import 'package:kids_space/view/screens/login_screen.dart';
+import 'package:kids_space/view/screens/profile_screen.dart';
+import 'package:kids_space/view/screens/register_screen.dart';
+import 'package:kids_space/view/screens/splash_screen.dart';
+import 'package:kids_space/view/screens/user_profile_screen.dart';
+import 'package:kids_space/view/screens/users_screen.dart';
 
 void main() {
   setup(GetIt.I);
