@@ -1,8 +1,11 @@
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/user.dart';
+import 'package:kids_space/model/child.dart';
+import 'package:kids_space/service/child_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:mobx/mobx.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
@@ -13,39 +16,25 @@ class UserProfileScreen extends StatefulWidget {
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
   final UserController _userController = GetIt.I<UserController>();
+  final ObservableList<Child> responsibleChildren = ObservableList<Child>();
+  String? _lastUserId;
+  bool _fabOpen = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Perfil do Usuário'),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            itemBuilder: (context) => [
-              const PopupMenuItem<String>(
-                value: 'edit_profile',
-                child: Text('Editar perfil'),
-              ),
-              const PopupMenuItem<String>(
-                value: 'register_child',
-                child: Text('Cadastrar criança'),
-              ),
-            ],
-            onSelected: (value) {
-              if (value == 'edit_profile') {
-                _onEditProfile();
-              } else if (value == 'register_child') {
-                _onRegisterChild();
-              }
-            },
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Observer(builder: (_) {
           final user = _userController.selectedUser;
+          // load children once when selected user changes
+          if (user?.id != _lastUserId) {
+            _lastUserId = user?.id;
+            _loadResponsibleChildren(user);
+          }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -175,15 +164,37 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Crianças sob responsabilidade',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: const Text(
+                                  'Crianças sob responsabilidade',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          // show list from observable responsibleChildren
+                          if (responsibleChildren.isEmpty)
+                            const Text('Você não possui crianças cadastradas', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold))
+                          else
+                            Column(
+                              children: responsibleChildren.map((c) => ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                title: Text(c.name),
+                                subtitle: Text(c.isActive ? 'Ativa' : 'Inativa'),
+                              )).toList(),
+                            ),
+                        ],
                       ),
-                      const SizedBox(height: 12),
-                      // Aqui você pode buscar as crianças do usuário se necessário
                     ],
                   ),
                 ),
@@ -192,7 +203,86 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           );
         }),
       ),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (_fabOpen) ...[
+            Align(
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                    ),
+                    child: const Text('Editar perfil', style: TextStyle(fontSize: 14, color: Colors.black)),
+                  ),
+                  FloatingActionButton(
+                    heroTag: 'edit_fab',
+                    mini: false,
+                    onPressed: () {
+                      _onEditProfile();
+                      setState(() => _fabOpen = false);
+                    },
+                    child: const Icon(Icons.edit),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                    ),
+                    child: const Text('Cadastrar criança', style: TextStyle(fontSize: 14, color: Colors.black)),
+                  ),
+                  FloatingActionButton(
+                    heroTag: 'add_child_fab',
+                    mini: false,
+                    onPressed: () {
+                      _onRegisterChild();
+                      setState(() => _fabOpen = false);
+                    },
+                    child: const Icon(Icons.child_care),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+          FloatingActionButton(
+            heroTag: 'main_fab',
+            onPressed: () => setState(() => _fabOpen = !_fabOpen),
+            child: Icon(_fabOpen ? Icons.close : Icons.menu),
+          ),
+        ],
+      ),
     );
+  }
+
+  void _loadResponsibleChildren(User? user) {
+    responsibleChildren.clear();
+    if (user == null) return;
+    final service = ChildService();
+    for (final cid in user.childrenIds) {
+      final child = service.getChildById(cid);
+      if (child != null) responsibleChildren.add(child);
+    }
   }
 
   void _onEditProfile() {
