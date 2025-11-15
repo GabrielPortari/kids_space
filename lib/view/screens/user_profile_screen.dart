@@ -30,7 +30,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         padding: const EdgeInsets.all(24.0),
         child: Observer(builder: (_) {
           final user = _userController.selectedUser;
-          // load children once when selected user changes
           if (user?.id != _lastUserId) {
             _lastUserId = user?.id;
             _loadResponsibleChildren(user);

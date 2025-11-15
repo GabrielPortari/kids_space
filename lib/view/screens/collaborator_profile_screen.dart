@@ -23,37 +23,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     debugPrint('DebuggerLog: ProfileScreen.initState');
   }
 
+  bool _fabOpen = false;
+
   @override
   Widget build(BuildContext context) {
     debugPrint('DebuggerLog: ProfileScreen.build');
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Perfil'),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            itemBuilder: (context) => [
-              const PopupMenuItem<String>(
-                value: 'edit_profile',
-                child: Text('Editar perfil'),
-              ),
-              const PopupMenuItem<String>(
-                value: 'logout',
-                child: Text('Deslogar'),
-              ),
-            ],
-            onSelected: (value) {
-                debugPrint('DebuggerLog: ProfileScreen.menu selected -> $value');
-              if (value == 'edit_profile') {
-                _onEditProfile();
-              }
-              if (value == 'logout') {
-                _onLogout();
-              }
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Perfil')),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Observer(
@@ -84,6 +60,75 @@ class _ProfileScreenState extends State<ProfileScreen> {
             );
           },
         ),
+      ),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (_fabOpen) ...[
+            Align(
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                    ),
+                    child: const Text('Editar perfil', style: TextStyle(fontSize: 14, color: Colors.black)),
+                  ),
+                  FloatingActionButton(
+                    heroTag: 'collab_edit_fab',
+                    mini: false,
+                    onPressed: () {
+                      _onEditProfile();
+                      setState(() => _fabOpen = false);
+                    },
+                    child: const Icon(Icons.edit),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                    ),
+                    child: const Text('Deslogar', style: TextStyle(fontSize: 14, color: Colors.black)),
+                  ),
+                  FloatingActionButton(
+                    heroTag: 'collab_logout_fab',
+                    mini: false,
+                    onPressed: () {
+                      _onLogout();
+                      setState(() => _fabOpen = false);
+                    },
+                    child: const Icon(Icons.logout),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+          FloatingActionButton(
+            heroTag: 'collab_main_fab',
+            onPressed: () => setState(() => _fabOpen = !_fabOpen),
+            child: Icon(_fabOpen ? Icons.close : Icons.menu),
+          ),
+        ],
       ),
     );
   }
