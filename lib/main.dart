@@ -6,7 +6,7 @@ import 'package:kids_space/view/widgets/app_bottom_nav.dart';
 import 'package:kids_space/view/screens/company_selection_screen.dart';
 import 'package:kids_space/view/screens/home_screen.dart';
 import 'package:kids_space/view/screens/login_screen.dart';
-import 'package:kids_space/view/screens/profile_screen.dart';
+import 'package:kids_space/view/screens/collaborator_profile_screen.dart';
 import 'package:kids_space/view/screens/register_screen.dart';
 import 'package:kids_space/view/screens/splash_screen.dart';
 import 'package:kids_space/view/screens/user_profile_screen.dart';

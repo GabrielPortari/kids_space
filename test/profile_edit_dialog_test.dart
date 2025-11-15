@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/auth_controller.dart';
-import 'package:kids_space/view/screens/profile_screen.dart';
+import 'package:kids_space/view/screens/collaborator_profile_screen.dart';
 
 void main() {
   setUp(() async {
