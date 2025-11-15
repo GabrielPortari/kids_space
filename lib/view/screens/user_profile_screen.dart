@@ -21,6 +21,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   bool _fabOpen = false;
 
   @override
+  void initState() {
+    super.initState();
+    debugPrint('DebuggerLog: UserProfileScreen.initState');
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -34,6 +40,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             _lastUserId = user?.id;
             _loadResponsibleChildren(user);
           }
+            debugPrint('DebuggerLog: UserProfileScreen.build selectedUserId=${user?.id ?? 'none'}');
           return Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -58,6 +65,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       child: InkWell(
                         borderRadius: BorderRadius.circular(20),
                         onTap: () {
+                          debugPrint('DebuggerLog: UserProfileScreen.addPhoto tapped');
                           // TODO: Implementar ação para adicionar foto
                         },
                         child: Container(
@@ -226,6 +234,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     heroTag: 'edit_fab',
                     mini: false,
                     onPressed: () {
+                      debugPrint('DebuggerLog: UserProfileScreen.editFab.tap');
                       _onEditProfile();
                       setState(() => _fabOpen = false);
                     },
@@ -254,6 +263,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     heroTag: 'add_child_fab',
                     mini: false,
                     onPressed: () {
+                      debugPrint('DebuggerLog: UserProfileScreen.addChildFab.tap');
                       _onRegisterChild();
                       setState(() => _fabOpen = false);
                     },
@@ -266,7 +276,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ],
           FloatingActionButton(
             heroTag: 'main_fab',
-            onPressed: () => setState(() => _fabOpen = !_fabOpen),
+            onPressed: () {
+              setState(() => _fabOpen = !_fabOpen);
+              debugPrint('DebuggerLog: UserProfileScreen.fab toggled -> $_fabOpen');
+            },
             child: Icon(_fabOpen ? Icons.close : Icons.menu),
           ),
         ],
@@ -275,6 +288,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   void _loadResponsibleChildren(User? user) {
+    debugPrint('DebuggerLog: UserProfileScreen._loadResponsibleChildren for userId=${user?.id ?? 'none'}');
     responsibleChildren.clear();
     if (user == null) return;
     final service = ChildService();
@@ -286,6 +300,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   void _onEditProfile() {
     final user = _userController.selectedUser;
+    debugPrint('DebuggerLog: UserProfileScreen.openEditDialog -> userId=${user?.id ?? 'none'}');
     final nameController = TextEditingController(text: user?.name ?? '');
     final emailController = TextEditingController(text: user?.email ?? '');
     final phoneController = TextEditingController(text: user?.phone ?? '');
@@ -333,6 +348,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 return;
               }
 
+              debugPrint('DebuggerLog: UserProfileScreen.saveProfile -> name=${nameController.text}, email=${emailController.text}, phone=${phoneController.text}');
               final updated = User(
                 id: user.id,
                 name: nameController.text.trim(),
@@ -356,6 +372,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   void _onRegisterChild() {
     final user = _userController.selectedUser;
+    debugPrint('DebuggerLog: UserProfileScreen.openRegisterChild -> userId=${user?.id ?? 'none'}');
     final childNameController = TextEditingController();
 
     showDialog(
@@ -385,6 +402,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Usuário não selecionado')));
                 return;
               }
+              debugPrint('DebuggerLog: UserProfileScreen.registerChild -> name=$childName, userId=$userId');
               // Try to navigate to a child creation route if available, passing responsible user id
               try {
                 Navigator.of(context).pushNamed('/child_create', arguments: {'responsibleUserId': userId, 'name': childName});

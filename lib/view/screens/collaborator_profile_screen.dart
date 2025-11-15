@@ -85,6 +85,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     heroTag: 'collab_edit_fab',
                     mini: false,
                     onPressed: () {
+                      debugPrint('DebuggerLog: ProfileScreen.editFab.tap');
                       _onEditProfile();
                       setState(() => _fabOpen = false);
                     },
@@ -113,6 +114,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     heroTag: 'collab_logout_fab',
                     mini: false,
                     onPressed: () {
+                      debugPrint('DebuggerLog: ProfileScreen.logoutFab.tap');
                       _onLogout();
                       setState(() => _fabOpen = false);
                     },
@@ -125,7 +127,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
           FloatingActionButton(
             heroTag: 'collab_main_fab',
-            onPressed: () => setState(() => _fabOpen = !_fabOpen),
+            onPressed: () {
+              setState(() => _fabOpen = !_fabOpen);
+              debugPrint('DebuggerLog: ProfileScreen.fab toggled -> $_fabOpen');
+            },
             child: Icon(_fabOpen ? Icons.close : Icons.menu),
           ),
         ],
