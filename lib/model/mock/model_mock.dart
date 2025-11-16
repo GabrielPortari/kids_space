@@ -58,6 +58,7 @@ final List<Child> mockChildren = [
     companyId: '1',
     responsibleUserIds: ['u1'],
     isActive: false,
+    document: '11122233344',
   ),
   // Sofia: Último evento é checkOut (e6, 30min atrás) => isActive: false
   Child(
@@ -66,6 +67,7 @@ final List<Child> mockChildren = [
     companyId: '1',
     responsibleUserIds: ['u2'],
     isActive: false,
+    document: '22233344455',
   ),
   // Gabriel: Último evento é checkIn (e4, 3h atrás) => isActive: true
   Child(
@@ -74,6 +76,7 @@ final List<Child> mockChildren = [
     companyId: '1',
     responsibleUserIds: ['u3'],
     isActive: true,
+    document: '33344455566',
   ),
   // Beatriz: Último evento é checkIn (e5, 2h atrás) => isActive: true
   Child(
@@ -82,6 +85,7 @@ final List<Child> mockChildren = [
     companyId: '1',
     responsibleUserIds: ['u4'],
     isActive: true,
+    document: '44455566677',
   ),
   // Marina: sem eventos => isActive: false
   Child(
@@ -90,6 +94,7 @@ final List<Child> mockChildren = [
     companyId: '1',
     responsibleUserIds: ['u1'],
     isActive: false,
+    document: '55566677788',
   ),
   // Enzo: sem eventos => isActive: false
   Child(
@@ -98,6 +103,7 @@ final List<Child> mockChildren = [
     companyId: '1',
     responsibleUserIds: ['u1'],
     isActive: false,
+    document: '66677788899',
   ),
 ];
 

@@ -83,7 +83,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   FloatingActionButton(
                     heroTag: 'collab_edit_fab',
-                    mini: false,
                     onPressed: () {
                       debugPrint('DebuggerLog: ProfileScreen.editFab.tap');
                       _onEditProfile();
@@ -112,7 +111,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   FloatingActionButton(
                     heroTag: 'collab_logout_fab',
-                    mini: false,
                     onPressed: () {
                       debugPrint('DebuggerLog: ProfileScreen.logoutFab.tap');
                       _onLogout();

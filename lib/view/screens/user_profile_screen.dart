@@ -3,6 +3,7 @@ import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/user.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/service/child_service.dart';
+import 'package:kids_space/view/widgets/add_child_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:mobx/mobx.dart';
@@ -41,7 +42,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             _loadResponsibleChildren(user);
           }
             debugPrint('DebuggerLog: UserProfileScreen.build selectedUserId=${user?.id ?? 'none'}');
-          return Column(
+          return SingleChildScrollView(
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 24),
@@ -194,11 +196,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             const Text('Você não possui crianças cadastradas', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold))
                           else
                             Column(
-                              children: responsibleChildren.map((c) => ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                title: Text(c.name),
-                                subtitle: Text(c.isActive ? 'Ativa' : 'Inativa'),
-                              )).toList(),
+                              children: responsibleChildren.map((c) {
+                                return Column(
+                                  children: [
+                                    ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      title: Text(c.name),
+                                      subtitle: Text('${c.isActive ? 'Ativa' : 'Inativa'}${c.document != null && c.document!.isNotEmpty ? ' · ${c.document}' : ''}'),
+                                    ),
+                                    const Divider(height: 1),
+                                  ],
+                                );
+                              }).toList(),
                             ),
                         ],
                       ),
@@ -207,7 +216,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ),
               ),
             ],
-          );
+          ));
         }),
       ),
       floatingActionButton: Column(
@@ -232,7 +241,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                   FloatingActionButton(
                     heroTag: 'edit_fab',
-                    mini: false,
                     onPressed: () {
                       debugPrint('DebuggerLog: UserProfileScreen.editFab.tap');
                       _onEditProfile();
@@ -261,7 +269,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                   FloatingActionButton(
                     heroTag: 'add_child_fab',
-                    mini: false,
                     onPressed: () {
                       debugPrint('DebuggerLog: UserProfileScreen.addChildFab.tap');
                       _onRegisterChild();
@@ -373,47 +380,25 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void _onRegisterChild() {
     final user = _userController.selectedUser;
     debugPrint('DebuggerLog: UserProfileScreen.openRegisterChild -> userId=${user?.id ?? 'none'}');
-    final childNameController = TextEditingController();
 
-    showDialog(
+    // Open the AddChildDialog and await the result. Use onCreate to persist via ChildService
+    showDialog<Child>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cadastrar criança'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: childNameController, decoration: const InputDecoration(labelText: 'Nome da criança')),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: () {
-              final childName = childNameController.text.trim();
-              if (childName.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nome da criança é obrigatório')));
-                return;
-              }
-              final userId = user?.id;
-              Navigator.pop(context);
-              if (userId == null) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Usuário não selecionado')));
-                return;
-              }
-              debugPrint('DebuggerLog: UserProfileScreen.registerChild -> name=$childName, userId=$userId');
-              // Try to navigate to a child creation route if available, passing responsible user id
-              try {
-                Navigator.of(context).pushNamed('/child_create', arguments: {'responsibleUserId': userId, 'name': childName});
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fluxo de cadastro não implementado')));
-              }
-            },
-            child: const Text('Cadastrar'),
-          ),
-        ],
+      builder: (_) => AddChildDialog(
+        companyId: user?.companyId,
+        responsibleUserId: user?.id,
+        onCreate: (child) {
+          // persist via service
+          ChildService().addChild(child);
+          debugPrint('DebuggerLog: UserProfileScreen.onCreate -> persisted child id=${child.id}');
+        },
       ),
-    );
+    ).then((created) {
+      if (created == null) return;
+      // Add to local list for immediate UI update
+      setState(() => responsibleChildren.add(created));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Criança cadastrada')));
+      debugPrint('DebuggerLog: UserProfileScreen.childCreated -> id=${created.id}, name=${created.name}');
+    });
   }
 }

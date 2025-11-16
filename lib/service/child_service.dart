@@ -15,4 +15,9 @@ class ChildService {
     }
     return null;
   }
+
+  // Adiciona uma criança (mock persistence)
+  void addChild(Child child) {
+    mockChildren.add(child);
+  }
 }

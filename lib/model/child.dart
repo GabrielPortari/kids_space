@@ -4,6 +4,7 @@ class Child {
   final String companyId;
   final List<String> responsibleUserIds; // IDs dos responsáveis
   final bool isActive;
+  final String? document; // CPF/RG ou outro identificador (opcional)
 
   Child({
     required this.id,
@@ -11,5 +12,6 @@ class Child {
     required this.companyId,
     required this.responsibleUserIds,
     this.isActive = false,
+    this.document,
   });
 }
