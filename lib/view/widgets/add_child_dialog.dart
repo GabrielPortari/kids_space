@@ -13,8 +13,10 @@ class AddChildDialog extends StatefulWidget {
   final String? companyId;
   final String? responsibleUserId;
   final void Function(Child child)? onCreate;
+  final void Function(Child child)? onUpdate;
+  final Child? initialChild;
 
-  const AddChildDialog({this.companyId, this.responsibleUserId, this.onCreate, super.key});
+  const AddChildDialog({this.companyId, this.responsibleUserId, this.onCreate, this.onUpdate, this.initialChild, super.key});
 
   @override
   State<AddChildDialog> createState() => _AddChildDialogState();
@@ -24,7 +26,7 @@ class _AddChildDialogState extends State<AddChildDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   late final TextEditingController _documentController;
-  final bool _isActive = false;
+  bool _isActive = false;
   bool _isSaving = false;
   bool _isFormValid = false;
 
@@ -32,8 +34,9 @@ class _AddChildDialogState extends State<AddChildDialog> {
   void initState() {
     super.initState();
     debugPrint('DebuggerLog: AddChildDialog.initState responsible=${widget.responsibleUserId ?? 'none'}');
-    _nameController = TextEditingController();
-    _documentController = TextEditingController();
+    _nameController = TextEditingController(text: widget.initialChild?.name ?? '');
+    _documentController = TextEditingController(text: widget.initialChild?.document ?? '');
+    _isActive = widget.initialChild?.isActive ?? false;
     _nameController.addListener(_onFieldChanged);
     _documentController.addListener(_onFieldChanged);
   }
@@ -59,7 +62,7 @@ class _AddChildDialogState extends State<AddChildDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Cadastrar criança'),
+      title: Text(widget.initialChild == null ? 'Cadastrar criança' : 'Editar criança'),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -88,7 +91,6 @@ class _AddChildDialogState extends State<AddChildDialog> {
                   return 'Documento inválido (9 ou 11 dígitos)';
                 },
               ),
-              const SizedBox(height: 12),
               if (widget.responsibleUserId != null) ...[
                 const SizedBox(height: 8),
                 Align(
@@ -128,26 +130,42 @@ class _AddChildDialogState extends State<AddChildDialog> {
                   }
                   setState(() => _isSaving = true);
 
-                  final id = DateTime.now().millisecondsSinceEpoch.toString();
-                  final child = Child(
-                    id: id,
-                    name: _nameController.text.trim(),
-                    companyId: widget.companyId ?? '',
-                    responsibleUserIds: widget.responsibleUserId != null ? [widget.responsibleUserId!] : [],
-                    document: _documentController.text.trim().isEmpty ? null : _documentController.text.trim(),
-                    isActive: _isActive,
-                  );
-
                   try {
-                    debugPrint('DebuggerLog: AddChildDialog.createChild -> id=$id name=${child.name} responsible=${widget.responsibleUserId ?? 'none'}');
-                    if (widget.onCreate != null) {
-                      debugPrint('DebuggerLog: AddChildDialog.calling onCreate callback');
-                      widget.onCreate!(child);
+                    if (widget.initialChild == null) {
+                      // create
+                      final id = DateTime.now().millisecondsSinceEpoch.toString();
+                      final child = Child(
+                        id: id,
+                        name: _nameController.text.trim(),
+                        companyId: widget.companyId ?? '',
+                        responsibleUserIds: widget.responsibleUserId != null ? [widget.responsibleUserId!] : [],
+                        document: _documentController.text.trim().isEmpty ? null : _documentController.text.trim(),
+                        isActive: _isActive,
+                      );
+                      debugPrint('DebuggerLog: AddChildDialog.createChild -> id=$id name=${child.name} responsible=${widget.responsibleUserId ?? 'none'}');
+                      if (widget.onCreate != null) {
+                        debugPrint('DebuggerLog: AddChildDialog.calling onCreate callback');
+                        widget.onCreate!(child);
+                      }
                       Navigator.pop(context, child);
+                      debugPrint('DebuggerLog: AddChildDialog.created and closed -> id=$id');
                     } else {
-                      Navigator.pop(context, child);
+                      // update
+                      final updated = Child(
+                        id: widget.initialChild!.id,
+                        name: _nameController.text.trim(),
+                        companyId: widget.companyId ?? widget.initialChild!.companyId,
+                        responsibleUserIds: widget.initialChild!.responsibleUserIds,
+                        document: _documentController.text.trim().isEmpty ? null : _documentController.text.trim(),
+                        isActive: _isActive,
+                      );
+                      debugPrint('DebuggerLog: AddChildDialog.updateChild -> id=${updated.id} name=${updated.name}');
+                      if (widget.onUpdate != null) {
+                        widget.onUpdate!(updated);
+                      }
+                      Navigator.pop(context, updated);
+                      debugPrint('DebuggerLog: AddChildDialog.updated and closed -> id=${updated.id}');
                     }
-                    debugPrint('DebuggerLog: AddChildDialog.created and closed -> id=$id');
                   } catch (e, st) {
                     debugPrint('DebuggerLog: AddChildDialog.createChild ERROR $e\n$st');
                     setState(() => _isSaving = false);
@@ -157,7 +175,7 @@ class _AddChildDialogState extends State<AddChildDialog> {
           child: Builder(builder: (_) {
             return _isSaving
                 ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Text('Cadastrar');
+                : Text(widget.initialChild == null ? 'Cadastrar' : 'Salvar');
           }),
         ),
       ],

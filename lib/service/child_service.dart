@@ -20,4 +20,14 @@ class ChildService {
   void addChild(Child child) {
     mockChildren.add(child);
   }
+
+  // Atualiza uma criança existente pelo id (mock persistence)
+  void updateChild(Child child) {
+    for (var i = 0; i < mockChildren.length; i++) {
+      if (mockChildren[i].id == child.id) {
+        mockChildren[i] = child;
+        return;
+      }
+    }
+  }
 }

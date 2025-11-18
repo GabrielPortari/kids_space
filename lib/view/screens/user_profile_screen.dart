@@ -203,6 +203,33 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       contentPadding: EdgeInsets.zero,
                                       title: Text(c.name),
                                       subtitle: Text('${c.isActive ? 'Ativa' : 'Inativa'}${c.document != null && c.document!.isNotEmpty ? ' · ${c.document}' : ''}'),
+                                      trailing: IconButton(
+                                        icon: const Icon(Icons.edit_outlined),
+                                        onPressed: () async {
+                                          debugPrint('DebuggerLog: UserProfileScreen.editChild.tap -> childId=${c.id}');
+                                          final updated = await showDialog<Child>(
+                                            context: context,
+                                            builder: (_) => AddChildDialog(
+                                              initialChild: c,
+                                              companyId: c.companyId,
+                                              responsibleUserId: c.responsibleUserIds.isNotEmpty ? c.responsibleUserIds.first : null,
+                                              onUpdate: (child) {
+                                                // persist update
+                                                ChildService().updateChild(child);
+                                                debugPrint('DebuggerLog: UserProfileScreen.onUpdate -> child id=${child.id}');
+                                              },
+                                            ),
+                                          );
+                                          if (updated != null) {
+                                            setState(() {
+                                              final idx = responsibleChildren.indexWhere((x) => x.id == updated.id);
+                                              if (idx >= 0) responsibleChildren[idx] = updated;
+                                            });
+                                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Criança atualizada')));
+                                            debugPrint('DebuggerLog: UserProfileScreen.childUpdated -> id=${updated.id}');
+                                          }
+                                        },
+                                      ),
                                     ),
                                     const Divider(height: 1),
                                   ],
@@ -211,10 +238,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             ),
                         ],
                       ),
+                      
                     ],
                   ),
                 ),
               ),
+              const SizedBox(height: 48),
             ],
           ));
         }),
