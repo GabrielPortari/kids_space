@@ -1,0 +1,23 @@
+{
+  "app_bottom_nav": {
+    "home": "Inicio",
+    "users": "Usuário",
+    "reports": "Relatórios"
+  },
+  "home":{
+    "collaborator": "Colaborador",
+    "Company": "Empresa"
+  },
+  "user_profile": {
+    "title": "Perfil do Usuário",
+    "no_children": "Você não possui crianças cadastradas",
+    "children_under_responsibility": "Crianças sob responsabilidade",
+    "child_updated": "Criança atualizada"
+  },
+  "buttons": {
+    "edit": "Editar",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "register_child": "Cadastrar criança"
+  }
+}

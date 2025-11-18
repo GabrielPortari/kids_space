@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kids_space/util/localization_service.dart';
 import 'package:kids_space/view/screens/home_screen.dart';
 import 'package:kids_space/view/screens/users_screen.dart';
 
@@ -18,20 +19,20 @@ class _AppBottomNavState extends State<AppBottomNav> {
     const SettingsScreen(),
   ];
 
-  static const List<BottomNavigationBarItem> _items = <BottomNavigationBarItem>[
-    BottomNavigationBarItem(
-      icon: Icon(Icons.home),
-      label: 'Home',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.person),
-      label: 'Usuários',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.settings),
-      label: 'Relatórios',
-    ),
-  ];
+  List<BottomNavigationBarItem> get _items => <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.home),
+          label: translate('app_bottom_nav.home'),
+        ),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.person),
+          label: translate('app_bottom_nav.users'),
+        ),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.settings),
+          label: translate('app_bottom_nav.reports'),
+        ),
+      ];
 
   void _onItemTapped(int index) {
     setState(() {

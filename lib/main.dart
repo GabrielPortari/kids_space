@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:kids_space/util/getit_factory.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kids_space/view/screens/all_active_children_screen.dart';
 import 'package:kids_space/view/widgets/app_bottom_nav.dart';
 import 'package:kids_space/view/screens/company_selection_screen.dart';
@@ -12,9 +14,18 @@ import 'package:kids_space/view/screens/splash_screen.dart';
 import 'package:kids_space/view/screens/user_profile_screen.dart';
 import 'package:kids_space/view/screens/users_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
   setup(GetIt.I);
-  runApp(const MyApp());
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [Locale('pt', 'BR'), Locale('en', 'US')],
+      path: 'assets/langs',
+      fallbackLocale: const Locale('pt', 'BR'),
+        child: Builder(builder: (context) => const MyApp()),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -22,6 +33,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        ...context.localizationDelegates,
+      ],
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
       title: 'Kids Space',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),

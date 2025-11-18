@@ -1,0 +1,19 @@
+{
+  "app_bottom_nav": {
+    "home": "Home",
+    "users": "Users",
+    "reports": "Reports"
+  },
+  "user_profile": {
+    "title": "User Profile",
+    "no_children": "You have no registered children",
+    "children_under_responsibility": "Children under responsibility",
+    "child_updated": "Child updated"
+  },
+  "buttons": {
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "register_child": "Register child"
+  }
+}
