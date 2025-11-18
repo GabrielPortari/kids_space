@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/user_controller.dart';
+import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/model/user.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/service/child_service.dart';
@@ -214,9 +215,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                               companyId: c.companyId,
                                               responsibleUserId: c.responsibleUserIds.isNotEmpty ? c.responsibleUserIds.first : null,
                                               onUpdate: (child) {
-                                                // persist update
-                                                ChildService().updateChild(child);
-                                                debugPrint('DebuggerLog: UserProfileScreen.onUpdate -> child id=${child.id}');
+                                                // persist update via controller
+                                                try {
+                                                  GetIt.I<ChildController>().updateChild(child);
+                                                  debugPrint('DebuggerLog: UserProfileScreen.onUpdate -> child id=${child.id}');
+                                                } catch (e) {
+                                                  debugPrint('DebuggerLog: UserProfileScreen.onUpdate ERROR $e');
+                                                }
                                               },
                                             ),
                                           );

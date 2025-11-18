@@ -35,4 +35,9 @@ class ChildController {
     // Aqui retorna vazio por padrão
     return {};
   }
+
+  // Atualiza uma criança (delegando ao serviço)
+  void updateChild(Child child) {
+    _childService.updateChild(child);
+  }
 }
