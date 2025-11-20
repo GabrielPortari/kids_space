@@ -10,7 +10,22 @@ class UserController = _UserController with _$UserController;
 abstract class _UserController with Store {
 	final UserService _userService = UserService();
 
-	String? companyId;
+  @observable
+  String userFilter = '';
+
+  @computed
+  List<User> get filteredUsers {
+    final filter = userFilter.toLowerCase();
+    if (filter.isEmpty) {
+      return users;
+    } else {
+      return users
+          .where((u) =>
+              u.name.toLowerCase().contains(filter) ||
+              u.email.toLowerCase().contains(filter))
+          .toList();
+    }
+  }
 
 	@observable
 	String? selectedUserId;
@@ -31,24 +46,26 @@ abstract class _UserController with Store {
 	@observable
 	ObservableList<User> users = ObservableList<User>();
 
+  @observable
+  bool refreshLoading = false;
+
 	@action
-	void refreshUsersForCompany(String? companyId) {
-		this.companyId = companyId;
+	Future<void> refreshUsersForCompany(String? companyId) async {
+    refreshLoading = true;
 		if (companyId == null) {
 			users.clear();
+			refreshLoading = false;
 			return;
 		}
-		final list = _userService.getUsersByCompanyId(companyId);
+		final list = await _userService.getUsersByCompanyId(companyId);
 		users
 			..clear()
 			..addAll(list);
+    refreshLoading = false;
 	}
 
-	// Convenience synchronous accessors (keeps compatibility with previous API)
-	List<User> get usersByCompany => users.where((u) => u.companyId == companyId).toList();
 
 	User? getUserById(String id) {
-		// prefer local cache first
 		try {
 			return users.firstWhere((u) => u.id == id);
 			} catch (_) {
@@ -56,11 +73,10 @@ abstract class _UserController with Store {
 		}
 	}
 
-	List<User> getUsersByCompanyId(String companyId) {
+	Future<List<User>> getUsersByCompanyId(String companyId) {
 		return _userService.getUsersByCompanyId(companyId);
 	}
 
-	// Mutators that notify observers by mutating the ObservableList instance
 	@action
 	void addUser(User user) => users.add(user);
 

@@ -5,19 +5,20 @@
     "reports": "Relatórios"
   },
   "home":{
+    "company": "Empresa",
+    "company_name": "Nome da Empresa",
     "collaborator": "Colaborador",
-    "Company": "Empresa"
-  },
-  "user_profile": {
-    "title": "Perfil do Usuário",
-    "no_children": "Você não possui crianças cadastradas",
-    "children_under_responsibility": "Crianças sob responsabilidade",
-    "child_updated": "Criança atualizada"
-  },
-  "buttons": {
-    "edit": "Editar",
-    "save": "Salvar",
-    "cancel": "Cancelar",
-    "register_child": "Cadastrar criança"
+    "collaborator_name": "Colaborador: {name_placeholder}",
+    "user_name": "Nome do Usuário",
+    "actives": "Ativos",
+    "see_more": "Ver mais",
+    "check_in": "Check-in",
+    "check_out": "Check-out",
+    "last_check_in": "Último check-in",
+    "last_check_out": "Último check-out",
+    "no_checkins_registered": "Nenhum check-in registrado",
+    "no_checkouts_registered": "Nenhum check-out registrado",
+    "30_last_presence_log": "30 últimos registros de presença",
+    "no_presence_records": "Nenhum registro de presença"
   }
 }

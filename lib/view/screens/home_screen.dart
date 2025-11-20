@@ -5,12 +5,15 @@ import 'package:kids_space/controller/check_event_controller.dart';
 import 'package:kids_space/model/check_event.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/util/date_hour_util.dart';
+import 'package:kids_space/util/localization_service.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 
 final CompanyController _companyController = GetIt.I<CompanyController>();
-final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
-final CheckEventController _checkEventController = GetIt.I<CheckEventController>();
+final CollaboratorController _collaboratorController =
+    GetIt.I<CollaboratorController>();
+final CheckEventController _checkEventController =
+    GetIt.I<CheckEventController>();
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,11 +22,20 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late final ScrollController _scrollController;
+
   @override
   void initState() {
     super.initState();
     debugPrint('DebuggerLog: HomeScreen.initState');
+    _scrollController = ScrollController();
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _onRefresh() async {
@@ -33,28 +45,168 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: _onRefresh,
-      child: SizedBox.expand(
+    final mq = MediaQuery.of(context);
+    final screenHeight = mq.size.height - mq.padding.top - kToolbarHeight;
+    final listHeight = (screenHeight * 0.36).clamp(180.0, 520.0).toDouble();
+
+    return SafeArea(
+      child: RefreshIndicator(
+        onRefresh: _onRefresh,
         child: SingleChildScrollView(
+          controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _infoCompanyCard(),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: _infoCompanyCard(),
+                ),
                 const SizedBox(height: 8),
-                _checkInAndOutButtons(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: _checkInAndOutButtons(),
+                ),
                 const SizedBox(height: 8),
-                _activeChildrenInfoCard(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: _activeChildrenInfoCard(),
+                ),
                 const SizedBox(height: 8),
-                _inAndOutList(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  child: _presenceLogCard(listHeight),
+                ),
+                const SizedBox(height: 48),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _presenceLogCard(double listHeight) {
+    return Observer(
+      builder: (_) {
+        final events = _checkEventController.logEvents;
+        final limited = events.take(30).toList();
+
+        return Skeletonizer(
+          enabled: _checkEventController.isLoadingLog,
+          child: Card(
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 4.0,
+                      horizontal: 4.0,
+                    ),
+                    child: Text(
+                      translate('home.30_last_presence_log'),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: listHeight,
+                    child: limited.isEmpty
+                        ? Center(
+                            child: Text(
+                              translate('home.no_presence_records'),
+                              style: const TextStyle(color: Colors.grey),
+                            ),
+                          )
+                        : Scrollbar(
+                            thumbVisibility: true,
+                            child: ListView.separated(
+                              primary: false,
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              itemCount: limited.length,
+                              separatorBuilder: (_, __) =>
+                                  const Divider(height: 1),
+                              itemBuilder: (context, idx) {
+                                final event = limited[idx];
+                                final isCheckin =
+                                    event.checkType == CheckType.checkIn;
+                                return ListTile(
+                                  contentPadding: const EdgeInsets.fromLTRB(
+                                    4.0,
+                                    0.0,
+                                    8.0,
+                                    0.0,
+                                  ),
+                                  leading: CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: isCheckin
+                                        ? Colors.green[50]
+                                        : Colors.red[50],
+                                    child: Icon(
+                                      isCheckin ? Icons.login : Icons.logout,
+                                      color: isCheckin
+                                          ? Colors.green
+                                          : Colors.red,
+                                      size: 18,
+                                    ),
+                                  ),
+                                  title: Text(
+                                    event.child.name,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  subtitle: Text(
+                                    '${formatDate(event.timestamp)} • ${formatTime(event.timestamp)}',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  trailing: Chip(
+                                    label: Text(
+                                      isCheckin
+                                          ? translate('home.check_in')
+                                          : translate('home.check_out'),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    backgroundColor: isCheckin
+                                        ? Colors.green
+                                        : Colors.red,
+                                  ),
+                                  onTap: () => debugPrint(
+                                    'DebuggerLog: HomeScreen.log tapped index=$idx child=${event.child.name}',
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -79,69 +231,68 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Builder(
           builder: (context) {
             return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 32.0),
-                  child: Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: IntrinsicHeight(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                debugPrint(
-                                  'DebuggerLog: HomeScreen.navigate -> /profile',
-                                );
-                                Navigator.of(context).pushNamed('/profile');
-                              },
-                              child: CircleAvatar(
-                                radius: 32,
-                                backgroundColor: Colors.deepPurple[50],
-                                backgroundImage: AssetImage(
-                                  _companyController.companySelected?.logoUrl ??
-                                      'assets/images/company_logo_placeholder.png',
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 20),
-                            Expanded(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _companyController.companySelected?.name ??
-                                        'Nome da Empresa',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Colaborador: ${_collaboratorController.loggedCollaborator?.name ?? "Nome do Colaborador"}',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.deepPurple,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    debugPrint('DebuggerLog: HomeScreen.navigate -> /profile');
+                    Navigator.of(context).pushNamed('/profile');
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                          radius: 32,
+                          backgroundColor: Colors.deepPurple[50],
+                          backgroundImage: AssetImage(
+                            _companyController.companySelected?.logoUrl ??
+                                'assets/images/company_logo_placeholder.png',
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _companyController.companySelected?.name ??
+                                    translate('home.company_name'),
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                translate(
+                                  'home.collaborator_name',
+                                  namedArgs: {
+                                    'name_placeholder':
+                                        _collaboratorController
+                                            .loggedCollaborator
+                                            ?.name ??
+                                        '-',
+                                  },
+                                ),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.deepPurple,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -174,8 +325,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     // Ação de check-in
                   },
                   icon: const Icon(Icons.login, color: Colors.white),
-                  label: const Text(
-                    'Check-In',
+                  label: Text(
+                    translate('home.check_in'),
                     style: TextStyle(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -198,8 +349,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     // Ação de check-out
                   },
                   icon: const Icon(Icons.logout, color: Colors.white),
-                  label: const Text(
-                    'Check-Out',
+                  label: Text(
+                    translate('home.check_out'),
                     style: TextStyle(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -258,8 +409,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              const Text(
-                                'Ativos',
+                              Text(
+                                translate('home.actives'),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 22,
@@ -275,8 +426,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   color: Colors.deepPurple,
                                 ),
                               ),
-                              const Text(
-                                'Ver mais',
+                              Text(
+                                translate('home.see_more'),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 16,
@@ -301,9 +452,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 size: 20,
                               ),
                               const SizedBox(width: 6),
-                              const Text(
-                                'Último check-in:',
-                                style: TextStyle(
+                              Text(
+                                translate('home.last_check_in'),
+                                style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -341,7 +492,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ],
                                   )
-                                : const Text('Nenhum check-in registrado'),
+                                : Text(
+                                    translate('home.no_checkins_registered'),
+                                  ),
                           ),
                           const Divider(height: 20),
                           Row(
@@ -352,9 +505,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 size: 20,
                               ),
                               const SizedBox(width: 6),
-                              const Text(
-                                'Último check-out:',
-                                style: TextStyle(
+                              Text(
+                                translate('home.last_check_out'),
+                                style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -392,99 +545,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ],
                                   )
-                                : const Text('Nenhum check-out registrado'),
+                                : Text(
+                                    translate('home.no_checkouts_registered'),
+                                  ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _inAndOutList() {
-    return Observer(
-      builder: (_) {
-        return Skeletonizer(
-          enabled: _checkEventController.isLoadingLog,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 16,
-                  horizontal: 16,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Log de presença (últimos 30)',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    ListView.separated(
-                      padding: const EdgeInsets.all(8.0),
-                      primary: false,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _checkEventController.logEvents.length,
-                      separatorBuilder: (context, index) =>
-                          const Divider(height: 12),
-                      itemBuilder: (context, index) {
-                        final event = _checkEventController.logEvents[index];
-                        final isCheckin = event.checkType == CheckType.checkIn;
-                        debugPrint(
-                          'DebuggerLog: HomeScreen.log itemBuilder index=$index child=${event.child.name}',
-                        );
-                        return Row(
-                          children: [
-                            Icon(
-                              isCheckin ? Icons.login : Icons.logout,
-                              color: isCheckin ? Colors.green : Colors.red,
-                              size: 22,
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                event.child.name,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              formatTime(event.timestamp),
-                              style: const TextStyle(
-                                fontSize: 15,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              formatDate(event.timestamp),
-                              style: const TextStyle(
-                                fontSize: 15,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
                     ),
                   ],
                 ),

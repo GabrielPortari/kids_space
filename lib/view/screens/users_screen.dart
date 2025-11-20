@@ -1,9 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
+import 'package:kids_space/model/mock/model_mock.dart';
+import 'package:kids_space/model/user.dart';
 import 'package:kids_space/view/widgets/add_user_dialog.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -19,27 +24,38 @@ class _UsersScreenState extends State<UsersScreen> {
   final UserController _userController = GetIt.I<UserController>();
   final CompanyController _companyController = GetIt.I<CompanyController>();
 
-
   @override
   void initState() {
     super.initState();
-  final companyId = _companyController.companySelected?.id;
+    final companyId = _companyController.companySelected?.id;
     debugPrint('DebuggerLog: UsersScreen.initState -> companyId=$companyId');
+    
     // populate controller observable list for the current company (keeps same ObservableList instance)
     _userController.refreshUsersForCompany(companyId);
     // keep a simple listener to trigger rebuilds when search text changes
     _searchController.addListener(_onSearchChanged);
   }
 
+  Timer? _debounce;
   void _onSearchChanged() {
-    // trigger a rebuild so the Observer-factory list is re-filtered by the new text
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      _userController.userFilter = _searchController.text.trim().toLowerCase();
+    });
     debugPrint('DebuggerLog: UsersScreen._onSearchChanged -> "${_searchController.text}"');
     setState(() {});
+  }
+
+  Future<void> _onRefresh() async {
+    final companyId = _companyController.companySelected?.id;
+    debugPrint('DebuggerLog: UsersScreen._onRefresh -> companyId=$companyId');
+    await _userController.refreshUsersForCompany(companyId);
   }
 
   @override
   void dispose() {
     debugPrint('DebuggerLog: UsersScreen.dispose');
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -67,57 +83,72 @@ class _UsersScreenState extends State<UsersScreen> {
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async {
-                  final cid = _companyController.companySelected?.id;
-                  debugPrint('DebuggerLog: UsersScreen.onRefresh -> $cid');
-                  _userController.refreshUsersForCompany(cid);
+                  await _onRefresh();
                 },
                 child: Observer(builder: (_) {
                   final all = _userController.users;
-                  final filter = _searchController.text.trim().toLowerCase();
-                    final filtered = filter.isEmpty
+                  final nameSearched = _searchController.text.trim().toLowerCase();
+                  final filtered = nameSearched.isEmpty
                       ? all
                       : all.where((u) {
-                        final nameMatch = u.name.toLowerCase().contains(filter);
-                        final docMatch = u.document.toLowerCase().contains(filter);
-                        return nameMatch || docMatch;
-                      }).toList();
+                          final nameMatch = u.name.toLowerCase().contains(nameSearched);
+                          final docMatch = u.document.toLowerCase().contains(nameSearched);
+                          return nameMatch || docMatch;
+                        }).toList();
 
-                  debugPrint('DebuggerLog: UsersScreen.Observer -> total=${all.length} filtered=${filtered.length} filter="$filter"');
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-                    itemCount: filtered.isEmpty ? 1 : filtered.length,
-                    itemBuilder: (context, index) {
-                      if (filtered.isEmpty) {
-                        return Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 24.0),
-                            child: Text(
-                              _searchController.text.isEmpty
-                                  ? 'Nenhum usuário cadastrado'
-                                  : 'Nenhum usuário encontrado',
-                              style: const TextStyle(color: Colors.grey, fontSize: 16),
+                  debugPrint('DebuggerLog: UsersScreen.Observer -> total=${all.length} filtered=${filtered.length} filter="$nameSearched"');
+                  if (_userController.refreshLoading) {
+                    return ListView.builder(
+                      padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+                      itemCount: 3,
+                      itemBuilder: (context, index) {
+                        return Skeletonizer(
+                          enabled: true,
+                          child: Card(
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            child: ListTile(
+                              title: Bone.text(words: 3),
+                              leading: const Icon(Icons.person),
                             ),
                           ),
                         );
-                      }
-
-                      final user = filtered[index];
-                      debugPrint('DebuggerLog: UsersScreen.onTap itemBuilder -> index=$index id=${user.id}');
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: ListTile(
-                          title: Text(user.name),
-                          leading: const Icon(Icons.person),
-                          onTap: () {
-                            debugPrint('DebuggerLog: UsersScreen.onTap -> userId=${user.id}');
-                            _userController.selectedUserId = user.id;
-                            Navigator.of(context).pushNamed('/user_profile_screen');
-                          },
-                        ),
-                      );
-                    },
-                  );
+                      },
+                    );
+                  } else {
+                    return ListView.builder(
+                      padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+                      itemCount: filtered.isEmpty ? 1 : filtered.length,
+                      itemBuilder: (context, index) {
+                        if (filtered.isEmpty) {
+                          return Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 24.0),
+                              child: Text(
+                                _searchController.text.isEmpty
+                                    ? 'Nenhum usuário cadastrado'
+                                    : 'Nenhum usuário encontrado',
+                                style: const TextStyle(color: Colors.grey, fontSize: 16),
+                              ),
+                            ),
+                          );
+                        }
+                        final user = filtered[index];
+                        debugPrint('DebuggerLog: UsersScreen.onTap itemBuilder -> index=$index id=${user.id}');
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          child: ListTile(
+                            title: Text(user.name),
+                            leading: const Icon(Icons.person),
+                            onTap: () {
+                              debugPrint('DebuggerLog: UsersScreen.onTap -> userId=${user.id}');
+                              _userController.selectedUserId = user.id;
+                              Navigator.of(context).pushNamed('/user_profile_screen');
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  }
                 }),
               ),
             ),

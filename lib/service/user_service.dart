@@ -11,7 +11,8 @@ class UserService {
 		}
 	}
 
-	List<User> getUsersByCompanyId(String companyId) {
+	Future<List<User>> getUsersByCompanyId(String companyId) async {
+    await Future.delayed(Duration(milliseconds: 500));
 		return mockUsers.where((user) => user.companyId == companyId).toList();
 	}
 

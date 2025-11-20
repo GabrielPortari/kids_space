@@ -53,22 +53,40 @@ mixin _$UserController on _UserController, Store {
     });
   }
 
-  late final _$_UserControllerActionController = ActionController(
-    name: '_UserController',
+  late final _$refreshLoadingAtom = Atom(
+    name: '_UserController.refreshLoading',
     context: context,
   );
 
   @override
-  void refreshUsersForCompany(String? companyId) {
-    final _$actionInfo = _$_UserControllerActionController.startAction(
-      name: '_UserController.refreshUsersForCompany',
-    );
-    try {
-      return super.refreshUsersForCompany(companyId);
-    } finally {
-      _$_UserControllerActionController.endAction(_$actionInfo);
-    }
+  bool get refreshLoading {
+    _$refreshLoadingAtom.reportRead();
+    return super.refreshLoading;
   }
+
+  @override
+  set refreshLoading(bool value) {
+    _$refreshLoadingAtom.reportWrite(value, super.refreshLoading, () {
+      super.refreshLoading = value;
+    });
+  }
+
+  late final _$refreshUsersForCompanyAsyncAction = AsyncAction(
+    '_UserController.refreshUsersForCompany',
+    context: context,
+  );
+
+  @override
+  Future<void> refreshUsersForCompany(String? companyId) {
+    return _$refreshUsersForCompanyAsyncAction.run(
+      () => super.refreshUsersForCompany(companyId),
+    );
+  }
+
+  late final _$_UserControllerActionController = ActionController(
+    name: '_UserController',
+    context: context,
+  );
 
   @override
   void addUser(User user) {
@@ -111,6 +129,7 @@ mixin _$UserController on _UserController, Store {
     return '''
 selectedUserId: ${selectedUserId},
 users: ${users},
+refreshLoading: ${refreshLoading},
 selectedUser: ${selectedUser}
     ''';
   }
