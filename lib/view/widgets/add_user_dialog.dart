@@ -64,158 +64,155 @@ class _AddUserDialogState extends State<AddUserDialog> {
         child: Form(
           key: _formKey,
           autovalidateMode: AutovalidateMode.onUserInteraction,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Nome'),
-                textInputAction: TextInputAction.next,
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Nome é obrigatório' : null,
-                autofocus: true,
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-                keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.next,
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return null; // optional
-                  return v.contains('@') ? null : 'Email inválido';
-                },
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: phoneController,
-                decoration: const InputDecoration(labelText: 'Telefone', hintText: '(99) 99999-9999'),
-                keyboardType: TextInputType.phone,
-                textInputAction: TextInputAction.next,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(11),
-                ],
-                onChanged: (s) {
-                  // Format phone manually so mask adapts immediately
-                  final digits = s.replaceAll(RegExp(r'[^0-9]'), '');
-                  String formatted;
-                  if (digits.length <= 2) {
-                    formatted = '(${digits}';
-                  } else {
-                    final area = digits.substring(0, 2);
-                    final rest = digits.substring(2);
-                    if (rest.length <= 4) {
-                      formatted = '($area) $rest';
-                    } else if (rest.length <= 5) {
-                      // for 7 total digits etc.
-                        formatted = '($area) ${rest.substring(0, 4)}-${rest.substring(4)}';
-                    } else if (rest.length <= 8) {
-                      // 10-digit total -> 4-4
-                      formatted = '($area) ${rest.substring(0, 4)}-${rest.substring(4)}';
-                    } else {
-                      // 11-digit total -> 5-4
-                      formatted = '($area) ${rest.substring(0, 5)}-${rest.substring(5)}';
-                    }
-                  }
-                  if (formatted != phoneController.text) {
-                    phoneController.value = TextEditingValue(
-                      text: formatted,
-                      selection: TextSelection.collapsed(offset: formatted.length),
-                    );
-                  }
-                },
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return null; // optional
-                  final digits = v.replaceAll(RegExp(r'[^0-9]'), '');
-                  if (digits.length == 10 || digits.length == 11) return null;
-                  return 'Telefone inválido';
-                },
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: documentController,
-                decoration: const InputDecoration(labelText: 'Documento (CPF ou RG)', hintText: 'CPF ou RG'),
-                keyboardType: TextInputType.number,
-                textInputAction: TextInputAction.done,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(11),
-                ],
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Documento é obrigatório';
-                  final digits = v.replaceAll(RegExp(r'[^0-9]'), '');
-                  if (digits.length == 11) {
-                    return isValidCpf(digits) ? null : 'CPF inválido';
-                  }
-                  // Accept RG only when it has exactly 9 digits
-                  if (digits.length == 9) return null;
-                  return 'Documento inválido (9 dígitos RG ou 11 dígitos CPF)';
-                },
-              ),
-            ],
-          ),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            _nameField(),
+            const SizedBox(height: 8),
+            _emailField(),
+            const SizedBox(height: 8),
+            _phoneField(),
+            const SizedBox(height: 8),
+            _documentField(),
+          ]),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: isSaving
-              ? null
-              : () {
-                  Navigator.pop(context, false);
-                },
-          child: const Text('Cancelar'),
-        ),
-        ElevatedButton(
-          onPressed: (isSaving || !isFormValid)
-              ? null
-              : () async {
-                  // final guard (re-validate before saving)
-                  if (!_formKey.currentState!.validate()) return;
-
-                  final name = nameController.text.trim();
-                  final email = emailController.text.trim();
-                  final phone = phoneController.text.trim();
-                  final document = documentController.text.trim();
-                  // remove parentheses, dots, spaces and hyphens explicitly
-                  final phoneDigits = phone.replaceAll(RegExp(r'[()\.\s-]'), '');
-                  final documentDigits = document.replaceAll(RegExp(r'[()\.\s-]'), '');
-
-                  final companyId = widget.companyController.companySelected?.id;
-                  if (companyId == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Selecione uma empresa antes de cadastrar')));
-                    return;
-                  }
-
-                  setState(() => isSaving = true);
-
-                  try {
-                    final id = DateTime.now().millisecondsSinceEpoch.toString();
-                    final user = User(
-                      id: id,
-                      name: name,
-                      email: email,
-                      phone: phoneDigits,
-                      document: documentDigits,
-                      companyId: companyId,
-                      childrenIds: [],
-                    );
-                    debugPrint('DebuggerLog: UsersScreen.createUser -> $id');
-                    widget.userController.addUser(user);
-                    Navigator.pop(context, true);
-                  } catch (e, st) {
-                    debugPrint('DebuggerLog: UsersScreen.createUser ERROR $e\n$st');
-                    setState(() => isSaving = false);
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erro ao criar usuário')));
-                  }
-                },
-          child: Builder(builder: (_) {
-            return isSaving
-                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Text('Salvar');
-          }),
-        ),
-      ],
+      actions: _buildActions(context),
     );
+  }
+
+  Widget _nameField() {
+    return TextFormField(
+      controller: nameController,
+      decoration: const InputDecoration(labelText: 'Nome'),
+      textInputAction: TextInputAction.next,
+      validator: (v) => (v == null || v.trim().isEmpty) ? 'Nome é obrigatório' : null,
+      autofocus: true,
+    );
+  }
+
+  Widget _emailField() {
+    return TextFormField(
+      controller: emailController,
+      decoration: const InputDecoration(labelText: 'Email'),
+      keyboardType: TextInputType.emailAddress,
+      textInputAction: TextInputAction.next,
+      validator: (v) {
+        if (v == null || v.trim().isEmpty) return null; // optional
+        return v.contains('@') ? null : 'Email inválido';
+      },
+    );
+  }
+
+  Widget _phoneField() {
+    return TextFormField(
+      controller: phoneController,
+      decoration: const InputDecoration(labelText: 'Telefone', hintText: '(99) 99999-9999'),
+      keyboardType: TextInputType.phone,
+      textInputAction: TextInputAction.next,
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly,
+        LengthLimitingTextInputFormatter(11),
+      ],
+      onChanged: (s) {
+        final digits = s.replaceAll(RegExp(r'[^0-9]'), '');
+        String formatted;
+        if (digits.length <= 2) {
+          formatted = '(${digits}';
+        } else {
+          final area = digits.substring(0, 2);
+          final rest = digits.substring(2);
+          if (rest.length <= 4) {
+            formatted = '($area) $rest';
+          } else if (rest.length <= 5) {
+            formatted = '($area) ${rest.substring(0, 4)}-${rest.substring(4)}';
+          } else if (rest.length <= 8) {
+            formatted = '($area) ${rest.substring(0, 4)}-${rest.substring(4)}';
+          } else {
+            formatted = '($area) ${rest.substring(0, 5)}-${rest.substring(5)}';
+          }
+        }
+        if (formatted != phoneController.text) {
+          phoneController.value = TextEditingValue(text: formatted, selection: TextSelection.collapsed(offset: formatted.length));
+        }
+      },
+      validator: (v) {
+        if (v == null || v.trim().isEmpty) return null; // optional
+        final digits = v.replaceAll(RegExp(r'[^0-9]'), '');
+        if (digits.length == 10 || digits.length == 11) return null;
+        return 'Telefone inválido';
+      },
+    );
+  }
+
+  Widget _documentField() {
+    return TextFormField(
+      controller: documentController,
+      decoration: const InputDecoration(labelText: 'Documento (CPF ou RG)', hintText: 'CPF ou RG'),
+      keyboardType: TextInputType.number,
+      textInputAction: TextInputAction.done,
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly,
+        LengthLimitingTextInputFormatter(11),
+      ],
+      validator: (v) {
+        if (v == null || v.trim().isEmpty) return 'Documento é obrigatório';
+        final digits = v.replaceAll(RegExp(r'[^0-9]'), '');
+        if (digits.length == 11) {
+          return isValidCpf(digits) ? null : 'CPF inválido';
+        }
+        if (digits.length == 9) return null;
+        return 'Documento inválido (9 dígitos RG ou 11 dígitos CPF)';
+      },
+    );
+  }
+
+  List<Widget> _buildActions(BuildContext context) {
+    return [
+      TextButton(
+        onPressed: isSaving
+            ? null
+            : () {
+                Navigator.pop(context, false);
+              },
+        child: const Text('Cancelar'),
+      ),
+      ElevatedButton(
+        onPressed: (isSaving || !isFormValid)
+            ? null
+            : () async {
+                if (!_formKey.currentState!.validate()) return;
+
+                final name = nameController.text.trim();
+                final email = emailController.text.trim();
+                final phone = phoneController.text.trim();
+                final document = documentController.text.trim();
+                final phoneDigits = phone.replaceAll(RegExp(r'[()\.\s-]'), '');
+                final documentDigits = document.replaceAll(RegExp(r'[()\.\s-]'), '');
+
+                final companyId = widget.companyController.companySelected?.id;
+                if (companyId == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Selecione uma empresa antes de cadastrar')));
+                  return;
+                }
+
+                setState(() => isSaving = true);
+
+                try {
+                  final id = DateTime.now().millisecondsSinceEpoch.toString();
+                  final user = User(id: id, name: name, email: email, phone: phoneDigits, document: documentDigits, companyId: companyId, childrenIds: []);
+                  debugPrint('DebuggerLog: UsersScreen.createUser -> $id');
+                  widget.userController.addUser(user);
+                  Navigator.pop(context, true);
+                } catch (e, st) {
+                  debugPrint('DebuggerLog: UsersScreen.createUser ERROR $e\n$st');
+                  setState(() => isSaving = false);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erro ao criar usuário')));
+                }
+              },
+        child: Builder(builder: (_) {
+          return isSaving ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Salvar');
+        }),
+      ),
+    ];
   }
 
   void _onFieldChanged() {
