@@ -51,8 +51,6 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   void _onAddUser() {
-    // Open add user dialog
-
     showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -149,7 +147,7 @@ class _UsersScreenState extends State<UsersScreen> {
         return Skeletonizer(
           enabled: true,
           child: Card(
-            margin: const EdgeInsets.symmetric(vertical: 8),
+            margin: const EdgeInsets.symmetric(vertical: 4),
             child: Center(
               child: ListTile(
                 leading: CircleAvatar(radius: 20, backgroundColor: Colors.grey.shade300),
@@ -170,11 +168,11 @@ class _UsersScreenState extends State<UsersScreen> {
       document = document.replaceRange(2, document.length, '.***.***-*');
     return Card(
       key: ValueKey(user.id),
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
         leading: CircleAvatar(
           radius: 20,
-          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
           child: Text(_getInitials(user.name), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
         ),
         title: Text(user.name),
