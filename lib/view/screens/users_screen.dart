@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
-import 'package:kids_space/model/mock/model_mock.dart';
 import 'package:kids_space/model/user.dart';
 import 'package:kids_space/view/widgets/add_user_dialog.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
@@ -17,166 +16,47 @@ class UsersScreen extends StatefulWidget {
   State<UsersScreen> createState() => _UsersScreenState();
 }
 
-
-
 class _UsersScreenState extends State<UsersScreen> {
+  final CompanyController _companyController = GetIt.I.get<CompanyController>();
+  final UserController _userController = GetIt.I.get<UserController>();
+
   final TextEditingController _searchController = TextEditingController();
-  final UserController _userController = GetIt.I<UserController>();
-  final CompanyController _companyController = GetIt.I<CompanyController>();
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
-    final companyId = _companyController.companySelected?.id;
-    debugPrint('DebuggerLog: UsersScreen.initState -> companyId=$companyId');
-    
-    // populate controller observable list for the current company (keeps same ObservableList instance)
-    _userController.refreshUsersForCompany(companyId);
-    // keep a simple listener to trigger rebuilds when search text changes
     _searchController.addListener(_onSearchChanged);
-  }
-
-  Timer? _debounce;
-  void _onSearchChanged() {
-    _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      _userController.userFilter = _searchController.text.trim().toLowerCase();
-    });
-    debugPrint('DebuggerLog: UsersScreen._onSearchChanged -> "${_searchController.text}"');
-    setState(() {});
-  }
-
-  Future<void> _onRefresh() async {
-    final companyId = _companyController.companySelected?.id;
-    debugPrint('DebuggerLog: UsersScreen._onRefresh -> companyId=$companyId');
-    await _userController.refreshUsersForCompany(companyId);
   }
 
   @override
   void dispose() {
-    debugPrint('DebuggerLog: UsersScreen.dispose');
     _debounce?.cancel();
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Usuários Cadastrados'),
-        automaticallyImplyLeading: false,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                labelText: 'Buscar usuário',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await _onRefresh();
-                },
-                child: Observer(builder: (_) {
-                  final all = _userController.users;
-                  final nameSearched = _searchController.text.trim().toLowerCase();
-                  final filtered = nameSearched.isEmpty
-                      ? all
-                      : all.where((u) {
-                          final nameMatch = u.name.toLowerCase().contains(nameSearched);
-                          final docMatch = u.document.toLowerCase().contains(nameSearched);
-                          return nameMatch || docMatch;
-                        }).toList();
+  void _onSearchChanged() {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      _userController.userFilter = _searchController.text.trim();
+      if (mounted) setState(() {});
+    });
+  }
 
-                  debugPrint('DebuggerLog: UsersScreen.Observer -> total=${all.length} filtered=${filtered.length} filter="$nameSearched"');
-                  if (_userController.refreshLoading) {
-                    return ListView.builder(
-                      padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-                      itemCount: 3,
-                      itemBuilder: (context, index) {
-                        return Skeletonizer(
-                          enabled: true,
-                          child: Card(
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            child: ListTile(
-                              title: Bone.text(words: 3),
-                              leading: const Icon(Icons.person),
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  } else {
-                    return ListView.builder(
-                      padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-                      itemCount: filtered.isEmpty ? 1 : filtered.length,
-                      itemBuilder: (context, index) {
-                        if (filtered.isEmpty) {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 24.0),
-                              child: Text(
-                                _searchController.text.isEmpty
-                                    ? 'Nenhum usuário cadastrado'
-                                    : 'Nenhum usuário encontrado',
-                                style: const TextStyle(color: Colors.grey, fontSize: 16),
-                              ),
-                            ),
-                          );
-                        }
-                        final user = filtered[index];
-                        debugPrint('DebuggerLog: UsersScreen.onTap itemBuilder -> index=$index id=${user.id}');
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          child: ListTile(
-                            title: Text(user.name),
-                            leading: const Icon(Icons.person),
-                            onTap: () {
-                              debugPrint('DebuggerLog: UsersScreen.onTap -> userId=${user.id}');
-                              _userController.selectedUserId = user.id;
-                              Navigator.of(context).pushNamed('/user_profile_screen');
-                            },
-                          ),
-                        );
-                      },
-                    );
-                  }
-                }),
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text('Cadastrar novo usuário'),
-                onPressed: _onAddUser,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  Future<void> _onRefresh() async {
+    final companyId = _companyController.companySelected?.id;
+    await _userController.refreshUsersForCompany(companyId);
   }
 
   void _onAddUser() {
-    debugPrint('DebuggerLog: UsersScreen.onAddUser pressed');
+    // Open add user dialog
 
     showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AddUserDialog(
-        companyController: _companyController,
-        userController: _userController,
-      ),
+      builder: (context) => AddUserDialog(companyController: _companyController, userController: _userController),
     ).then((created) {
       if (created == true) {
         if (!mounted) return;
@@ -184,4 +64,134 @@ class _UsersScreenState extends State<UsersScreen> {
       }
     });
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Usuários Cadastrados'), automaticallyImplyLeading: false),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            _searchField(),
+            const SizedBox(height: 16),
+            _userList(),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _onAddUser,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _searchField() {
+    return TextField(
+      controller: _searchController,
+      decoration: InputDecoration(
+        labelText: 'Buscar usuário',
+        prefixIcon: const Icon(Icons.search),
+        border: const OutlineInputBorder(),
+        suffixIcon: _searchController.text.isEmpty
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: () {
+                  _searchController.clear();
+                  _userController.userFilter = '';
+                },
+              ),
+      ),
+    );
+  }
+
+  Widget _userList() {
+    return Expanded(
+      child: RefreshIndicator(
+        onRefresh: () async => await _onRefresh(),
+        child: Observer(builder: (_) {
+          final filtered = _userController.filteredUsers;
+
+          if (_userController.refreshLoading) {
+            return _buildSkeletonList();
+          }
+
+          if (filtered.isEmpty) {
+            return ListView(padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0), children: [
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24.0),
+                  child: Text(_searchController.text.isEmpty ? 'Nenhum usuário cadastrado' : 'Nenhum usuário encontrado', style: const TextStyle(color: Colors.grey, fontSize: 16)),
+                ),
+              )
+            ]);
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+            itemCount: filtered.length,
+            itemExtent: 80.0,
+            itemBuilder: (context, index) => _userTile(filtered[index]),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildSkeletonList() {
+    return ListView.builder(
+      padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+      itemCount: 3,
+      itemExtent: 80.0,
+      itemBuilder: (context, index) {
+        return Skeletonizer(
+          enabled: true,
+          child: Card(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            child: Center(
+              child: ListTile(
+                leading: CircleAvatar(radius: 20, backgroundColor: Colors.grey.shade300),
+                title: const SizedBox.shrink(),
+                subtitle: const SizedBox.shrink(),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _userTile(User user) {
+    String document = user.document;
+    document.length == 11 ?
+      document = document.replaceRange(3, document.length, '.***.***-**') :
+      document = document.replaceRange(2, document.length, '.***.***-*');
+    return Card(
+      key: ValueKey(user.id),
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ListTile(
+        leading: CircleAvatar(
+          radius: 20,
+          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+          child: Text(_getInitials(user.name), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+        ),
+        title: Text(user.name),
+        subtitle: Text(document),
+        onTap: () {
+          _userController.selectedUserId = user.id;
+          Navigator.of(context).pushNamed('/user_profile_screen');
+        },
+      ),
+    );
+  }
+
+  String _getInitials(String? name) {
+    if (name == null || name.trim().isEmpty) return '?';
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.length == 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
 }
