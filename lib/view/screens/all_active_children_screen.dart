@@ -21,7 +21,7 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
   List<Child> _allChildren = [];
   List<Child> _filteredChildren = [];
 
-  late Map<Child, List<User>> _childrenResponsibles;
+  late Map<String, List<User>> _childrenResponsibles;
 
   @override
   void initState() {
@@ -35,7 +35,7 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
       final query = _searchController.text.toLowerCase();
       _filteredChildren = _allChildren.where((child) {
         final childName = child.name.toLowerCase();
-        final responsibles = _childrenResponsibles[child] ?? [];
+        final responsibles = _childrenResponsibles[child.id] ?? [];
         final responsibleName = responsibles.isNotEmpty
             ? responsibles.first.name.toLowerCase()
             : '';
@@ -59,72 +59,75 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                labelText: 'Buscar criança',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-            ),
+            _searchField(),
             const SizedBox(height: 16),
+            _childrenList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _searchField() {
+    return TextField(
+      controller: _searchController,
+      decoration: const InputDecoration(
+        labelText: 'Buscar criança',
+        prefixIcon: Icon(Icons.search),
+        border: OutlineInputBorder(),
+      ),
+    );
+  }
+
+  Widget _childrenList() {
+    return Expanded(
+      child: _allChildren.isEmpty
+          ? const Center(child: Text('Nenhuma criança ativa'))
+          : _filteredChildren.isEmpty
+              ? const Center(child: Text('Nenhuma criança encontrada'))
+              : ListView.builder(
+                  itemCount: _filteredChildren.length,
+                  itemBuilder: (context, index) {
+                    final child = _filteredChildren[index];
+                    final responsibles = _childrenResponsibles[child.id] ?? [];
+                    final responsible = responsibles.isNotEmpty ? responsibles.first : null;
+                    return _childCard(child, responsible);
+                  },
+                ),
+    );
+  }
+
+  Widget _childCard(Child child, User? responsible) {
+    return Card(
+      key: ValueKey(child.id),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(
+              Icons.child_care,
+              color: Colors.deepPurple,
+              size: 32,
+            ),
+            const SizedBox(width: 12),
             Expanded(
-              child: ListView.builder(
-                itemCount: _filteredChildren.length,
-                itemBuilder: (context, index) {
-                  final child = _filteredChildren[index];
-                  final responsibles = _childrenResponsibles[child] ?? [];
-                  final responsible = responsibles.isNotEmpty
-                      ? responsibles.first
-                      : null;
-                  return Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(
-                            Icons.child_care,
-                            color: Colors.deepPurple,
-                            size: 32,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  child.name,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Responsável: ${responsible?.name ?? ''}',
-                                  style: const TextStyle(fontSize: 15),
-                                ),
-                                Text(
-                                  'Telefone: ${responsible?.phone ?? ''}',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    child.name,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text('Responsável: ${responsible?.name ?? ''}', style: const TextStyle(fontSize: 15)),
+                  Text('Telefone: ${responsible?.phone ?? ''}', style: const TextStyle(fontSize: 15, color: Colors.grey)),
+                ],
               ),
             ),
           ],
@@ -139,10 +142,10 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
       _allChildren = _childController.activeCheckedInChildren(companyId);
       _allChildren.sort((a, b) => a.name.compareTo(b.name));
       _filteredChildren = List.from(_allChildren);
-      _childrenResponsibles = _childController.getChildrenWithResponsibles(
-        _allChildren,
-      );
+      _childrenResponsibles = _childController.getChildrenWithResponsibles(_allChildren);
     } else {
+      _allChildren = [];
+      _filteredChildren = [];
       _childrenResponsibles = {};
     }
   }

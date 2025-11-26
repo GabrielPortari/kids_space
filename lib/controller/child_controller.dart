@@ -17,20 +17,21 @@ class ChildController {
         ..addAll(newResponsibleUserIds);
     }
   }
-  // Retorna um mapa de Child para lista de responsáveis (User)
-  Map<Child, List<User>> getChildrenWithResponsibles(List<Child> children) {
-    final Map<Child, List<User>> result = {};
+  // Retorna um mapa de childId para lista de responsáveis (User)
+  Map<String, List<User>> getChildrenWithResponsibles(List<Child> children) {
+    final Map<String, List<User>> result = {};
     for (final child in children) {
       final responsibles = mockUsers
           .where((u) => child.responsibleUserIds.contains(u.id))
           .toList();
-      result[child] = responsibles;
+      result[child.id] = responsibles;
     }
     return result;
   }
 
   // Getter para obter o mapa de responsáveis das crianças ativas da empresa selecionada
-  Map<Child, List<User>> get activeChildrenWithResponsibles {
+  // Retorna mapa por childId
+  Map<String, List<User>> get activeChildrenWithResponsibles {
     // companyId deve ser passado externamente ou via outro controller
     // Aqui retorna vazio por padrão
     return {};
