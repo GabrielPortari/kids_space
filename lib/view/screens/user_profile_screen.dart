@@ -42,291 +42,261 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             _lastUserId = user?.id;
             _loadResponsibleChildren(user);
           }
-            debugPrint('DebuggerLog: UserProfileScreen.build selectedUserId=${user?.id ?? 'none'}');
+          debugPrint('DebuggerLog: UserProfileScreen.build selectedUserId=${user?.id ?? 'none'}');
           return SingleChildScrollView(
             child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 24),
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Colors.deepPurple[100],
-                    child: const Icon(
-                      Icons.person,
-                      size: 60,
-                      color: Colors.deepPurple,
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(20),
-                        onTap: () {
-                          debugPrint('DebuggerLog: UserProfileScreen.addPhoto tapped');
-                          // TODO: Implementar ação para adicionar foto
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.deepPurple,
-                            shape: BoxShape.circle,
-                          ),
-                          padding: const EdgeInsets.all(6),
-                          child: const Icon(
-                            Icons.add_a_photo,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Text(
-                user?.name ?? 'Nome não encontrado',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Usuário',
-                style: TextStyle(fontSize: 18, color: Colors.deepPurple),
-              ),
-              const SizedBox(height: 24),
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 16,
-                    horizontal: 20,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          const Text('Nome:', style: TextStyle(fontSize: 16)),
-                          const SizedBox(width: 8),
-                          Text(user?.name ?? '-', style: const TextStyle(fontSize: 16)),
-                        ],
-                      ),
-                      const Divider(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          const Text('Email:', style: TextStyle(fontSize: 16)),
-                          const SizedBox(width: 8),
-                          Text(user?.email ?? '-', style: const TextStyle(fontSize: 16)),
-                        ],
-                      ),
-                      const Divider(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          const Text('Telefone:', style: TextStyle(fontSize: 16)),
-                          const SizedBox(width: 8),
-                          Text(user?.phone ?? '-', style: const TextStyle(fontSize: 16)),
-                        ],
-                      ),
-                      const Divider(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          const Text('Documento:', style: TextStyle(fontSize: 16)),
-                          const SizedBox(width: 8),
-                          Text(user?.document ?? '-', style: const TextStyle(fontSize: 16)),
-                        ],
-                      ),
-                      const Divider(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          const Text('ID:', style: TextStyle(fontSize: 16, color: Colors.grey)),
-                          const SizedBox(width: 8),
-                          Text(user?.id ?? '-', style: const TextStyle(fontSize: 16, color: Colors.grey)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 16,
-                    horizontal: 20,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: const Text(
-                                  'Crianças sob responsabilidade',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          // show list from observable responsibleChildren
-                          if (responsibleChildren.isEmpty)
-                            const Text('Você não possui crianças cadastradas', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold))
-                          else
-                            Column(
-                              children: responsibleChildren.map((c) {
-                                return Column(
-                                  children: [
-                                    ListTile(
-                                      contentPadding: EdgeInsets.zero,
-                                      title: Text(c.name),
-                                      subtitle: Text('${c.isActive ? 'Ativa' : 'Inativa'}${c.document != null && c.document!.isNotEmpty ? ' · ${c.document}' : ''}'),
-                                      trailing: IconButton(
-                                        icon: const Icon(Icons.edit_outlined),
-                                        onPressed: () async {
-                                          debugPrint('DebuggerLog: UserProfileScreen.editChild.tap -> childId=${c.id}');
-                                          final updated = await showDialog<Child>(
-                                            context: context,
-                                            builder: (_) => AddChildDialog(
-                                              initialChild: c,
-                                              companyId: c.companyId,
-                                              responsibleUserId: c.responsibleUserIds.isNotEmpty ? c.responsibleUserIds.first : null,
-                                              onUpdate: (child) {
-                                                // persist update via controller
-                                                try {
-                                                  GetIt.I<ChildController>().updateChild(child);
-                                                  debugPrint('DebuggerLog: UserProfileScreen.onUpdate -> child id=${child.id}');
-                                                } catch (e) {
-                                                  debugPrint('DebuggerLog: UserProfileScreen.onUpdate ERROR $e');
-                                                }
-                                              },
-                                            ),
-                                          );
-                                          if (updated != null) {
-                                            setState(() {
-                                              final idx = responsibleChildren.indexWhere((x) => x.id == updated.id);
-                                              if (idx >= 0) responsibleChildren[idx] = updated;
-                                            });
-                                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Criança atualizada')));
-                                            debugPrint('DebuggerLog: UserProfileScreen.childUpdated -> id=${updated.id}');
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                    const Divider(height: 1),
-                                  ],
-                                );
-                              }).toList(),
-                            ),
-                        ],
-                      ),
-                      
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 48),
-            ],
-          ));
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 24),
+                _buildAvatarSection(user),
+                const SizedBox(height: 24),
+                _buildHeaderSection(user),
+                const SizedBox(height: 24),
+                _buildInfoCard(user),
+                const SizedBox(height: 24),
+                _buildChildrenCard(),
+                const SizedBox(height: 48),
+              ],
+            ),
+          );
         }),
       ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (_fabOpen) ...[
-            Align(
-              alignment: Alignment.centerRight,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(6),
-                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
-                    ),
-                    child: const Text('Editar perfil', style: TextStyle(fontSize: 14, color: Colors.black)),
-                  ),
-                  FloatingActionButton(
-                    heroTag: 'edit_fab',
-                    onPressed: () {
-                      debugPrint('DebuggerLog: UserProfileScreen.editFab.tap');
-                      _onEditProfile();
-                      setState(() => _fabOpen = false);
-                    },
-                    child: const Icon(Icons.edit),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(6),
-                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
-                    ),
-                    child: const Text('Cadastrar criança', style: TextStyle(fontSize: 14, color: Colors.black)),
-                  ),
-                  FloatingActionButton(
-                    heroTag: 'add_child_fab',
-                    onPressed: () {
-                      debugPrint('DebuggerLog: UserProfileScreen.addChildFab.tap');
-                      _onRegisterChild();
-                      setState(() => _fabOpen = false);
-                    },
-                    child: const Icon(Icons.child_care),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-          FloatingActionButton(
-            heroTag: 'main_fab',
-            onPressed: () {
-              setState(() => _fabOpen = !_fabOpen);
-              debugPrint('DebuggerLog: UserProfileScreen.fab toggled -> $_fabOpen');
-            },
-            child: Icon(_fabOpen ? Icons.close : Icons.menu),
+      floatingActionButton: _buildFabColumn(),
+    );
+  }
+
+  Widget _buildAvatarSection(User? user) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        CircleAvatar(
+          radius: 50,
+          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.12),
+          child: Text(
+            _getInitials(user?.name),
+            style: TextStyle(fontSize: 40, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w600),
           ),
-        ],
+        ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () {
+                debugPrint('DebuggerLog: UserProfileScreen.addPhoto tapped');
+                // TODO: Implementar ação para adicionar foto
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.deepPurple,
+                  shape: BoxShape.circle,
+                ),
+                padding: const EdgeInsets.all(6),
+                child: const Icon(
+                  Icons.add_a_photo,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getInitials(String? name) {
+    if (name == null || name.trim().isEmpty) return '?';
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.length == 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  Widget _buildHeaderSection(User? user) {
+    return Column(
+      children: [
+        Text(
+          user?.name ?? 'Nome não encontrado',
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Usuário',
+          style: TextStyle(fontSize: 18, color: Colors.deepPurple),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoCard(User? user) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _infoRow('Nome:', user?.name ?? '-'),
+            const Divider(),
+            _infoRow('Email:', user?.email ?? '-'),
+            const Divider(),
+            _infoRow('Telefone:', user?.phone ?? '-'),
+            const Divider(),
+            _infoRow('Documento:', user?.document ?? '-'),
+            const Divider(),
+            _infoRow('ID:', user?.id ?? '-', valueStyle: const TextStyle(fontSize: 16, color: Colors.grey)),
+          ],
+        ),
       ),
     );
   }
+
+  Widget _infoRow(String label, String value, {TextStyle? valueStyle}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 16)),
+        const SizedBox(width: 8),
+        Text(value, style: valueStyle ?? const TextStyle(fontSize: 16)),
+      ],
+    );
+  }
+
+  Widget _buildChildrenCard() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Expanded(
+                child: const Text(
+                  'Crianças sob responsabilidade',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ]),
+            const SizedBox(height: 12),
+            if (responsibleChildren.isEmpty)
+              const Text('Você não possui crianças cadastradas', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold))
+            else
+              Column(
+                children: responsibleChildren.map((c) {
+                  return Column(children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(c.name),
+                      subtitle: Text('${c.isActive ? 'Ativa' : 'Inativa'}${c.document != null && c.document!.isNotEmpty ? ' · ${c.document}' : ''}'),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.edit_outlined),
+                        onPressed: () async {
+                          debugPrint('DebuggerLog: UserProfileScreen.editChild.tap -> childId=${c.id}');
+                          final updated = await showDialog<Child>(
+                            context: context,
+                            builder: (_) => AddChildDialog(
+                              initialChild: c,
+                              companyId: c.companyId,
+                              responsibleUserId: c.responsibleUserIds.isNotEmpty ? c.responsibleUserIds.first : null,
+                              onUpdate: (child) {
+                                try {
+                                  GetIt.I<ChildController>().updateChild(child);
+                                  debugPrint('DebuggerLog: UserProfileScreen.onUpdate -> child id=${child.id}');
+                                } catch (e) {
+                                  debugPrint('DebuggerLog: UserProfileScreen.onUpdate ERROR $e');
+                                }
+                              },
+                            ),
+                          );
+                          if (updated != null) {
+                            setState(() {
+                              final idx = responsibleChildren.indexWhere((x) => x.id == updated.id);
+                              if (idx >= 0) responsibleChildren[idx] = updated;
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Criança atualizada')));
+                            debugPrint('DebuggerLog: UserProfileScreen.childUpdated -> id=${updated.id}');
+                          }
+                        },
+                      ),
+                    ),
+                    const Divider(height: 1),
+                  ]);
+                }).toList(),
+              ),
+          ]),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildFabColumn() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (_fabOpen) ...[
+          Align(
+            alignment: Alignment.centerRight,
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(6), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)]),
+                child: const Text('Editar perfil', style: TextStyle(fontSize: 14, color: Colors.black)),
+              ),
+              FloatingActionButton(
+                heroTag: 'edit_fab',
+                onPressed: () {
+                  debugPrint('DebuggerLog: UserProfileScreen.editFab.tap');
+                  _onEditProfile();
+                  setState(() => _fabOpen = false);
+                },
+                child: const Icon(Icons.edit),
+              ),
+            ]),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(6), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)]),
+                child: const Text('Cadastrar criança', style: TextStyle(fontSize: 14, color: Colors.black)),
+              ),
+              FloatingActionButton(
+                heroTag: 'add_child_fab',
+                onPressed: () {
+                  debugPrint('DebuggerLog: UserProfileScreen.addChildFab.tap');
+                  _onRegisterChild();
+                  setState(() => _fabOpen = false);
+                },
+                child: const Icon(Icons.child_care),
+              ),
+            ]),
+          ),
+          const SizedBox(height: 8),
+        ],
+        FloatingActionButton(
+          heroTag: 'main_fab',
+          onPressed: () {
+            setState(() => _fabOpen = !_fabOpen);
+            debugPrint('DebuggerLog: UserProfileScreen.fab toggled -> $_fabOpen');
+          },
+          child: Icon(_fabOpen ? Icons.close : Icons.menu),
+        ),
+      ],
+    );
+  }
+ 
 
   void _loadResponsibleChildren(User? user) {
     debugPrint('DebuggerLog: UserProfileScreen._loadResponsibleChildren for userId=${user?.id ?? 'none'}');
@@ -369,7 +339,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () async {
-              // Ask for confirmation before saving
               final confirm = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
@@ -401,7 +370,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               );
 
               _userController.updateUser(updated);
-              Navigator.pop(context); // close edit dialog
+              Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Perfil atualizado')));
             },
             child: const Text('Salvar'),
@@ -415,21 +384,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final user = _userController.selectedUser;
     debugPrint('DebuggerLog: UserProfileScreen.openRegisterChild -> userId=${user?.id ?? 'none'}');
 
-    // Open the AddChildDialog and await the result. Use onCreate to persist via ChildService
     showDialog<Child>(
       context: context,
       builder: (_) => AddChildDialog(
         companyId: user?.companyId,
         responsibleUserId: user?.id,
         onCreate: (child) {
-          // persist via service
           ChildService().addChild(child);
           debugPrint('DebuggerLog: UserProfileScreen.onCreate -> persisted child id=${child.id}');
         },
       ),
     ).then((created) {
       if (created == null) return;
-      // Add to local list for immediate UI update
       setState(() => responsibleChildren.add(created));
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Criança cadastrada')));
       debugPrint('DebuggerLog: UserProfileScreen.childCreated -> id=${created.id}, name=${created.name}');
