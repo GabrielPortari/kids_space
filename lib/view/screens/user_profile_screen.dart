@@ -366,7 +366,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 phone: phoneController.text.trim(),
                 document: user.document,
                 companyId: user.companyId,
-                childrenIds: user.childrenIds,
+                childrenIds: user.childrenIds, 
+                createdAt: user.createdAt, 
+                updatedAt: user.updatedAt,
               );
 
               _userController.updateUser(updated);
