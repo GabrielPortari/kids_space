@@ -47,55 +47,69 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
 				padding: const EdgeInsets.all(16.0),
 				child: Column(
 					children: [
-						TextField(
-							controller: _searchController,
-							decoration: const InputDecoration(
-								labelText: 'Buscar empresa',
-								prefixIcon: Icon(Icons.search),
-								border: OutlineInputBorder(),
-							),
-						),
+						_searchField(),
 						const SizedBox(height: 16),
-						Expanded(
-							child: _searchController.text.isEmpty
-									? Center(
-											child: Text(
-												'Digite para buscar uma empresa',
-												style: TextStyle(color: Colors.grey, fontSize: 16),
-											),
-										)
-									: _filteredCompanies.isEmpty
-											? Center(
-													child: Text(
-														'Nenhuma empresa encontrada',
-														style: TextStyle(color: Colors.grey, fontSize: 16),
-													),
-												)
-											: ListView.builder(
-													itemCount: _filteredCompanies.length,
-													itemBuilder: (context, index) {
-														final company = _filteredCompanies[index];
-														return Card(
-															margin: const EdgeInsets.symmetric(vertical: 8),
-															child: ListTile(
-																title: Text(company.name),
-																leading: const Icon(Icons.business),
-																onTap: () {
-																	_companyController.selectCompany(company);
-																	Navigator.push(
-																		context,
-																		MaterialPageRoute(
-																			builder: (context) => const LoginScreen(),
-																		),
-																	);
-																},
-															),
-														);
-													},
-												),
-						),
+						Expanded(child: _buildCompaniesArea()),
 					],
 				),
+			),
+		);
+	}
+
+	Widget _searchField() {
+		return TextField(
+			controller: _searchController,
+			decoration: const InputDecoration(
+				labelText: 'Buscar empresa',
+				prefixIcon: Icon(Icons.search),
+				border: OutlineInputBorder(),
+			),
+		);
+	}
+
+	Widget _buildCompaniesArea() {
+		if (_searchController.text.isEmpty) {
+			return const Center(
+				child: Text(
+					'Digite para buscar uma empresa',
+					style: TextStyle(color: Colors.grey, fontSize: 16),
+				),
+			);
+		}
+
+		if (_filteredCompanies.isEmpty) {
+			return const Center(
+				child: Text(
+					'Nenhuma empresa encontrada',
+					style: TextStyle(color: Colors.grey, fontSize: 16),
+				),
+			);
+		}
+
+		return ListView.builder(
+			itemCount: _filteredCompanies.length,
+			itemBuilder: (context, index) {
+				final company = _filteredCompanies[index];
+				return _companyTile(company);
+			},
+		);
+	}
+
+	Widget _companyTile(Company company) {
+		return Card(
+			margin: const EdgeInsets.symmetric(vertical: 8),
+			child: ListTile(
+				title: Text(company.name),
+				leading: const Icon(Icons.business),
+				onTap: () {
+					_companyController.selectCompany(company);
+					Navigator.push(
+						context,
+						MaterialPageRoute(
+							builder: (context) => const LoginScreen(),
+						),
+					);
+				},
 			),
 		);
 	}
