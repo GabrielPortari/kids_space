@@ -21,7 +21,6 @@ class Collaborator {
     'companyId': companyId,
     'email': email,
     'phoneNumber': phoneNumber,
-    'password': password,
   };
 
   factory Collaborator.fromJson(Map<String, dynamic> json) => Collaborator(

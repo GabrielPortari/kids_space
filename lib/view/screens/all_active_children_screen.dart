@@ -54,7 +54,9 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Todas as crianças ativas')),
+      appBar: AppBar(
+        title: const Text('Todas as crianças ativas')
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

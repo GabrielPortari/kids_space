@@ -20,6 +20,8 @@ final List<User> mockUsers = [
     phone: '123456789',
     document: '12345678901',
     childrenIds: ['ch1', 'ch5', 'ch6'], // Lucas, Marina, Enzo
+    createdAt: DateTime.now().subtract(Duration(days: 30)),
+    updatedAt: DateTime.now(),
   ),
   User(
     id: 'u2',
@@ -29,6 +31,8 @@ final List<User> mockUsers = [
     phone: '987654321',
     document: '10987654321',
     childrenIds: ['ch2'], // Sofia
+    createdAt: DateTime.now().subtract(Duration(days: 30)),
+    updatedAt: DateTime.now(),
   ),
   User(
     id: 'u3',
@@ -38,6 +42,8 @@ final List<User> mockUsers = [
     phone: '456789123',
     document: '45678912345',
     childrenIds: ['ch3'], // Gabriel
+    createdAt: DateTime.now().subtract(Duration(days: 30)),
+    updatedAt: DateTime.now(),
   ),
   User(
     id: 'u4',
@@ -47,6 +53,8 @@ final List<User> mockUsers = [
     phone: '321654987',
     document: '32165498765',
     childrenIds: ['ch4'], // Beatriz
+    createdAt: DateTime.now().subtract(Duration(days: 30)),
+    updatedAt: DateTime.now(),
   ),
 ];
 
@@ -59,6 +67,8 @@ final List<Child> mockChildren = [
     responsibleUserIds: ['u1'],
     isActive: false,
     document: '11122233344',
+    createdAt: DateTime.now().subtract(Duration(days: 60)),
+    updatedAt: DateTime.now().subtract(Duration(days: 1)),
   ),
   // Sofia: Último evento é checkOut (e6, 30min atrás) => isActive: false
   Child(
@@ -68,6 +78,8 @@ final List<Child> mockChildren = [
     responsibleUserIds: ['u2'],
     isActive: false,
     document: '22233344455',
+    createdAt: DateTime.now().subtract(Duration(days: 60)),
+    updatedAt: DateTime.now().subtract(Duration(days: 1)),
   ),
   // Gabriel: Último evento é checkIn (e4, 3h atrás) => isActive: true
   Child(
@@ -77,6 +89,8 @@ final List<Child> mockChildren = [
     responsibleUserIds: ['u3'],
     isActive: true,
     document: '33344455566',
+    createdAt: DateTime.now().subtract(Duration(days: 60)),
+    updatedAt: DateTime.now().subtract(Duration(hours: 3)),
   ),
   // Beatriz: Último evento é checkIn (e5, 2h atrás) => isActive: true
   Child(
@@ -86,6 +100,8 @@ final List<Child> mockChildren = [
     responsibleUserIds: ['u4'],
     isActive: true,
     document: '44455566677',
+    createdAt: DateTime.now().subtract(Duration(days: 60)),
+    updatedAt: DateTime.now().subtract(Duration(hours: 2)),
   ),
   // Marina: sem eventos => isActive: false
   Child(
@@ -95,6 +111,8 @@ final List<Child> mockChildren = [
     responsibleUserIds: ['u1'],
     isActive: false,
     document: '55566677788',
+    createdAt: DateTime.now().subtract(Duration(days: 60)),
+    updatedAt: DateTime.now().subtract(Duration(days: 1)),
   ),
   // Enzo: sem eventos => isActive: false
   Child(
@@ -104,6 +122,8 @@ final List<Child> mockChildren = [
     responsibleUserIds: ['u1'],
     isActive: false,
     document: '66677788899',
+    createdAt: DateTime.now().subtract(Duration(days: 60)),
+    updatedAt: DateTime.now().subtract(Duration(days: 1)),
   ),
 ];
 
@@ -163,20 +183,29 @@ final mockCompanies = [
     id: '1',
     name: 'Tech Kids',
     collaborators: [mockCollaborators[0]],
+    createdAt: DateTime.now().subtract(Duration(days: 365)),
+    updatedAt: DateTime.now(),
   ),
   Company(
     id: '2',
     name: 'EducaPlay',
     collaborators: [mockCollaborators[1]],
+    createdAt: DateTime.now().subtract(Duration(days: 365)),
+    updatedAt: DateTime.now(),
   ),
   Company(
     id: '3',
     name: 'Brincar & Aprender',
     collaborators: [mockCollaborators[2]],
+    createdAt: DateTime.now().subtract(Duration(days: 365)),
+    updatedAt: DateTime.now(),
   ),
   Company(
     id: '4',
     name: 'Mundo Infantil',
     collaborators: [mockCollaborators[3]],
+    createdAt: DateTime.now().subtract(Duration(days: 365)),
+    updatedAt: DateTime.now(),
+    
   ),
 ];
