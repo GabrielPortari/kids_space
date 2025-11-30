@@ -51,57 +51,76 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Imagem/logo da empresa
-                SizedBox(
-                  height: 100,
-                  child: Image.asset(
-                    'assets/images/company_logo_placeholder.png',
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.business, size: 80, color: Colors.deepPurple),
-                  ),
-                ),
+                _buildLogo(),
                 const SizedBox(height: 24),
-                Text(
-                  'Bem-vindo à ${company?.name ?? "Empresa"}',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                  textAlign: TextAlign.center,
-                ),
+                _buildWelcome(company?.name),
                 const SizedBox(height: 32),
-                TextField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Usuário',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
+                _emailField(),
                 const SizedBox(height: 16),
-                TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Senha',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
+                _passwordField(),
                 const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _loading ? null : _login,
-                    child: _loading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Entrar'),
-                  ),
-                ),
+                _loginButton(),
                 const SizedBox(height: 24),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLogo() {
+    return SizedBox(
+      height: 100,
+      child: Image.asset(
+        'assets/images/company_logo_placeholder.png',
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => const Icon(Icons.business, size: 80, color: Colors.deepPurple),
+      ),
+    );
+  }
+
+  Widget _buildWelcome(String? companyName) {
+    return Text(
+      'Bem-vindo à ${companyName ?? "Empresa"}',
+      style: Theme.of(context).textTheme.headlineSmall,
+      textAlign: TextAlign.center,
+    );
+  }
+
+  Widget _emailField() {
+    return TextField(
+      controller: _emailController,
+      decoration: const InputDecoration(
+        labelText: 'Usuário',
+        border: OutlineInputBorder(),
+      ),
+    );
+  }
+
+  Widget _passwordField() {
+    return TextField(
+      controller: _passwordController,
+      obscureText: true,
+      decoration: const InputDecoration(
+        labelText: 'Senha',
+        border: OutlineInputBorder(),
+      ),
+    );
+  }
+
+  Widget _loginButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _loading ? null : _login,
+        child: _loading
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Text('Entrar'),
       ),
     );
   }
