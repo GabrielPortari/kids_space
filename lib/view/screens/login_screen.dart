@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/auth_controller.dart';
+import 'package:kids_space/controller/collaborator_controller.dart';
+import 'package:kids_space/model/collaborator.dart' show UserType;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,10 +25,19 @@ class _LoginScreenState extends State<LoginScreen> {
     final success = await _authController.login(email, password);
     setState(() => _loading = false);
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login realizado!')),
-      );
-      Navigator.pushNamed(context, '/app_bottom_nav');
+      final collabController = GetIt.I<CollaboratorController>();
+      final logged = collabController.loggedCollaborator;
+      if (logged != null && logged.userType == UserType.admin) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login como administrador. Redirecionando...')),
+        );
+        Navigator.pushReplacementNamed(context, '/admin_panel');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login realizado!')),
+        );
+        Navigator.pushReplacementNamed(context, '/app_bottom_nav');
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Usuário ou senha inválidos!')),

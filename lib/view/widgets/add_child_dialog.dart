@@ -158,6 +158,8 @@ class _AddChildDialogState extends State<AddChildDialog> {
                       responsibleUserIds: widget.responsibleUserId != null ? [widget.responsibleUserId!] : [],
                       document: _documentController.text.trim().isEmpty ? null : _documentController.text.trim(),
                       isActive: _isActive,
+                      createdAt: DateTime.now(),
+                      updatedAt: DateTime.now()
                     );
                     debugPrint('DebuggerLog: AddChildDialog.createChild -> id=$id name=${child.name} responsible=${widget.responsibleUserId ?? 'none'}');
                     if (widget.onCreate != null) {
@@ -167,7 +169,6 @@ class _AddChildDialogState extends State<AddChildDialog> {
                     Navigator.pop(context, child);
                     debugPrint('DebuggerLog: AddChildDialog.created and closed -> id=$id');
                   } else {
-                    // update
                     final updated = Child(
                       id: widget.initialChild!.id,
                       name: _nameController.text.trim(),
@@ -175,6 +176,8 @@ class _AddChildDialogState extends State<AddChildDialog> {
                       responsibleUserIds: widget.initialChild!.responsibleUserIds,
                       document: _documentController.text.trim().isEmpty ? null : _documentController.text.trim(),
                       isActive: _isActive,
+                      createdAt: widget.initialChild!.createdAt,
+                      updatedAt: DateTime.now(),
                     );
                     debugPrint('DebuggerLog: AddChildDialog.updateChild -> id=${updated.id} name=${updated.name}');
                     if (widget.onUpdate != null) {

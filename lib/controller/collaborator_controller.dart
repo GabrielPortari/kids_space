@@ -25,7 +25,8 @@ abstract class _CollaboratorController with Store {
         name: collaborator.name,
         email: collaborator.email,
         companyId: collaborator.companyId,
-        phoneNumber: collaborator.phoneNumber,
+        phoneNumber: collaborator.phoneNumber, 
+        userType: collaborator.userType,
         // adicione outros campos se houver
       );
       await prefs.setString('logged_user', jsonEncode(sanitized.toJson()));

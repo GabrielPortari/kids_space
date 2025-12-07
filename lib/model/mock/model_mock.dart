@@ -5,10 +5,11 @@ import '../child.dart';
 import '../check_event.dart';
 
 final mockCollaborators = [
-  Collaborator(id: 'c1', name: 'João', companyId: '1', email: 'joao@techkids.com', password: '123456'),
-  Collaborator(id: 'c2', name: 'Ana', companyId: '2', email: 'ana@educaplay.com', password: '654321'),
-  Collaborator(id: 'c3', name: 'Pedro', companyId: '3', email: 'pedro@brincaraprender.com', password: 'abc123'),
-  Collaborator(id: 'c4', name: 'Juliana', companyId: '4', email: 'juliana@mundoinfantil.com', password: 'juliana1'),
+  Collaborator(id: 'c0', name: 'Admin', companyId: '1', email: 'admin@techkids.com', password: '123456', userType: UserType.admin),
+  Collaborator(id: 'c1', name: 'João', companyId: '1', email: 'joao@techkids.com', password: '123456', userType: UserType.collaborator),
+  Collaborator(id: 'c2', name: 'Ana', companyId: '2', email: 'ana@educaplay.com', password: '654321', userType: UserType.collaborator),
+  Collaborator(id: 'c3', name: 'Pedro', companyId: '3', email: 'pedro@brincaraprender.com', password: 'abc123', userType: UserType.collaborator),
+  Collaborator(id: 'c4', name: 'Juliana', companyId: '4', email: 'juliana@mundoinfantil.com', password: 'juliana1', userType: UserType.collaborator),
 ];
 
 final List<User> mockUsers = [

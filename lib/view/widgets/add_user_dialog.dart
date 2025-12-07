@@ -198,7 +198,16 @@ class _AddUserDialogState extends State<AddUserDialog> {
 
                 try {
                   final id = DateTime.now().millisecondsSinceEpoch.toString();
-                  final user = User(id: id, name: name, email: email, phone: phoneDigits, document: documentDigits, companyId: companyId, childrenIds: []);
+                  final user = User(
+                    id: id, 
+                    name: name, 
+                    email: email, 
+                    phone: phoneDigits, 
+                    document: documentDigits, 
+                    companyId: companyId, 
+                    childrenIds: [], 
+                    createdAt: DateTime.now(), 
+                    updatedAt: DateTime.now());
                   debugPrint('DebuggerLog: UsersScreen.createUser -> $id');
                   widget.userController.addUser(user);
                   Navigator.pop(context, true);
