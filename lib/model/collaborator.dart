@@ -31,13 +31,33 @@ class Collaborator {
     'phoneNumber': phoneNumber,
   };
 
-  factory Collaborator.fromJson(Map<String, dynamic> json) => Collaborator(
-    id: json['id'],
-    name: json['name'],
-    companyId: json['companyId'],
-    email: json['email'],
-    userType: UserType.values.firstWhere((e) => e.toString() == 'UserType.${json['userType']}'),
-    phoneNumber: json['phoneNumber'],
-    password: json['password'],
-  );
+  factory Collaborator.fromJson(Map<String, dynamic> json) {
+    final raw = json['userType'];
+    UserType parsedUserType = UserType.collaborator;
+
+    if (raw != null) {
+      final rawStr = raw.toString();
+      try {
+        if (rawStr.contains('.')) {
+          // Accept full enum string like 'UserType.admin' or just the enum name 'admin'
+          parsedUserType = UserType.values.firstWhere((e) => e.toString() == rawStr);
+        } else {
+          parsedUserType = UserType.values.firstWhere((e) => e.toString() == 'UserType.$rawStr');
+        }
+      } catch (_) {
+        // fallback to collaborator if parsing fails
+        parsedUserType = UserType.collaborator;
+      }
+    }
+
+    return Collaborator(
+      id: json['id'],
+      name: json['name'],
+      companyId: json['companyId'],
+      email: json['email'],
+      userType: parsedUserType,
+      phoneNumber: json['phoneNumber'],
+      password: json['password'],
+    );
+  }
 }
