@@ -9,6 +9,14 @@ part of 'user_controller.dart';
 // ignore_for_file: non_constant_identifier_names, unnecessary_brace_in_string_interps, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic, no_leading_underscores_for_local_identifiers
 
 mixin _$UserController on _UserController, Store {
+  Computed<List<User>>? _$filteredUsersComputed;
+
+  @override
+  List<User> get filteredUsers =>
+      (_$filteredUsersComputed ??= Computed<List<User>>(
+        () => super.filteredUsers,
+        name: '_UserController.filteredUsers',
+      )).value;
   Computed<User?>? _$selectedUserComputed;
 
   @override
@@ -16,6 +24,24 @@ mixin _$UserController on _UserController, Store {
     () => super.selectedUser,
     name: '_UserController.selectedUser',
   )).value;
+
+  late final _$userFilterAtom = Atom(
+    name: '_UserController.userFilter',
+    context: context,
+  );
+
+  @override
+  String get userFilter {
+    _$userFilterAtom.reportRead();
+    return super.userFilter;
+  }
+
+  @override
+  set userFilter(String value) {
+    _$userFilterAtom.reportWrite(value, super.userFilter, () {
+      super.userFilter = value;
+    });
+  }
 
   late final _$selectedUserIdAtom = Atom(
     name: '_UserController.selectedUserId',
@@ -127,9 +153,11 @@ mixin _$UserController on _UserController, Store {
   @override
   String toString() {
     return '''
+userFilter: ${userFilter},
 selectedUserId: ${selectedUserId},
 users: ${users},
 refreshLoading: ${refreshLoading},
+filteredUsers: ${filteredUsers},
 selectedUser: ${selectedUser}
     ''';
   }

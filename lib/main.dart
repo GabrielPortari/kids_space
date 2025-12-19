@@ -10,7 +10,6 @@ import 'package:kids_space/view/screens/company_selection_screen.dart';
 import 'package:kids_space/view/screens/home_screen.dart';
 import 'package:kids_space/view/screens/login_screen.dart';
 import 'package:kids_space/view/screens/collaborator_profile_screen.dart';
-import 'package:kids_space/view/screens/register_screen.dart';
 import 'package:kids_space/view/screens/splash_screen.dart';
 import 'package:kids_space/view/screens/user_profile_screen.dart';
 import 'package:kids_space/view/screens/users_screen.dart';
@@ -51,7 +50,6 @@ class MyApp extends StatelessWidget {
         '/splash': (context) => const SplashScreen(),
         '/home': (context) => const HomeScreen(),
         '/company_selection': (context) => const CompanySelectionScreen(),
-        '/register': (context) => const RegisterScreen(),
         '/login': (context) => const LoginScreen(),
         '/users': (context) => const UsersScreen(),
         '/app_bottom_nav': (context) => const AppBottomNav(),

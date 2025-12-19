@@ -30,35 +30,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
     debugPrint('DebuggerLog: ProfileScreen.build');
     return Scaffold(
       appBar: AppBar(title: const Text('Perfil')),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Observer(
-          builder: (_) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 24),
-                _collaboratorProfileInfo(),
-                const SizedBox(height: 24),
-                Text(
-                  _collaboratorController.loggedCollaborator != null
-                      ? _collaboratorController.loggedCollaborator!.name
-                      : 'Nome do Colaborador',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Colaborador', //user type
-                  style: TextStyle(fontSize: 18, color: Colors.deepPurple),
-                ),
-                const SizedBox(height: 24),
-                _collaboratorProfileCard(),
-              ],
-            );
-          },
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 720),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Observer(
+              builder: (_) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 24),
+                    _collaboratorProfileInfo(),
+                    const SizedBox(height: 24),
+                    Text(
+                      _collaboratorController.loggedCollaborator != null
+                          ? _collaboratorController.loggedCollaborator!.name
+                          : 'Nome do Colaborador',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Colaborador', //user type
+                      style: TextStyle(fontSize: 18, color: Colors.deepPurple),
+                    ),
+                    const SizedBox(height: 24),
+                    _collaboratorProfileCard(),
+                  ],
+                );
+              },
+            ),
+          ),
         ),
       ),
       floatingActionButton: Column(
