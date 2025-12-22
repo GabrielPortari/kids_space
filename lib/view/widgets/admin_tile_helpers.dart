@@ -16,7 +16,7 @@ String titleForType(AdminTileType type) {
     case AdminTileType.child:
       return 'Crianças';
     case AdminTileType.collaborator:
-      return 'collaborator';
+      return 'Colaboradores';
     case AdminTileType.reports:
       return 'Relatórios';
     case AdminTileType.configurations:

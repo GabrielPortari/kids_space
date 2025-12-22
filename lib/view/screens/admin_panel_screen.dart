@@ -18,8 +18,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     AdminTileModel(type: AdminTileType.responsible, icon: Icons.person),
     AdminTileModel(type: AdminTileType.child, icon: Icons.child_care),
     AdminTileModel(type: AdminTileType.collaborator, icon: Icons.group),
-    AdminTileModel(type: AdminTileType.reports, icon: Icons.insert_chart),
-    AdminTileModel(type: AdminTileType.configurations, icon: Icons.settings),
   ];
 
 
@@ -43,12 +41,12 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 720),
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: GridView.count(
-              crossAxisCount: 2,
+              crossAxisCount: 1,
               mainAxisSpacing: 8,
               crossAxisSpacing: 8,
-              childAspectRatio: 2,
+              childAspectRatio: 4,
               children: _adminItems.map((model) {
                 return AdminTile(
                   model: model,
