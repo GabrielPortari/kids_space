@@ -136,7 +136,6 @@ class _UsersScreenState extends State<UsersScreen> {
           return ListView.builder(
             padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
             itemCount: filtered.length,
-            itemExtent: 80.0,
             itemBuilder: (context, index) => _userTile(filtered[index]),
           );
         }),
@@ -147,8 +146,7 @@ class _UsersScreenState extends State<UsersScreen> {
   Widget _buildSkeletonList() {
     return ListView.builder(
       padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-      itemCount: 3,
-      itemExtent: 80.0,
+      itemCount: 8,
       itemBuilder: (context, index) {
         return Skeletonizer(
           enabled: true,
@@ -175,18 +173,42 @@ class _UsersScreenState extends State<UsersScreen> {
     return Card(
       key: ValueKey(user.id),
       margin: const EdgeInsets.symmetric(vertical: 4),
-      child: ListTile(
-        leading: CircleAvatar(
-          radius: 20,
-          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-          child: Text(_getInitials(user.name), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
-        ),
-        title: Text(user.name),
-        subtitle: Text(document),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
         onTap: () {
           _userController.selectedUserId = user.id;
           Navigator.of(context).pushNamed('/user_profile_screen');
         },
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 56,
+                child: Center(
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    child: Text(_getInitials(user.name), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(user.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 4),
+                    Text(document, style: const TextStyle(fontSize: 15, color: Colors.grey)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
