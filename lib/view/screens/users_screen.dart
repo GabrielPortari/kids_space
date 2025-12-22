@@ -27,6 +27,7 @@ class _UsersScreenState extends State<UsersScreen> {
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
+    _onRefresh();
   }
 
   @override

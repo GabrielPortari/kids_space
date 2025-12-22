@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'admin_tile_helpers.dart';
+import '../../util/admin_tile_helpers.dart';
 import '../../model/admin_tile_model.dart';
 
 class AdminTile extends StatelessWidget {

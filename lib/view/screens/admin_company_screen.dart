@@ -3,7 +3,6 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter/services.dart';
 import 'package:kids_space/controller/company_controller.dart';
-import 'package:kids_space/util/localization_service.dart';
 
 final CompanyController _companyController = GetIt.I<CompanyController>();
 

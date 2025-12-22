@@ -114,12 +114,17 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.child_care,
-              color: Colors.deepPurple,
-              size: 32,
+            SizedBox(
+              width: 56,
+              child: Center(
+                child: const Icon(
+                  Icons.child_care,
+                  color: Colors.deepPurple,
+                  size: 32,
+                ),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(

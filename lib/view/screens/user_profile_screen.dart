@@ -1,6 +1,8 @@
 import 'package:get_it/get_it.dart';
+import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/controller/child_controller.dart';
+import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/model/user.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/service/child_service.dart';
@@ -34,36 +36,34 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       appBar: AppBar(
         title: const Text('Perfil do Usuário'),
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 720),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Observer(builder: (_) {
-              final user = _userController.selectedUser;
-              if (user?.id != _lastUserId) {
-                _lastUserId = user?.id;
-                _loadResponsibleChildren(user);
-              }
-              debugPrint('DebuggerLog: UserProfileScreen.build selectedUserId=${user?.id ?? 'none'}');
-              return SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 24),
-                    _buildAvatarSection(user),
-                    const SizedBox(height: 24),
-                    _buildHeaderSection(user),
-                    const SizedBox(height: 24),
-                    _buildInfoCard(user),
-                    const SizedBox(height: 24),
-                    _buildChildrenCard(),
-                    const SizedBox(height: 48),
-                  ],
-                ),
-              );
-            }),
-          ),
+      body: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 720),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Observer(builder: (_) {
+            final user = _userController.selectedUser;
+            if (user?.id != _lastUserId) {
+              _lastUserId = user?.id;
+              _loadResponsibleChildren(user);
+            }
+            debugPrint('DebuggerLog: UserProfileScreen.build selectedUserId=${user?.id ?? 'none'}');
+            return SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 24),
+                  _buildAvatarSection(user),
+                  const SizedBox(height: 24),
+                  _buildHeaderSection(user),
+                  const SizedBox(height: 24),
+                  _buildInfoCard(user),
+                  const SizedBox(height: 24),
+                  _buildChildrenCard(),
+                  const SizedBox(height: 48),
+                ],
+              ),
+            );
+          }),
         ),
       ),
       floatingActionButton: _buildFabColumn(),
@@ -200,35 +200,48 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       contentPadding: EdgeInsets.zero,
                       title: Text(c.name),
                       subtitle: Text('${c.isActive ? 'Ativa' : 'Inativa'}${c.document != null && c.document!.isNotEmpty ? ' · ${c.document}' : ''}'),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.edit_outlined),
-                        onPressed: () async {
-                          debugPrint('DebuggerLog: UserProfileScreen.editChild.tap -> childId=${c.id}');
-                          final updated = await showDialog<Child>(
-                            context: context,
-                            builder: (_) => AddChildDialog(
-                              initialChild: c,
-                              companyId: c.companyId,
-                              responsibleUserId: c.responsibleUserIds.isNotEmpty ? c.responsibleUserIds.first : null,
-                              onUpdate: (child) {
-                                try {
-                                  GetIt.I<ChildController>().updateChild(child);
-                                  debugPrint('DebuggerLog: UserProfileScreen.onUpdate -> child id=${child.id}');
-                                } catch (e) {
-                                  debugPrint('DebuggerLog: UserProfileScreen.onUpdate ERROR $e');
-                                }
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit_outlined),
+                            onPressed: () async {
+                              debugPrint('DebuggerLog: UserProfileScreen.editChild.tap -> childId=${c.id}');
+                              final updated = await showDialog<Child>(
+                                context: context,
+                                builder: (_) => AddChildDialog(
+                                  initialChild: c,
+                                  companyId: c.companyId,
+                                  responsibleUserId: c.responsibleUserIds.isNotEmpty ? c.responsibleUserIds.first : null,
+                                  onUpdate: (child) {
+                                    try {
+                                      GetIt.I<ChildController>().updateChild(child);
+                                      debugPrint('DebuggerLog: UserProfileScreen.onUpdate -> child id=${child.id}');
+                                    } catch (e) {
+                                      debugPrint('DebuggerLog: UserProfileScreen.onUpdate ERROR $e');
+                                    }
+                                  },
+                                ),
+                              );
+                              if (updated != null) {
+                                setState(() {
+                                  final idx = responsibleChildren.indexWhere((x) => x.id == updated.id);
+                                  if (idx >= 0) responsibleChildren[idx] = updated;
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Criança atualizada')));
+                                debugPrint('DebuggerLog: UserProfileScreen.childUpdated -> id=${updated.id}');
+                              }
+                            },
+                          ),
+                          if (GetIt.I<CollaboratorController>().loggedCollaborator?.userType != UserType.admin)
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, color: Colors.red),
+                              onPressed: () {
+                                debugPrint('DebuggerLog: UserProfileScreen.deleteChild.tap -> childId=${c.id}');
+                                // TODO: Implementar exclusão de criança
                               },
                             ),
-                          );
-                          if (updated != null) {
-                            setState(() {
-                              final idx = responsibleChildren.indexWhere((x) => x.id == updated.id);
-                              if (idx >= 0) responsibleChildren[idx] = updated;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Criança atualizada')));
-                            debugPrint('DebuggerLog: UserProfileScreen.childUpdated -> id=${updated.id}');
-                          }
-                        },
+                        ],
                       ),
                     ),
                     const Divider(height: 1),
@@ -289,6 +302,27 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ]),
           ),
           const SizedBox(height: 8),
+          if(GetIt.I<CollaboratorController>().loggedCollaborator?.userType != UserType.admin)
+            Align(
+              alignment: Alignment.centerRight,
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(6), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)]),
+                  child: const Text('Excluir usuário', style: TextStyle(fontSize: 14, color: Colors.black)),
+                ),
+                FloatingActionButton(
+                  heroTag: 'exclude_user_fab',
+                  onPressed: () {
+                    debugPrint('DebuggerLog: UserProfileScreen.excludeUserFab.tap');
+                    setState(() => _fabOpen = false);
+                  },
+                  child: const Icon(Icons.delete_outline, color: Colors.red),
+                ),
+              ]),
+            ),
+            const SizedBox(height: 8),
         ],
         FloatingActionButton(
           heroTag: 'main_fab',

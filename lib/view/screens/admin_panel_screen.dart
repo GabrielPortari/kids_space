@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import '../widgets/admin_tile_helpers.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kids_space/controller/auth_controller.dart';
+import '../../util/admin_tile_helpers.dart';
 import '../../model/admin_tile_model.dart';
 import '../widgets/admin_tile.dart';
+
+final AuthController _authController = GetIt.I<AuthController>();
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({Key? key}) : super(key: key);
@@ -36,6 +40,36 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         title: const Text('Painel Admin'),
         centerTitle: true,
         elevation: 0,
+      ),
+      floatingActionButton: FloatingActionButton(
+        tooltip: 'Sair',
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Sair'),
+              content: const Text('Deseja deslogar o usuário?'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    debugPrint('DebuggerLog: AdminPanelScreen.logout.cancel');
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    debugPrint('DebuggerLog: AdminPanelScreen.logout.confirm');
+                    await _authController.logout();
+                    Navigator.of(context).pushNamedAndRemoveUntil('/company_selection', (route) => false);
+                  },
+                  child: const Text('Deslogar'),
+                ),
+              ],
+            ),
+          );
+        },
+        child: const Icon(Icons.logout),
       ),
       body: Center(
         child: ConstrainedBox(
