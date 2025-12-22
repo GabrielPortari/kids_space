@@ -251,62 +251,69 @@ class _AdminCompanyScreenState extends State<AdminCompanyScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return SafeArea(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            decoration: BoxDecoration(
+              color: Theme.of(context).canvasColor,
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Editar empresa', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    IconButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      icon: const Icon(Icons.close),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Editar empresa', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        IconButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 8),
+                    TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nome')),
+                    const SizedBox(height: 12),
+                    TextField(controller: emailController, decoration: const InputDecoration(labelText: 'Email')),
+                    const SizedBox(height: 12),
+                    TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Telefone')),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            debugPrint('DebuggerLog: AdminCompanyScreen.editModal.cancel');
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Cancelar'),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            debugPrint('DebuggerLog: AdminCompanyScreen.saveModal -> name=${nameController.text}, email=${emailController.text}, phone=${phoneController.text}');
+                            // TODO: Salvar alterações via _companyController
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Salvar'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
                   ],
                 ),
-                const SizedBox(height: 8),
-                TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nome')),
-                const SizedBox(height: 12),
-                TextField(controller: emailController, decoration: const InputDecoration(labelText: 'Email')),
-                const SizedBox(height: 12),
-                TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Telefone')),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        debugPrint('DebuggerLog: AdminCompanyScreen.editModal.cancel');
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Cancelar'),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        debugPrint('DebuggerLog: AdminCompanyScreen.saveModal -> name=${nameController.text}, email=${emailController.text}, phone=${phoneController.text}');
-                        // TODO: Salvar alterações via _companyController
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Salvar'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-              ],
+              ),
             ),
           ),
         );
