@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kids_space/util/localization_service.dart';
+import 'package:kids_space/view/screens/childrens_screen.dart';
 import 'package:kids_space/view/screens/home_screen.dart';
 import 'package:kids_space/view/screens/users_screen.dart';
 
@@ -16,7 +17,7 @@ class _AppBottomNavState extends State<AppBottomNav> {
   static final List<Widget> _pages = <Widget>[
     const HomeScreen(),
     const UsersScreen(),
-    const SettingsScreen(),
+    const ChildrensScreen(),
   ];
 
   List<BottomNavigationBarItem> get _items => <BottomNavigationBarItem>[
@@ -29,8 +30,8 @@ class _AppBottomNavState extends State<AppBottomNav> {
           label: translate('app_bottom_nav.users'),
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.settings),
-          label: translate('app_bottom_nav.reports'),
+          icon: const Icon(Icons.child_friendly),
+          label: translate('Crianças'),
         ),
       ];
 

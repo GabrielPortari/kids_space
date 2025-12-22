@@ -41,4 +41,9 @@ class ChildController {
   void updateChild(Child child) {
     _childService.updateChild(child);
   }
+
+  // Busca crianças da empresa (delegando ao serviço)
+  Future<List<Child>> getChildrenByCompanyId(String companyId) {
+    return _childService.getChildrenByCompanyId(companyId);
+  }
 }

@@ -30,4 +30,10 @@ class ChildService {
       }
     }
   }
+
+  // Busca todas as crianças da empresa (mock async)
+  Future<List<Child>> getChildrenByCompanyId(String companyId) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return mockChildren.where((child) => child.companyId == companyId).toList();
+  }
 }

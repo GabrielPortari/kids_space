@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kids_space/view/screens/admin_company_screen.dart';
 import 'package:kids_space/view/screens/admin_panel_screen.dart';
 import 'package:kids_space/view/screens/all_active_children_screen.dart';
+import 'package:kids_space/view/screens/childrens_screen.dart';
 import 'package:kids_space/view/widgets/app_bottom_nav.dart';
 import 'package:kids_space/view/screens/company_selection_screen.dart';
 import 'package:kids_space/view/screens/home_screen.dart';
@@ -53,6 +54,7 @@ class MyApp extends StatelessWidget {
         '/company_selection': (context) => const CompanySelectionScreen(),
         '/login': (context) => const LoginScreen(),
         '/users': (context) => const UsersScreen(),
+        '/childrens': (context) => const ChildrensScreen(),
         '/app_bottom_nav': (context) => const AppBottomNav(),
         '/profile': (context) => const ProfileScreen(),
         '/user_profile_screen': (context) => const UserProfileScreen(),

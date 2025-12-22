@@ -46,7 +46,7 @@ String getNavigationRoute(AdminTileType type) {
     case AdminTileType.company:
       return('/admin_company_screen');
     case AdminTileType.responsible:
-      return('/admin_responsible_screen');
+      return('/users');
     case AdminTileType.child:
       return('/admin_child_screen');
     case AdminTileType.collaborator:
