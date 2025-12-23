@@ -120,15 +120,15 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(
-              width: 56,
-              child: Center(
-                child: const Icon(
-                  Icons.child_care,
-                  color: Colors.deepPurple,
-                  size: 32,
+                width: 56,
+                child: Center(
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.deepPurple.withOpacity(0.12),
+                    child: Text(_getInitials(child.name), style: const TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.w600)),
+                  ),
                 ),
               ),
-            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -149,6 +149,13 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
         ),
       ),
     );
+  }
+  
+  String _getInitials(String? name) {
+    if (name == null || name.trim().isEmpty) return '?';
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.length == 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 
   void _loadActiveChildrenWithResponsibles() {

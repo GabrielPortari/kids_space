@@ -56,7 +56,11 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
           final responsibleName = responsibles.isNotEmpty ? responsibles.first.name.toLowerCase() : '';
           return childName.contains(query) || responsibleName.contains(query);
         }).toList();
-        _filteredChildren.sort((a, b) => a.name.compareTo(b.name));
+        _filteredChildren.sort((a, b) {
+          if (a.isActive && !b.isActive) return -1;
+          if (!a.isActive && b.isActive) return 1;
+          return a.name.compareTo(b.name);
+        });
       });
     });
   }
@@ -73,7 +77,11 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
     }
     setState(() => _refreshLoading = true);
     final list = await _childController.getChildrenByCompanyId(companyId);
-    list.sort((a, b) => a.name.compareTo(b.name));
+    list.sort((a, b) {
+      if (a.isActive && !b.isActive) return -1;
+      if (!a.isActive && b.isActive) return 1;
+      return a.name.compareTo(b.name);
+    });
     setState(() {
       _allChildren = list;
       _filteredChildren = List.from(_allChildren);
@@ -220,10 +228,24 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      child.name,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      overflow: TextOverflow.ellipsis,
+                    Row(
+                      children: [
+                        Text(
+                          child.name,
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (child.isActive)
+                          Container(
+                            margin: const EdgeInsets.only(left: 8),
+                            width: 10,
+                            height: 10,
+                            decoration: const BoxDecoration(
+                              color: Colors.green,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text('Responsável: ${responsible?.name ?? ''}', style: const TextStyle(fontSize: 15)),

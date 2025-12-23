@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:flutter/services.dart';
 import 'package:kids_space/controller/auth_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
+import 'package:kids_space/model/collaborator.dart';
 
 final AuthController authController = GetIt.I<AuthController>();
 final CollaboratorController _collaboratorController =
@@ -39,16 +40,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.all(24.0),
               child: Observer(
                 builder: (_) {
+                  final displayed = _collaboratorController.selectedCollaborator ?? _collaboratorController.loggedCollaborator;
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const SizedBox(height: 24),
-                      _collaboratorProfileInfo(),
+                      _collaboratorProfileInfo(displayed),
                       const SizedBox(height: 24),
                       Text(
-                        _collaboratorController.loggedCollaborator != null
-                            ? _collaboratorController.loggedCollaborator!.name
-                            : 'Nome do Colaborador',
+                        displayed != null ? displayed.name : 'Nome do Colaborador',
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -60,7 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: TextStyle(fontSize: 18, color: Colors.deepPurple),
                       ),
                       const SizedBox(height: 24),
-                      _collaboratorProfileCard(),
+                      _collaboratorProfileCard(displayed),
                     ],
                   );
                 },
@@ -102,34 +102,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(6),
-                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+            // Logout button: hide if logged user is admin
+            if ((_collaboratorController.loggedCollaborator != null && _collaboratorController.loggedCollaborator!.userType != UserType.admin)) ...[
+              Align(
+                alignment: Alignment.centerRight,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(6),
+                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                      ),
+                      child: const Text('Deslogar', style: TextStyle(fontSize: 14, color: Colors.black)),
                     ),
-                    child: const Text('Deslogar', style: TextStyle(fontSize: 14, color: Colors.black)),
-                  ),
-                  FloatingActionButton(
-                    heroTag: 'collab_logout_fab',
-                    onPressed: () {
-                      debugPrint('DebuggerLog: ProfileScreen.logoutFab.tap');
-                      _onLogout();
-                      setState(() => _fabOpen = false);
-                    },
-                    child: const Icon(Icons.logout),
-                  ),
-                ],
+                    FloatingActionButton(
+                      heroTag: 'collab_logout_fab',
+                      onPressed: () {
+                        debugPrint('DebuggerLog: ProfileScreen.logoutFab.tap');
+                        _onLogout();
+                        setState(() => _fabOpen = false);
+                      },
+                      child: const Icon(Icons.logout),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
+              const SizedBox(height: 8),
+            ],
+
+            // Delete button for any logged collaborator
+            if (_collaboratorController.loggedCollaborator != null && _collaboratorController.loggedCollaborator!.userType == UserType.admin) ...[
+              Align(
+                alignment: Alignment.centerRight,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(6),
+                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                      ),
+                      child: const Text('Excluir', style: TextStyle(fontSize: 14, color: Colors.black)),
+                    ),
+                    FloatingActionButton(
+                      backgroundColor: Colors.red,
+                      heroTag: 'collab_delete_fab',
+                      onPressed: () async {
+                        setState(() => _fabOpen = false);
+                        // TODO : Implementar exclusão de colaborador
+                      },
+                      child: const Icon(Icons.delete),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
           ],
           FloatingActionButton(
             heroTag: 'collab_main_fab',
@@ -144,7 +179,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  _collaboratorProfileInfo() {
+
+
+  _collaboratorProfileInfo(Collaborator? displayed) {
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -161,7 +198,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: InkWell(
               borderRadius: BorderRadius.circular(20),
               onTap: () {
-                  debugPrint('DebuggerLog: ProfileScreen.addPhoto tapped');
+                debugPrint('DebuggerLog: ProfileScreen.addPhoto tapped');
                 // TODO: Implementar ação para adicionar foto
               },
               child: Container(
@@ -183,7 +220,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  _collaboratorProfileCard() {
+  _collaboratorProfileCard(Collaborator? displayed) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -197,12 +234,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 const Text('Nome:', style: TextStyle(fontSize: 16)),
                 const SizedBox(width: 8),
-                Text(
-                  _collaboratorController.loggedCollaborator != null
-                      ? _collaboratorController.loggedCollaborator!.name
-                      : 'Nome do Colaborador',
-                  style: const TextStyle(fontSize: 16),
-                ),
+                  Text(
+                    displayed != null ? displayed.name : 'Nome do Colaborador',
+                    style: const TextStyle(fontSize: 16),
+                  ),
               ],
             ),
             const Divider(),
@@ -211,12 +246,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 const Text('Email:', style: TextStyle(fontSize: 16)),
                 const SizedBox(width: 8),
-                Text(
-                  _collaboratorController.loggedCollaborator != null
-                      ? _collaboratorController.loggedCollaborator!.email
-                      : 'email@placeholder.com',
-                  style: const TextStyle(fontSize: 16),
-                ),
+                  Text(
+                    displayed != null ? displayed.email : 'email@placeholder.com',
+                    style: const TextStyle(fontSize: 16),
+                  ),
               ],
             ),
             const Divider(),
@@ -225,16 +258,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 const Text('Telefone:', style: TextStyle(fontSize: 16)),
                 const SizedBox(width: 8),
-                Text(
-                  _collaboratorController.loggedCollaborator != null &&
-                          _collaboratorController
-                                  .loggedCollaborator!
-                                  .phoneNumber !=
-                              null
-                      ? _collaboratorController.loggedCollaborator!.phoneNumber!
-                      : '(11) 1234 5678',
-                  style: const TextStyle(fontSize: 16),
-                ),
+                  Text(
+                    displayed != null && displayed.phoneNumber != null ? displayed.phoneNumber! : '(11) 1234 5678',
+                    style: const TextStyle(fontSize: 16),
+                  ),
               ],
             ),
             const Divider(),
@@ -248,32 +275,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      _collaboratorController.loggedCollaborator != null
-                          ? _collaboratorController.loggedCollaborator!.id
-                          : 'ID do Colaborador',
-                      style: const TextStyle(fontSize: 16, color: Colors.grey),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                        Text(
+                          displayed != null ? displayed.id : 'ID do Colaborador',
+                          style: const TextStyle(fontSize: 16, color: Colors.grey),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                   ],
                 ),
                 const SizedBox(width: 8),
                 InkWell(
                   onTap: () async {
-                    final id =
-                        _collaboratorController.loggedCollaborator?.id ?? '';
-                    debugPrint(
-                      'DebuggerLog: ProfileScreen.copyId tapped -> $id',
-                    );
+                    final id = displayed?.id ?? '';
+                    debugPrint('DebuggerLog: ProfileScreen.copyId tapped -> $id');
                     if (id.isNotEmpty) {
                       await Clipboard.setData(ClipboardData(text: id));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'ID copiado para a área de transferência!',
-                          ),
-                        ),
-                      );
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ID copiado para a área de transferência!')));
                     }
                   },
                   child: const Padding(
@@ -365,10 +381,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           TextButton(
             onPressed: () {
               debugPrint('DebuggerLog: ProfileScreen.logout.confirm');
+              final idLogged = _collaboratorController.loggedCollaborator?.id;
+              // if logout for the logged collaborator just perform logout
               authController.logout();
-              Navigator.of(
-                context,
-              ).pushNamedAndRemoveUntil('/company_selection', (route) => false);
+              Navigator.of(context).pushNamedAndRemoveUntil('/company_selection', (route) => false);
             },
             child: const Text('Deslogar'),
           ),

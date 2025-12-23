@@ -13,6 +13,9 @@ abstract class _CollaboratorController with Store {
   @observable
   Collaborator? loggedCollaborator;
 
+  @observable
+  Collaborator? selectedCollaborator;
+
   /// Define o colaborador logado e persiste localmente
   @action
   Future<void> setLoggedCollaborator(Collaborator? collaborator) async {
@@ -33,6 +36,12 @@ abstract class _CollaboratorController with Store {
     } else {
       await prefs.remove('logged_user');
     }
+  }
+
+  /// Define o colaborador selecionado para visualização (não altera o logado)
+  @action
+  Future<void> setSelectedCollaborator(Collaborator? collaborator) async {
+    selectedCollaborator = collaborator;
   }
 
   /// Limpa o colaborador logado e remove dos dados locais

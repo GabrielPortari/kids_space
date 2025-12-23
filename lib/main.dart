@@ -15,6 +15,7 @@ import 'package:kids_space/view/screens/collaborator_profile_screen.dart';
 import 'package:kids_space/view/screens/splash_screen.dart';
 import 'package:kids_space/view/screens/user_profile_screen.dart';
 import 'package:kids_space/view/screens/users_screen.dart';
+import 'package:kids_space/view/screens/collaborators_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,6 +55,7 @@ class MyApp extends StatelessWidget {
         '/company_selection': (context) => const CompanySelectionScreen(),
         '/login': (context) => const LoginScreen(),
         '/users': (context) => const UsersScreen(),
+        '/collaborators': (context) => const CollaboratorsScreen(),
         '/childrens': (context) => const ChildrensScreen(),
         '/app_bottom_nav': (context) => const AppBottomNav(),
         '/profile': (context) => const ProfileScreen(),

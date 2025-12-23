@@ -77,19 +77,18 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             constraints: BoxConstraints(maxWidth: 720),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              child: GridView.count(
-                crossAxisCount: 1,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
-                childAspectRatio: 4,
-                children: _adminItems.map((model) {
+              child: ListView.separated(
+                itemCount: _adminItems.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemBuilder: (context, index) {
+                  final model = _adminItems[index];
                   return AdminTile(
                     model: model,
-                    onTap: (){
+                    onTap: () {
                       Navigator.pushNamed(context, getNavigationRoute(model.type));
-                    }
+                    },
                   );
-                }).toList(),
+                },
               ),
             ),
           ),
