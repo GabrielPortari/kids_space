@@ -43,20 +43,23 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Selecionar Empresa')),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                _searchField(),
-                const SizedBox(height: 16),
-                Expanded(child: _buildCompaniesArea()),
-              ],
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  _searchField(),
+                  const SizedBox(height: 16),
+                  Expanded(child: _buildCompaniesArea()),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

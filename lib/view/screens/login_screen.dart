@@ -52,35 +52,38 @@ class _LoginScreenState extends State<LoginScreen> {
       appBar: AppBar(
         title: Text('Login - ${company?.name ?? "Empresa"}'),
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Card(
-              elevation: 6,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildLogo(),
-                    const SizedBox(height: 24),
-                    _buildWelcome(company?.name),
-                    const SizedBox(height: 32),
-                    _emailField(),
-                    const SizedBox(height: 16),
-                    _passwordField(),
-                    const SizedBox(height: 32),
-                    _loginButton(),
-                    const SizedBox(height: 24),
-                  ],
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Card(
+                elevation: 6,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildLogo(),
+                      const SizedBox(height: 24),
+                      _buildWelcome(company?.name),
+                      const SizedBox(height: 32),
+                      _emailField(),
+                      const SizedBox(height: 16),
+                      _passwordField(),
+                      const SizedBox(height: 32),
+                      _loginButton(),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

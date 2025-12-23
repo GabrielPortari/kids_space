@@ -68,21 +68,24 @@ class _UsersScreenState extends State<UsersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Usuários Cadastrados'), automaticallyImplyLeading: false),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 720),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                _searchField(),
-                const SizedBox(height: 16),
-                _userList(),
-                const SizedBox(height: 16),
-              ],
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 720),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  _searchField(),
+                  const SizedBox(height: 16),
+                  _userList(),
+                  const SizedBox(height: 16),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _onAddUser,

@@ -57,20 +57,23 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
       appBar: AppBar(
         title: const Text('Todas as crianças ativas')
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 720),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                _searchField(),
-                const SizedBox(height: 16),
-                _childrenList(),
-              ],
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 720),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  _searchField(),
+                  const SizedBox(height: 16),
+                  _childrenList(),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

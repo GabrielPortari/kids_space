@@ -36,35 +36,40 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       appBar: AppBar(
         title: const Text('Perfil do Usuário'),
       ),
-      body: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 720),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Observer(builder: (_) {
-            final user = _userController.selectedUser;
-            if (user?.id != _lastUserId) {
-              _lastUserId = user?.id;
-              _loadResponsibleChildren(user);
-            }
-            debugPrint('DebuggerLog: UserProfileScreen.build selectedUserId=${user?.id ?? 'none'}');
-            return SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 24),
-                  _buildAvatarSection(user),
-                  const SizedBox(height: 24),
-                  _buildHeaderSection(user),
-                  const SizedBox(height: 24),
-                  _buildInfoCard(user),
-                  const SizedBox(height: 24),
-                  _buildChildrenCard(),
-                  const SizedBox(height: 48),
-                ],
-              ),
-            );
-          }),
-        ),
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 720),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Observer(builder: (_) {
+                final user = _userController.selectedUser;
+                if (user?.id != _lastUserId) {
+                  _lastUserId = user?.id;
+                  _loadResponsibleChildren(user);
+                }
+                debugPrint('DebuggerLog: UserProfileScreen.build selectedUserId=${user?.id ?? 'none'}');
+                return SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 24),
+                      _buildAvatarSection(user),
+                      const SizedBox(height: 24),
+                      _buildHeaderSection(user),
+                      const SizedBox(height: 24),
+                      _buildInfoCard(user),
+                      const SizedBox(height: 24),
+                      _buildChildrenCard(),
+                      const SizedBox(height: 48),
+                    ],
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: _buildFabColumn(),
     );

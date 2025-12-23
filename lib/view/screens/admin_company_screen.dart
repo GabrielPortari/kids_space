@@ -27,40 +27,43 @@ class _AdminCompanyScreenState extends State<AdminCompanyScreen> {
     debugPrint('DebuggerLog: AdminCompanyScreen.build');
     return Scaffold(
       appBar: AppBar(title: const Text('Empresa')),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 720),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Observer(
-              builder: (_) {
-                final company = _companyController.companySelected;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 24),
-                    _companyProfileInfo(company),
-                    const SizedBox(height: 24),
-                    Text(
-                      company?.name ?? 'Nome da Empresa',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 720),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Observer(
+                builder: (_) {
+                  final company = _companyController.companySelected;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 24),
+                      _companyProfileInfo(company),
+                      const SizedBox(height: 24),
+                      Text(
+                        company?.name ?? 'Nome da Empresa',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Empresa',
-                      style: TextStyle(fontSize: 18, color: Colors.deepPurple),
-                    ),
-                    const SizedBox(height: 24),
-                    _companyProfileCard(company),
-                  ],
-                );
-              },
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Empresa',
+                        style: TextStyle(fontSize: 18, color: Colors.deepPurple),
+                      ),
+                      const SizedBox(height: 24),
+                      _companyProfileCard(company),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
-        ),
+        ],
       ),
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,

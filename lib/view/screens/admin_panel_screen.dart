@@ -34,7 +34,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Painel Admin'),
@@ -71,27 +70,30 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         },
         child: const Icon(Icons.logout),
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 720),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: GridView.count(
-              crossAxisCount: 1,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 4,
-              children: _adminItems.map((model) {
-                return AdminTile(
-                  model: model,
-                  onTap: (){
-                    Navigator.pushNamed(context, getNavigationRoute(model.type));
-                  }
-                );
-              }).toList(),
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 720),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: GridView.count(
+                crossAxisCount: 1,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                childAspectRatio: 4,
+                children: _adminItems.map((model) {
+                  return AdminTile(
+                    model: model,
+                    onTap: (){
+                      Navigator.pushNamed(context, getNavigationRoute(model.type));
+                    }
+                  );
+                }).toList(),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

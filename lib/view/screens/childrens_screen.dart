@@ -7,8 +7,6 @@ import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/model/user.dart';
-import 'package:kids_space/view/widgets/add_child_dialog.dart';
-import 'package:kids_space/service/child_service.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class ChildrensScreen extends StatefulWidget {
@@ -92,21 +90,24 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Crianças cadastradas'), automaticallyImplyLeading: false),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 720),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                _searchField(),
-                const SizedBox(height: 16),
-                _childrenList(),
-                const SizedBox(height: 16),
-              ],
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 720),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  _searchField(),
+                  const SizedBox(height: 16),
+                  _childrenList(),
+                  const SizedBox(height: 16),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
