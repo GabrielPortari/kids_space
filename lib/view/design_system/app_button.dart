@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kids_space/view/design_system/app_theme_colors.dart';
 
 /// AppButton: botão padronizável e focado em aparência.
 /// Visuals configuráveis: `padding`, `borderRadius`, `elevation`,
@@ -39,16 +40,15 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final enabled = onPressed != null && !isLoading;
-    final bgColor = backgroundColor ?? theme.colorScheme.primary;
+    final bgColor = backgroundColor ?? buttonColor;
     final content = isLoading
         ? SizedBox(
             width: 18,
             height: 18,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation(theme.colorScheme.onPrimary),
+              valueColor: AlwaysStoppedAnimation(buttonText),
             ),
           )
         : child;
@@ -60,11 +60,11 @@ class AppButton extends StatelessWidget {
       borderRadius: borderRadius,
       boxShadow: elevation > 0
           ? [
-              BoxShadow(
-                color: shadowColor ?? Colors.black.withOpacity(0.12),
-                blurRadius: elevation * 2,
-                offset: Offset(0, elevation / 2),
-              )
+                      BoxShadow(
+                        color: shadowColor ?? headline.withOpacity(0.12),
+                        blurRadius: elevation * 2,
+                        offset: Offset(0, elevation / 2),
+                      )
             ]
           : null,
     );
@@ -77,13 +77,13 @@ class AppButton extends StatelessWidget {
         borderRadius: borderRadius,
         child: InkWell(
           borderRadius: borderRadius,
-          splashColor: splashColor ?? (theme.colorScheme.onPrimary.withOpacity(0.08)),
+          splashColor: splashColor ?? (buttonText.withOpacity(0.08)),
           onTap: enabled ? onPressed : null,
           child: Padding(
             padding: padding,
             child: SizedBox(
               height: height,
-              child: Align(alignment: alignment, child: DefaultTextStyle.merge(style: TextStyle(color: gradient == null ? theme.colorScheme.onPrimary : theme.colorScheme.onPrimary), child: content)),
+              child: Align(alignment: alignment, child: DefaultTextStyle.merge(style: TextStyle(color: buttonText), child: content)),
             ),
           ),
         ),

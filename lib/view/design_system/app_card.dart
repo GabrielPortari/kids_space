@@ -1,6 +1,5 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
+import 'package:kids_space/view/design_system/app_theme_colors.dart';
 
 /// Lightweight AppCard focused on theming and visual effects.
 ///
@@ -36,28 +35,28 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final radius = borderRadius;
 
     final effectiveElevation = elevation;
 
-    final _decoration = decoration ?? BoxDecoration(
-      color: color ?? theme.colorScheme.surface,
-      gradient: gradient,
-      border: border,
-      borderRadius: radius,
-      boxShadow: (effectiveElevation) > 0
-          ? [
-              BoxShadow(
-                color: shadowColor ?? theme.colorScheme.shadow.withOpacity(0.25),
-                blurRadius: (effectiveElevation) * 1.5,
-                spreadRadius: (effectiveElevation) > 0 ? 0.5 : 0,
-                offset: Offset(0, (effectiveElevation) / 2),
-              )
-            ]
-          : null,
-    );
+      final effectiveColor = color ?? Theme.of(context).colorScheme.surface;
 
+      final _decoration = decoration ?? BoxDecoration(
+        color: effectiveColor,
+        gradient: gradient,
+        border: border,
+        borderRadius: radius,
+        boxShadow: (effectiveElevation) > 0
+            ? [
+                BoxShadow(
+                  color: shadowColor ?? headline.withOpacity(0.25),
+                  blurRadius: (effectiveElevation) * 1.5,
+                  spreadRadius: (effectiveElevation) > 0 ? 0.5 : 0,
+                  offset: Offset(0, (effectiveElevation) / 2),
+                )
+              ]
+            : null,
+      );
     Widget card = Container(
       margin: margin,
       decoration: _decoration,

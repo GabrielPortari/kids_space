@@ -8,6 +8,10 @@ import 'package:kids_space/util/date_hour_util.dart';
 import 'package:kids_space/util/localization_service.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:kids_space/view/design_system/app_card.dart';
+import 'package:kids_space/view/design_system/app_button.dart';
+import 'package:kids_space/view/design_system/app_text.dart';
+import 'package:kids_space/view/design_system/app_theme_colors.dart';
 
 final CompanyController _companyController = GetIt.I<CompanyController>();
 final CollaboratorController _collaboratorController =
@@ -53,42 +57,44 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 720),
-            child: RefreshIndicator(
-              onRefresh: _onRefresh,
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: _infoCompanyCard(),
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: _checkInAndOutButtons(),
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: _activeChildrenInfoCard(),
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 8.0,
+          Expanded(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 720),
+              child: RefreshIndicator(
+                onRefresh: _onRefresh,
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: _infoCompanyCard(),
                         ),
-                        child: _presenceLogCard(listHeight),
-                      ),
-                      const SizedBox(height: 48),
-                    ],
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: _checkInAndOutButtons(),
+                        ),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: _activeChildrenInfoCard(),
+                        ),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 8.0,
+                          ),
+                          child: _presenceLogCard(listHeight),
+                        ),
+                        const SizedBox(height: 48),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -107,110 +113,77 @@ class _HomeScreenState extends State<HomeScreen> {
 
         return Skeletonizer(
           enabled: _checkEventController.isLoadingLog,
-          child: Card(
+          child: AppCard(
             elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 4.0,
-                      horizontal: 4.0,
-                    ),
-                    child: Text(
-                      translate('home.30_last_presence_log'),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+            borderRadius: BorderRadius.circular(12),
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 4.0,
+                    horizontal: 4.0,
                   ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: listHeight,
-                    child: limited.isEmpty
-                        ? Center(
-                            child: Text(
-                              translate('home.no_presence_records'),
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                          )
-                        : Scrollbar(
-                            thumbVisibility: true,
-                            child: ListView.separated(
-                              primary: false,
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              itemCount: limited.length,
-                              separatorBuilder: (_, __) =>
-                                  const Divider(height: 1),
-                              itemBuilder: (context, idx) {
-                                final event = limited[idx];
-                                final isCheckin =
-                                    event.checkType == CheckType.checkIn;
-                                return ListTile(
-                                  contentPadding: const EdgeInsets.fromLTRB(
-                                    4.0,
-                                    0.0,
-                                    8.0,
-                                    0.0,
+                  child: Text(
+                    translate('home.30_last_presence_log'),
+                    style: AppText.headerSmall(context),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: listHeight,
+                  child: limited.isEmpty
+                      ? Center(
+                              child: Text(
+                                translate('home.no_presence_records'),
+                                style: AppText.bodyMedium(context).copyWith(color: paragraph.withOpacity(0.6)),
+                              ),
+                        )
+                      : Scrollbar(
+                          thumbVisibility: true,
+                          child: ListView.separated(
+                            primary: false,
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: limited.length,
+                            separatorBuilder: (_, __) => const Divider(height: 1),
+                            itemBuilder: (context, idx) {
+                              final event = limited[idx];
+                              final isCheckin = event.checkType == CheckType.checkIn;
+                              return ListTile(
+                                contentPadding: const EdgeInsets.fromLTRB(4.0, 0.0, 8.0, 0.0),
+                                leading: CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: isCheckin ? successBg : dangerBg,
+                                  child: Icon(
+                                    isCheckin ? Icons.login : Icons.logout,
+                                    color: isCheckin ? success : danger,
+                                    size: 18,
                                   ),
-                                  leading: CircleAvatar(
-                                    radius: 20,
-                                    backgroundColor: isCheckin
-                                        ? Colors.green[50]
-                                        : Colors.red[50],
-                                    child: Icon(
-                                      isCheckin ? Icons.login : Icons.logout,
-                                      color: isCheckin
-                                          ? Colors.green
-                                          : Colors.red,
-                                      size: 18,
-                                    ),
+                                ),
+                                title: Text(
+                                  event.child.name,
+                                  style: AppText.bodyMedium(context).copyWith(fontWeight: FontWeight.w600, fontSize: 15),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                subtitle: Text(
+                                  '${formatDate(event.timestamp)} • ${formatTime(event.timestamp)}',
+                                  style: AppText.bodySmall(context).copyWith(color: paragraph.withOpacity(0.6)),
+                                ),
+                                trailing: Chip(
+                                  label: Text(
+                                    isCheckin ? translate('home.check_in') : translate('home.check_out'),
+                                    style: AppText.caption(context).copyWith(color: Colors.white, fontSize: 12),
                                   ),
-                                  title: Text(
-                                    event.child.name,
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  subtitle: Text(
-                                    '${formatDate(event.timestamp)} • ${formatTime(event.timestamp)}',
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  trailing: Chip(
-                                    label: Text(
-                                      isCheckin
-                                          ? translate('home.check_in')
-                                          : translate('home.check_out'),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    backgroundColor: isCheckin
-                                        ? Colors.green
-                                        : Colors.red,
-                                  ),
-                                  onTap: () => debugPrint(
-                                    'DebuggerLog: HomeScreen.log tapped index=$idx child=${event.child.name}',
-                                  ),
-                                );
-                              },
-                            ),
+                                  backgroundColor: isCheckin ? success : danger,
+                                ),
+                                onTap: () => debugPrint('DebuggerLog: HomeScreen.log tapped index=$idx child=${event.child.name}'),
+                              );
+                            },
                           ),
-                  ),
-                ],
-              ),
+                        ),
+                ),
+              ],
             ),
           ),
         );
@@ -240,69 +213,47 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Card(
+              child: AppCard(
                 elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () {
-                    debugPrint('DebuggerLog: HomeScreen.navigate -> /profile');
-                    Navigator.of(context).pushNamed('/profile');
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        CircleAvatar(
-                          radius: 32,
-                          backgroundColor: Colors.deepPurple[50],
-                          backgroundImage: AssetImage(
-                            _companyController.companySelected?.logoUrl ??
-                                'assets/images/company_logo_placeholder.png',
-                          ),
-                        ),
-                        const SizedBox(width: 20),
-                        Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _companyController.companySelected?.name ??
-                                    translate('home.company_name'),
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                translate(
-                                  'home.collaborator_name',
-                                  namedArgs: {
-                                    'name_placeholder':
-                                        _collaboratorController
-                                            .loggedCollaborator
-                                            ?.name ??
-                                        '-',
-                                  },
-                                ),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.deepPurple,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                borderRadius: BorderRadius.circular(16),
+                padding: const EdgeInsets.all(16.0),
+                onTap: () {
+                  debugPrint('DebuggerLog: HomeScreen.navigate -> /profile');
+                  Navigator.of(context).pushNamed('/profile');
+                },
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 32,
+                      backgroundColor: illSecondary.withOpacity(0.12),
+                      backgroundImage: AssetImage(
+                        _companyController.companySelected?.logoUrl ?? 'assets/images/company_logo_placeholder.png',
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _companyController.companySelected?.name ?? translate('home.company_name'),
+                            style: AppText.headerMedium(context).copyWith(fontSize: 20),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            translate('home.collaborator_name', namedArgs: {
+                              'name_placeholder': _collaboratorController.loggedCollaborator?.name ?? '-',
+                            }),
+                            style: AppText.bodyMedium(context).copyWith(color: illSecondary),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );
@@ -317,65 +268,42 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (_) {
         return Skeletonizer(
           enabled: !_checkEventController.allLoaded,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 8.0,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    debugPrint(
-                      'DebuggerLog: HomeScreen.checkIn button pressed',
-                    );
-                    // Ação de check-in
-                  },
-                  icon: const Icon(Icons.login, color: Colors.white),
-                  label: Text(
-                    translate('home.check_in'),
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    textStyle: const TextStyle(fontSize: 16),
-                    backgroundColor: Colors.deepPurple,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    debugPrint(
-                      'DebuggerLog: HomeScreen.checkOut button pressed',
-                    );
-                    // Ação de check-out
-                  },
-                  icon: const Icon(Icons.logout, color: Colors.white),
-                  label: Text(
-                    translate('home.check_out'),
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    textStyle: const TextStyle(fontSize: 16),
-                    backgroundColor: Colors.deepPurple,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      AppButton(
+                        onPressed: () {
+                          debugPrint('DebuggerLog: HomeScreen.checkIn button pressed');
+                        },
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                            children: [
+                            Icon(Icons.login, color: buttonText),
+                            const SizedBox(width: 8),
+                            Text(translate('home.check_in'), style: AppText.button(context).copyWith(fontSize: 16)),
+                          ],
+                        ),
+                      ),
+                      AppButton(
+                        onPressed: () {
+                          debugPrint('DebuggerLog: HomeScreen.checkOut button pressed');
+                        },
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                            children: [
+                            Icon(Icons.logout, color: buttonText),
+                            const SizedBox(width: 8),
+                            Text(translate('home.check_out'), style: AppText.button(context).copyWith(fontSize: 16)),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
         );
       },
     );
@@ -390,178 +318,109 @@ class _HomeScreenState extends State<HomeScreen> {
               _checkEventController.isLoadingLastCheck,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Card(
+            child: AppCard(
               elevation: 3,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 16,
-                  horizontal: 20,
-                ),
-                child: Row(
-                  children: [
-                    Builder(
-                      builder: (context) => GestureDetector(
-                        onTap: () {
-                          debugPrint(
-                            'HomeScreen.navigate -> /all_active_children',
-                          );
-                          Navigator.of(
-                            context,
-                          ).pushNamed('/all_active_children');
-                        },
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                translate('home.actives'),
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              Text(
-                                '${_checkEventController.activeCheckins?.length ?? 0}',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 56,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.deepPurple,
-                                ),
-                              ),
-                              Text(
-                                translate('home.see_more'),
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.deepPurple,
-                                ),
-                              ),
-                            ],
-                          ),
+              borderRadius: BorderRadius.circular(12),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+              child: Row(
+                children: [
+                  Builder(
+                    builder: (context) => GestureDetector(
+                      onTap: () {
+                        debugPrint('HomeScreen.navigate -> /all_active_children');
+                        Navigator.of(context).pushNamed('/all_active_children');
+                      },
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              translate('home.actives'),
+                              textAlign: TextAlign.center,
+                              style: AppText.title(context).copyWith(fontSize: 22),
+                            ),
+                            Text(
+                              '${_checkEventController.activeCheckins?.length ?? 0}',
+                              textAlign: TextAlign.center,
+                              style: AppText.headerLarge(context).copyWith(fontSize: 56, fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              translate('home.see_more'),
+                              textAlign: TextAlign.center,
+                              style: AppText.bodyMedium(context).copyWith(),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    const SizedBox(width: 32),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.login,
-                                color: Colors.green,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                translate('home.last_check_in'),
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              left: 32.0,
-                              top: 2.0,
+                  ),
+                  const SizedBox(width: 32),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.login, color: success, size: 20),
+                            const SizedBox(width: 6),
+                            Text(
+                              translate('home.last_check_in'),
+                              style: AppText.bodyMedium(context).copyWith(fontWeight: FontWeight.w500),
                             ),
-                            child: _checkEventController.lastCheckIn != null
-                                ? Row(
-                                    children: [
-                                      Text(
-                                        _checkEventController
-                                                .lastCheckIn
-                                                ?.child
-                                                .name ??
-                                            '-',
-                                        style: const TextStyle(fontSize: 15),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        formatTime(
-                                          _checkEventController
-                                                  .lastCheckIn
-                                                  ?.timestamp ??
-                                              DateTime.now(),
-                                        ),
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                : Text(
-                                    translate('home.no_checkins_registered'),
-                                  ),
-                          ),
-                          const Divider(height: 20),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.logout,
-                                color: Colors.red,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                translate('home.last_check_out'),
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              left: 32.0,
-                              top: 2.0,
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 32.0, top: 2.0),
+                          child: _checkEventController.lastCheckIn != null
+                              ? Row(
+                                  children: [
+                                    Text(
+                                      _checkEventController.lastCheckIn?.child.name ?? '-',
+                                      style: AppText.bodyMedium(context),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      formatTime(_checkEventController.lastCheckIn?.timestamp ?? DateTime.now()),
+                                      style: AppText.bodyMedium(context).copyWith(color: paragraph.withOpacity(0.6)),
+                                    ),
+                                  ],
+                                )
+                              : Text(translate('home.no_checkins_registered')),
+                        ),
+                        const Divider(height: 20),
+                        Row(
+                          children: [
+                            Icon(Icons.logout, color: danger, size: 20),
+                            const SizedBox(width: 6),
+                            Text(
+                              translate('home.last_check_out'),
+                              style: AppText.bodyMedium(context).copyWith(fontWeight: FontWeight.w500),
                             ),
-                            child: _checkEventController.lastCheckOut != null
-                                ? Row(
-                                    children: [
-                                      Text(
-                                        _checkEventController
-                                                .lastCheckOut
-                                                ?.child
-                                                .name ??
-                                            '-',
-                                        style: const TextStyle(fontSize: 15),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        formatTime(
-                                          _checkEventController
-                                                  .lastCheckOut
-                                                  ?.timestamp ??
-                                              DateTime.now(),
-                                        ),
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                : Text(
-                                    translate('home.no_checkouts_registered'),
-                                  ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 32.0, top: 2.0),
+                          child: _checkEventController.lastCheckOut != null
+                              ? Row(
+                                  children: [
+                                    Text(
+                                      _checkEventController.lastCheckOut?.child.name ?? '-',
+                                      style: AppText.bodyMedium(context),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      formatTime(_checkEventController.lastCheckOut?.timestamp ?? DateTime.now()),
+                                      style: AppText.bodyMedium(context).copyWith(color: paragraph.withOpacity(0.6)),
+                                    ),
+                                  ],
+                                )
+                              : Text(translate('home.no_checkouts_registered')),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

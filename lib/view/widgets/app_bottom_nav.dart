@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kids_space/util/localization_service.dart';
+import 'package:kids_space/view/design_system/app_theme_colors.dart';
 import 'package:kids_space/view/screens/childrens_screen.dart';
 import 'package:kids_space/view/screens/home_screen.dart';
 import 'package:kids_space/view/screens/users_screen.dart';
@@ -44,14 +45,16 @@ class _AppBottomNavState extends State<AppBottomNav> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: background,
       body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: illMain,
         items: _items,
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.deepPurple,
+        selectedItemColor: illStroke,
         onTap: _onItemTapped,
       ),
     );

@@ -66,10 +66,9 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final fill = widget.fillColor ?? theme.colorScheme.surface;
-    final borderClr = widget.borderColor ?? AppColors.outline;
-    final focusedClr = widget.focusedBorderColor ?? theme.colorScheme.primary;
+    final fill = widget.fillColor ?? colorScheme.surface;
+    final borderClr = widget.borderColor ?? const Color(0xFFCED4DA);
+    final focusedClr = widget.focusedBorderColor ?? buttonColor;
 
     final border = OutlineInputBorder(
       borderRadius: widget.borderRadius,
