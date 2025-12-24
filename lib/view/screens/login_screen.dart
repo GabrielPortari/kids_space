@@ -4,6 +4,10 @@ import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/auth_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/model/collaborator.dart' show UserType;
+import 'package:kids_space/view/design_system/app_button.dart';
+import 'package:kids_space/view/design_system/app_card.dart';
+import 'package:kids_space/view/design_system/app_text.dart';
+import 'package:kids_space/view/design_system/app_textfield.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -55,26 +59,23 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Card(
-                elevation: 6,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+          Expanded(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: AppCard(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _buildLogo(),
                       const SizedBox(height: 24),
                       _buildWelcome(company?.name),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
                       _emailField(),
                       const SizedBox(height: 16),
                       _passwordField(),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 16),
                       _loginButton(),
                       const SizedBox(height: 24),
                     ],
@@ -100,47 +101,35 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildWelcome(String? companyName) {
+    final welcomeText = 'Bem-vindo${companyName != null ? " à $companyName" : ""}!';
     return Text(
-      'Bem-vindo à ${companyName ?? "Empresa"}',
-      style: Theme.of(context).textTheme.headlineSmall,
+      welcomeText,
+      style: AppText.headerLarge(context),
       textAlign: TextAlign.center,
     );
   }
 
   Widget _emailField() {
-    return TextField(
+    return AppTextField(
       controller: _emailController,
-      decoration: const InputDecoration(
-        labelText: 'Usuário',
-        border: OutlineInputBorder(),
-      ),
+      labelText: 'E-mail',
+      hintText: 'Digite seu e-mail',
+      keyboardType: TextInputType.emailAddress,
     );
   }
 
   Widget _passwordField() {
-    return TextField(
+    return AppTextField(
       controller: _passwordController,
       obscureText: true,
-      decoration: const InputDecoration(
-        labelText: 'Senha',
-        border: OutlineInputBorder(),
-      ),
+      labelText: 'Senha',
+      hintText: 'Digite sua senha',
     );
   }
 
   Widget _loginButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: _loading ? null : _login,
-        child: _loading
-            ? const SizedBox(
-                width: 24,
-                height: 40,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Text('Entrar'),
-      ),
-    );
+    return AppButton(
+      onPressed: _loading ? null : _login,
+      child: Text('Entrar'));
   }
 }
