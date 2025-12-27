@@ -52,14 +52,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const SizedBox(height: 24),
                         _collaboratorProfileInfo(displayed),
                         const SizedBox(height: 24),
-                        Text(
+                        TextHeaderMedium(
                           displayed != null ? displayed.name : 'Nome do Colaborador',
-                          style: AppText.headerMedium(context).copyWith(fontSize: 24),
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          'Colaborador', //user type
-                          style: AppText.title(context).copyWith(color: Colors.deepPurple),
+                        TextHeaderSmall(
+                          'Colaborador',
                         ),
                         const SizedBox(height: 24),
                         _collaboratorProfileCard(displayed),
@@ -190,8 +188,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         CircleAvatar(
           radius: 50,
-          backgroundColor: Colors.deepPurple[100],
-          child: const Icon(Icons.person, size: 60, color: Colors.deepPurple),
+          child: const Icon(Icons.person, size: 60),
         ),
         Positioned(
           bottom: 0,
@@ -206,7 +203,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.deepPurple,
+                    color: Theme.of(context).colorScheme.primary,
                     shape: BoxShape.circle,
                   ),
                   padding: const EdgeInsets.all(6),
@@ -234,27 +231,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text('Nome:', style: AppText.bodyMedium(context)),
+              TextBodyMedium('Nome:'),
               const SizedBox(width: 8),
-              Text(displayed != null ? displayed.name : 'Nome do Colaborador', style: AppText.bodyMedium(context)),
+              TextBodyMedium(displayed != null ? displayed.name : 'Nome do Colaborador'),
             ],
           ),
           const Divider(),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text('Email:', style: AppText.bodyMedium(context)),
+              TextBodyMedium('Email:'),
               const SizedBox(width: 8),
-              Text(displayed != null ? displayed.email : 'email@placeholder.com', style: AppText.bodyMedium(context)),
+              TextBodyMedium(displayed != null ? displayed.email : 'email@placeholder.com'),
             ],
           ),
           const Divider(),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text('Telefone:', style: AppText.bodyMedium(context)),
+              TextBodyMedium('Telefone:'),
               const SizedBox(width: 8),
-              Text(displayed != null && displayed.phoneNumber != null ? displayed.phoneNumber! : '(11) 1234 5678', style: AppText.bodyMedium(context)),
+              TextBodyMedium(displayed != null && displayed.phoneNumber != null ? displayed.phoneNumber! : '(11) 1234 5678'),
             ],
           ),
           const Divider(),
@@ -263,11 +260,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Row(
                 children: [
-                  Text('ID:', style: AppText.bodyMedium(context).copyWith(color: Colors.grey)),
+                  TextBodyMedium('ID:'),
                   const SizedBox(width: 8),
                   SizedBox(
                     width: 200,
-                    child: Text(displayed != null ? displayed.id : 'ID do Colaborador', style: AppText.bodyMedium(context).copyWith(color: Colors.grey), overflow: TextOverflow.ellipsis),
+                    child: TextBodyMedium(displayed != null ? displayed.id : 'ID do Colaborador'),
                   ),
                 ],
               ),
@@ -302,7 +299,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final emailController = TextEditingController(text: _collaboratorController.loggedCollaborator?.email ?? '');
         final phoneController = TextEditingController(text: _collaboratorController.loggedCollaborator?.phoneNumber ?? '');
         return AlertDialog(
-          title: Text('Editar perfil', style: AppText.headerSmall(context)),
+          title: TextHeaderSmall('Editar perfil'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -321,15 +318,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 debugPrint('DebuggerLog: ProfileScreen.editDialog.cancel');
                 Navigator.pop(context);
               },
-              child: Text('Cancelar', style: AppText.bodyMedium(context)),
+              child: TextButtonLabel('Cancelar'),
             ),
             AppButton(
+              text: 'Salvar',
               onPressed: () {
                 debugPrint('DebuggerLog: ProfileScreen.saveProfile -> name=${nameController.text}, email=${emailController.text}, phone=${phoneController.text}');
                 // TODO: Salvar alterações (persistir via _collaboratorController)
                 Navigator.pop(context);
-              },
-              child: Text('Salvar', style: AppText.button(context)),
+              }
             ),
           ],
         );

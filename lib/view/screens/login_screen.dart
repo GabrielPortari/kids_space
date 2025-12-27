@@ -101,12 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildWelcome(String? companyName) {
-    final welcomeText = 'Bem-vindo${companyName != null ? " à $companyName" : ""}!';
-    return Text(
-      welcomeText,
-      style: AppText.headerLarge(context),
-      textAlign: TextAlign.center,
-    );
+    return TextHeaderLarge('Bem-vindo${companyName != null ? " à $companyName" : ""}!');
   }
 
   Widget _emailField() {
@@ -129,7 +124,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _loginButton() {
     return AppButton(
-      onPressed: _loading ? null : _login,
-      child: Text('Entrar'));
+      text: 'Entrar',
+      onPressed: _loading ? null : _login
+    );
   }
 }

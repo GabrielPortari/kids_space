@@ -11,11 +11,7 @@ class AppCard extends StatelessWidget {
   final EdgeInsetsGeometry? margin;
   final BorderRadius borderRadius;
   final double elevation;
-  final Color? color;
-  final Gradient? gradient;
-  final BoxBorder? border;
-  final BoxDecoration? decoration; // overrides other decoration props
-  final Color? shadowColor;
+
   final VoidCallback? onTap;
 
   const AppCard({
@@ -25,59 +21,23 @@ class AppCard extends StatelessWidget {
     this.margin,
     this.borderRadius = const BorderRadius.all(Radius.circular(12)),
     this.elevation = 6.0,
-    this.color,
-    this.gradient,
-    this.border,
-    this.decoration,
-    this.shadowColor,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final radius = borderRadius;
-
-    final effectiveElevation = elevation;
-
-      final effectiveColor = color ?? Theme.of(context).colorScheme.surface;
-
-      final _decoration = decoration ?? BoxDecoration(
-        color: effectiveColor,
-        gradient: gradient,
-        border: border,
-        borderRadius: radius,
-        boxShadow: (effectiveElevation) > 0
-            ? [
-                BoxShadow(
-                  color: shadowColor ?? headline.withOpacity(0.25),
-                  blurRadius: (effectiveElevation) * 1.5,
-                  spreadRadius: (effectiveElevation) > 0 ? 0.5 : 0,
-                  offset: Offset(0, (effectiveElevation) / 2),
-                )
-              ]
-            : null,
-      );
-    Widget card = Container(
+    return Card(
       margin: margin,
-      decoration: _decoration,
-      child: Material(
-        type: MaterialType.transparency,
-        borderRadius: radius,
+      shape: RoundedRectangleBorder(borderRadius: borderRadius),
+      elevation: elevation,
+      child: InkWell(
+        borderRadius: borderRadius,
+        onTap: onTap,
         child: Padding(
           padding: padding,
           child: child,
         ),
       ),
     );
-
-    if (onTap != null) {
-      card = InkWell(
-        borderRadius: radius,
-        onTap: onTap,
-        child: card,
-      );
-    }
-
-    return card;
   }
 }

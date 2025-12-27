@@ -6,6 +6,7 @@ import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/model/user.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/service/child_service.dart';
+import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/widgets/add_child_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
@@ -39,34 +40,36 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 720),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Observer(builder: (_) {
-                final user = _userController.selectedUser;
-                if (user?.id != _lastUserId) {
-                  _lastUserId = user?.id;
-                  _loadResponsibleChildren(user);
-                }
-                debugPrint('DebuggerLog: UserProfileScreen.build selectedUserId=${user?.id ?? 'none'}');
-                return SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 24),
-                      _buildAvatarSection(user),
-                      const SizedBox(height: 24),
-                      _buildHeaderSection(user),
-                      const SizedBox(height: 24),
-                      _buildInfoCard(user),
-                      const SizedBox(height: 24),
-                      _buildChildrenCard(),
-                      const SizedBox(height: 48),
-                    ],
-                  ),
-                );
-              }),
+          Expanded(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 720),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Observer(builder: (_) {
+                  final user = _userController.selectedUser;
+                  if (user?.id != _lastUserId) {
+                    _lastUserId = user?.id;
+                    _loadResponsibleChildren(user);
+                  }
+                  debugPrint('DebuggerLog: UserProfileScreen.build selectedUserId=${user?.id ?? 'none'}');
+                  return SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 24),
+                        _buildAvatarSection(user),
+                        const SizedBox(height: 24),
+                        _buildHeaderSection(user),
+                        const SizedBox(height: 24),
+                        _buildInfoCard(user),
+                        const SizedBox(height: 24),
+                        _buildChildrenCard(),
+                        const SizedBox(height: 48),
+                      ],
+                    ),
+                  );
+                }),
+              ),
             ),
           ),
         ],
@@ -81,7 +84,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       children: [
         CircleAvatar(
           radius: 50,
-          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.12),
+          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
           child: Text(
             _getInitials(user?.name),
             style: TextStyle(fontSize: 40, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w600),
@@ -100,7 +103,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               },
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.deepPurple,
+                  color: Theme.of(context).colorScheme.primary,
                   shape: BoxShape.circle,
                 ),
                 padding: const EdgeInsets.all(6),
@@ -132,9 +135,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Usuário',
-          style: TextStyle(fontSize: 18, color: Colors.deepPurple),
+          style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.primary),
         ),
       ],
     );
@@ -240,7 +243,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           ),
                           if (GetIt.I<CollaboratorController>().loggedCollaborator?.userType != UserType.admin)
                             IconButton(
-                              icon: const Icon(Icons.delete_outline, color: Colors.red),
+                              icon: const Icon(Icons.delete_outline, color: Palette.danger),
                               onPressed: () {
                                 debugPrint('DebuggerLog: UserProfileScreen.deleteChild.tap -> childId=${c.id}');
                                 // TODO: Implementar exclusão de criança
@@ -323,7 +326,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     debugPrint('DebuggerLog: UserProfileScreen.excludeUserFab.tap');
                     setState(() => _fabOpen = false);
                   },
-                  child: const Icon(Icons.delete_outline, color: Colors.red),
+                  child: const Icon(Icons.delete_outline),
                 ),
               ]),
             ),

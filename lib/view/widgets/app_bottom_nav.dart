@@ -45,16 +45,13 @@ class _AppBottomNavState extends State<AppBottomNav> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: background,
       body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: illMain,
         items: _items,
         currentIndex: _selectedIndex,
-        selectedItemColor: illStroke,
         onTap: _onItemTapped,
       ),
     );

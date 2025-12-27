@@ -1,71 +1,83 @@
 
 import 'package:flutter/material.dart';
 
-const background = Color(0xFFFEF6E4);      // #fef6e4
-const headline = Color(0xFF001858);        // #001858
-const paragraph = Color(0xFF172C66);       // #172c66
-const buttonColor = Color(0xFFF582AE);     // #f582ae
-const buttonText = Color(0xFF001858);      // #001858
+// NOTE: this file centralizes theme creation using a seed color.
+// The application uses ColorScheme.fromSeed(seedColor: seedColor).
+const Color danger = Colors.red;
+const Color success = Colors.green;
+const Color dangerBg = Colors.white;
+const Color successBg = Colors.white;
 
-const illStroke = Color(0xFF001858);       // #001858
-const illMain = Color(0xFFF3D2C1);         // #f3d2c1
-const illHighlight = Color(0xFFFEF6E4);    // #fef6e4
-const illSecondary = Color(0xFF8BD3DD);    // #8bd3dd
-const illTertiary = Color(0xFFF582AE);     // #f582ae
+const Color seedColor = Colors.lightBlue;
 
-// Semantic status colors
-const success = Color(0xFF2E7D32); // green 800
-const danger = Color(0xFFD32F2F);  // red 700
+class AppTheme {
+  static ThemeData lightTheme() {
+    final scheme = ColorScheme.fromSeed(seedColor: seedColor, brightness: Brightness.light);
+    final base = ThemeData.from(colorScheme: scheme);
 
-final successBg = success.withOpacity(0.12);
-final dangerBg = danger.withOpacity(0.12);
+    final textTheme = base.textTheme.copyWith(
+      headlineLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, height: 1.2),
+      headlineMedium: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, height: 1.25),
+      headlineSmall: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, height: 1.3),
+      titleLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+      titleMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+      bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, height: 1.4),
+      bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, height: 1.4),
+      bodySmall: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, height: 1.3),
+      labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+    ).apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface);
 
-final colorScheme = ColorScheme(
-  brightness: Brightness.light,
-  primary: buttonColor,            // cor principal (botões / acentos)
-  onPrimary: buttonText,
-  secondary: illSecondary,
-  onSecondary: headline,
-  background: background,
-  onBackground: paragraph,
-  surface: illMain,
-  onSurface: paragraph,
-  error: Color(0xFFB00020), 
-  onError: Colors.white,
-);
+    final inputDecoration = InputDecorationTheme(
+      filled: true,
+      fillColor: Colors.grey.shade50,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide(color: Colors.grey.shade300)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide(color: Colors.grey.shade300)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide(color: scheme.primary, width: 2.0)),
+      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide(color: scheme.error)),
+    );
 
-final theme = ThemeData.from(colorScheme: colorScheme).copyWith(
-  useMaterial3: true,
-  scaffoldBackgroundColor: background,
-  appBarTheme: AppBarTheme(
-    backgroundColor: Colors.transparent,
-    foregroundColor: headline,
-    elevation: 0,
-  ),
-  textTheme: TextTheme(
-    displayLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: headline),
-    displayMedium: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: headline),
-    titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: headline),
-    bodyLarge: TextStyle(fontSize: 16, color: paragraph, height: 1.4),
-    bodyMedium: TextStyle(fontSize: 14, color: paragraph, height: 1.4),
-    bodySmall: TextStyle(fontSize: 12, color: paragraph.withOpacity(0.9)),
-    labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: buttonText),
-  ),
-  inputDecorationTheme: InputDecorationTheme(
-    filled: true,
-    fillColor: Colors.white,
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Color(0xFFCED4DA))),
-  ),
-  elevatedButtonTheme: ElevatedButtonThemeData(
-    style: ElevatedButton.styleFrom(
-      backgroundColor: buttonColor,
-      foregroundColor: buttonText,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-    ),
-  ),
-  floatingActionButtonTheme: FloatingActionButtonThemeData(
-    backgroundColor: buttonColor,
-    foregroundColor: buttonText,
-  ),
-);
+    return base.copyWith(
+      textTheme: textTheme,
+      inputDecorationTheme: inputDecoration,
+      appBarTheme: base.appBarTheme.copyWith(backgroundColor: scheme.primary, foregroundColor: scheme.onPrimary),
+      floatingActionButtonTheme: base.floatingActionButtonTheme.copyWith(backgroundColor: scheme.primary, foregroundColor: scheme.onPrimary),
+      elevatedButtonTheme: ElevatedButtonThemeData(style: ElevatedButton.styleFrom(backgroundColor: scheme.primary, foregroundColor: scheme.onPrimary)),
+    );
+  }
+
+  static ThemeData darkTheme() {
+    final scheme = ColorScheme.fromSeed(seedColor: seedColor, brightness: Brightness.dark);
+    final base = ThemeData.from(colorScheme: scheme);
+
+    final textTheme = base.textTheme.copyWith(
+      headlineLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, height: 1.2),
+      headlineMedium: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, height: 1.25),
+      headlineSmall: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, height: 1.3),
+      titleLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+      titleMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+      bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, height: 1.4),
+      bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, height: 1.4),
+      bodySmall: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, height: 1.3),
+      labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+    ).apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface);
+
+    final inputDecoration = InputDecorationTheme(
+      filled: true,
+      fillColor: Color(0xFF111219),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide(color: Colors.grey.shade800)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide(color: Colors.grey.shade800)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide(color: scheme.primary, width: 2.0)),
+      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide(color: scheme.error)),
+    );
+
+    return base.copyWith(
+      textTheme: textTheme,
+      inputDecorationTheme: inputDecoration,
+      appBarTheme: base.appBarTheme.copyWith(backgroundColor: scheme.surface, foregroundColor: scheme.onSurface),
+      floatingActionButtonTheme: base.floatingActionButtonTheme.copyWith(backgroundColor: scheme.primary, foregroundColor: scheme.onPrimary),
+      elevatedButtonTheme: ElevatedButtonThemeData(style: ElevatedButton.styleFrom(backgroundColor: scheme.primary, foregroundColor: scheme.onPrimary)),
+    );
+  }
+}

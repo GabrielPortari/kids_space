@@ -66,21 +66,31 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final fill = widget.fillColor ?? colorScheme.surface;
-    final borderClr = widget.borderColor ?? const Color(0xFFCED4DA);
-    final focusedClr = widget.focusedBorderColor ?? buttonColor;
+    final theme = Theme.of(context);
+    final fill = widget.fillColor ?? theme.inputDecorationTheme.fillColor ?? theme.colorScheme.surface;
 
-    final border = OutlineInputBorder(
+    final enabledBorder = OutlineInputBorder(
       borderRadius: widget.borderRadius,
-      borderSide: BorderSide(color: borderClr),
+      borderSide: BorderSide(color: widget.borderColor ?? Colors.transparent),
     );
-
     final focusedBorder = OutlineInputBorder(
       borderRadius: widget.borderRadius,
-      borderSide: BorderSide(color: focusedClr, width: 2),
+      borderSide: BorderSide(color: widget.focusedBorderColor ?? theme.colorScheme.primary, width: 2),
     );
 
-    final field = TextField(
+    final inputDecoration = InputDecoration(
+      labelText: widget.labelText,
+      hintText: widget.hintText,
+      errorText: widget.errorText,
+      prefixIcon: widget.prefixIcon,
+      contentPadding: widget.contentPadding,
+      filled: true,
+      fillColor: fill,
+      enabledBorder: enabledBorder,
+      focusedBorder: focusedBorder,
+    );
+
+    final TextField field = TextField(
       controller: widget.controller,
       obscureText: _obscure,
       onChanged: widget.onChanged,
@@ -88,43 +98,24 @@ class _AppTextFieldState extends State<AppTextField> {
       textInputAction: widget.textInputAction,
       readOnly: widget.readOnly,
       maxLines: widget.maxLines,
-      decoration: InputDecoration(
-        isDense: true,
-        labelText: widget.labelText,
-        hintText: widget.hintText,
-        errorText: widget.errorText,
-        prefixIcon: widget.prefixIcon,
-        suffixIcon: widget.obscureText
+      decoration: inputDecoration.copyWith(
+        suffixIcon: widget.suffixIcon ?? (widget.obscureText
             ? IconButton(
-                icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
+                icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
                 onPressed: () => setState(() => _obscure = !_obscure),
               )
-            : widget.suffixIcon,
-        filled: true,
-        fillColor: fill,
-        contentPadding: widget.contentPadding,
-        border: border,
-        enabledBorder: border,
-        focusedBorder: focusedBorder,
+            : null),
       ),
     );
 
-    final effectiveDecoration = widget.decoration ?? BoxDecoration(
-      color: Colors.transparent,
-      borderRadius: widget.borderRadius,
-      boxShadow: widget.elevationShadow > 0
-          ? [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: widget.elevationShadow * 2,
-                offset: Offset(0, widget.elevationShadow / 2),
-              )
-            ]
-          : null,
-    );
+    if (widget.decoration != null) {
+      return Container(decoration: widget.decoration, child: field);
+    }
 
-    return Container(
-      decoration: effectiveDecoration,
+    return Material(
+      color: Colors.transparent,
+      elevation: widget.elevationShadow,
+      shape: RoundedRectangleBorder(borderRadius: widget.borderRadius),
       child: field,
     );
   }

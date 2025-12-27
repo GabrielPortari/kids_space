@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:kids_space/util/getit_factory.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kids_space/view/design_system/app_theme_colors.dart';
+import 'package:kids_space/view/design_system/app_theme_colors.dart' as AppThemeColors;
 import 'package:kids_space/view/screens/admin_company_screen.dart';
 import 'package:kids_space/view/screens/admin_panel_screen.dart';
 import 'package:kids_space/view/screens/all_active_children_screen.dart';
@@ -46,7 +47,7 @@ class MyApp extends StatelessWidget {
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       title: 'Kids Space',
-      theme: theme,
+      theme: AppThemeColors.AppTheme.lightTheme(),
       initialRoute: '/splash',
       routes: {
         '/splash': (context) => const SplashScreen(),

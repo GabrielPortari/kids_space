@@ -4,6 +4,8 @@ import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/model/user.dart';
+import 'package:kids_space/view/design_system/app_text.dart';
+import 'package:kids_space/view/design_system/app_theme_colors.dart' as Pallette;
 
 class AllActiveChildrenScreen extends StatefulWidget {
   const AllActiveChildrenScreen({super.key});
@@ -55,21 +57,26 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Todas as crianças ativas')
+        title: const TextHeaderSmall(
+          'Todas as crianças ativas',
+          textAlign: TextAlign.center,
+        ),
       ),
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 720),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  _searchField(),
-                  const SizedBox(height: 16),
-                  _childrenList(),
-                ],
+          Expanded(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 720),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    _searchField(),
+                    const SizedBox(height: 16),
+                    _childrenList(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -94,16 +101,18 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
       child: _allChildren.isEmpty
           ? const Center(child: Text('Nenhuma criança ativa'))
           : _filteredChildren.isEmpty
-              ? const Center(child: Text('Nenhuma criança encontrada'))
-              : ListView.builder(
-                  itemCount: _filteredChildren.length,
-                  itemBuilder: (context, index) {
-                    final child = _filteredChildren[index];
-                    final responsibles = _childrenResponsibles[child.id] ?? [];
-                    final responsible = responsibles.isNotEmpty ? responsibles.first : null;
-                    return _childCard(child, responsible);
-                  },
-                ),
+          ? const Center(child: Text('Nenhuma criança encontrada'))
+          : ListView.builder(
+              itemCount: _filteredChildren.length,
+              itemBuilder: (context, index) {
+                final child = _filteredChildren[index];
+                final responsibles = _childrenResponsibles[child.id] ?? [];
+                final responsible = responsibles.isNotEmpty
+                    ? responsibles.first
+                    : null;
+                return _childCard(child, responsible);
+              },
+            ),
     );
   }
 
@@ -111,37 +120,60 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
     return Card(
       key: ValueKey(child.id),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(
-                width: 56,
-                child: Center(
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.deepPurple.withOpacity(0.12),
-                    child: Text(_getInitials(child.name), style: const TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.w600)),
+              width: 56,
+              child: Center(
+                child: CircleAvatar(
+                  radius: 20,
+                  child: Text(
+                    _getInitials(child.name),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    child.name,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      Text(
+                        child.name,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+
+                      Container(
+                        margin: const EdgeInsets.only(left: 8),
+                        width: 10,
+                        height: 10,
+                        decoration: const BoxDecoration(
+                          color: Pallette.success,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 4),
-                  Text('Responsável: ${responsible?.name ?? ''}', style: const TextStyle(fontSize: 15)),
-                  Text('Telefone: ${responsible?.phone ?? ''}', style: const TextStyle(fontSize: 15, color: Colors.grey)),
+                  Text(
+                    'Responsável: ${responsible?.name ?? ''}',
+                    style: const TextStyle(fontSize: 15),
+                  ),
+                  Text(
+                    'Telefone: ${responsible?.phone ?? ''}',
+                    style: const TextStyle(fontSize: 15, color: Colors.grey),
+                  ),
                 ],
               ),
             ),
@@ -150,7 +182,7 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
       ),
     );
   }
-  
+
   String _getInitials(String? name) {
     if (name == null || name.trim().isEmpty) return '?';
     final parts = name.trim().split(RegExp(r'\s+'));
@@ -164,7 +196,9 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
       _allChildren = _childController.activeCheckedInChildren(companyId);
       _allChildren.sort((a, b) => a.name.compareTo(b.name));
       _filteredChildren = List.from(_allChildren);
-      _childrenResponsibles = _childController.getChildrenWithResponsibles(_allChildren);
+      _childrenResponsibles = _childController.getChildrenWithResponsibles(
+        _allChildren,
+      );
     } else {
       _allChildren = [];
       _filteredChildren = [];

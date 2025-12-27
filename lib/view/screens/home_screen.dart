@@ -114,9 +114,6 @@ class _HomeScreenState extends State<HomeScreen> {
         return Skeletonizer(
           enabled: _checkEventController.isLoadingLog,
           child: AppCard(
-            elevation: 3,
-            borderRadius: BorderRadius.circular(12),
-            padding: const EdgeInsets.all(12.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -125,9 +122,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     vertical: 4.0,
                     horizontal: 4.0,
                   ),
-                  child: Text(
+                  child: TextHeaderSmall(
                     translate('home.30_last_presence_log'),
-                    style: AppText.headerSmall(context),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -135,9 +131,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: listHeight,
                   child: limited.isEmpty
                       ? Center(
-                              child: Text(
+                              child: TextBodyMedium(
                                 translate('home.no_presence_records'),
-                                style: AppText.bodyMedium(context).copyWith(color: paragraph.withOpacity(0.6)),
                               ),
                         )
                       : Scrollbar(
@@ -161,19 +156,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                     size: 18,
                                   ),
                                 ),
-                                title: Text(
+                                title: TextBodyMedium(
                                   event.child.name,
-                                  style: AppText.bodyMedium(context).copyWith(fontWeight: FontWeight.w600, fontSize: 15),
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                subtitle: Text(
+                                subtitle: TextBodySmall(
                                   '${formatDate(event.timestamp)} • ${formatTime(event.timestamp)}',
-                                  style: AppText.bodySmall(context).copyWith(color: paragraph.withOpacity(0.6)),
                                 ),
                                 trailing: Chip(
-                                  label: Text(
+                                  label: TextBodySmall(
                                     isCheckin ? translate('home.check_in') : translate('home.check_out'),
-                                    style: AppText.caption(context).copyWith(color: Colors.white, fontSize: 12),
                                   ),
                                   backgroundColor: isCheckin ? success : danger,
                                 ),
@@ -214,9 +206,6 @@ class _HomeScreenState extends State<HomeScreen> {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: AppCard(
-                elevation: 4,
-                borderRadius: BorderRadius.circular(16),
-                padding: const EdgeInsets.all(16.0),
                 onTap: () {
                   debugPrint('DebuggerLog: HomeScreen.navigate -> /profile');
                   Navigator.of(context).pushNamed('/profile');
@@ -226,7 +215,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     CircleAvatar(
                       radius: 32,
-                      backgroundColor: illSecondary.withOpacity(0.12),
                       backgroundImage: AssetImage(
                         _companyController.companySelected?.logoUrl ?? 'assets/images/company_logo_placeholder.png',
                       ),
@@ -237,19 +225,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          TextHeaderMedium(
                             _companyController.companySelected?.name ?? translate('home.company_name'),
-                            style: AppText.headerMedium(context).copyWith(fontSize: 20),
-                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            translate('home.collaborator_name', namedArgs: {
+                          TextBodyMedium(translate('home.collaborator_name', namedArgs: {
                               'name_placeholder': _collaboratorController.loggedCollaborator?.name ?? '-',
-                            }),
-                            style: AppText.bodyMedium(context).copyWith(color: illSecondary),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                            })),
                         ],
                       ),
                     ),
@@ -274,32 +256,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       AppButton(
+                        text: translate('home.check_in'),
+                        icon: Icon(Icons.login_rounded, color: Colors.white),
                         onPressed: () {
                           debugPrint('DebuggerLog: HomeScreen.checkIn button pressed');
                         },
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                            children: [
-                            Icon(Icons.login, color: buttonText),
-                            const SizedBox(width: 8),
-                            Text(translate('home.check_in'), style: AppText.button(context).copyWith(fontSize: 16)),
-                          ],
                         ),
-                      ),
                       AppButton(
+                        text: translate('home.check_out'),
+                        icon: Icon(Icons.logout_rounded, color: Colors.white),
                         onPressed: () {
                           debugPrint('DebuggerLog: HomeScreen.checkOut button pressed');
                         },
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                            children: [
-                            Icon(Icons.logout, color: buttonText),
-                            const SizedBox(width: 8),
-                            Text(translate('home.check_out'), style: AppText.button(context).copyWith(fontSize: 16)),
-                          ],
-                        ),
                       ),
                     ],
                   ),
@@ -319,9 +287,6 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: AppCard(
-              elevation: 3,
-              borderRadius: BorderRadius.circular(12),
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
               child: Row(
                 children: [
                   Builder(
@@ -335,20 +300,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text(
+                            TextTitle(
                               translate('home.actives'),
-                              textAlign: TextAlign.center,
-                              style: AppText.title(context).copyWith(fontSize: 22),
                             ),
-                            Text(
+                            TextHeaderLarge(
                               '${_checkEventController.activeCheckins?.length ?? 0}',
-                              textAlign: TextAlign.center,
-                              style: AppText.headerLarge(context).copyWith(fontSize: 56, fontWeight: FontWeight.bold),
                             ),
-                            Text(
+                            TextBodyMedium(
                               translate('home.see_more'),
-                              textAlign: TextAlign.center,
-                              style: AppText.bodyMedium(context).copyWith(),
                             ),
                           ],
                         ),
@@ -364,9 +323,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Icon(Icons.login, color: success, size: 20),
                             const SizedBox(width: 6),
-                            Text(
+                            TextHeaderSmall(
                               translate('home.last_check_in'),
-                              style: AppText.bodyMedium(context).copyWith(fontWeight: FontWeight.w500),
                             ),
                           ],
                         ),
@@ -375,14 +333,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: _checkEventController.lastCheckIn != null
                               ? Row(
                                   children: [
-                                    Text(
+                                    TextBodyMedium(
                                       _checkEventController.lastCheckIn?.child.name ?? '-',
-                                      style: AppText.bodyMedium(context),
                                     ),
                                     const SizedBox(width: 8),
-                                    Text(
+                                    TextBodyMedium(
                                       formatTime(_checkEventController.lastCheckIn?.timestamp ?? DateTime.now()),
-                                      style: AppText.bodyMedium(context).copyWith(color: paragraph.withOpacity(0.6)),
                                     ),
                                   ],
                                 )
@@ -393,9 +349,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Icon(Icons.logout, color: danger, size: 20),
                             const SizedBox(width: 6),
-                            Text(
+                            TextHeaderSmall(
                               translate('home.last_check_out'),
-                              style: AppText.bodyMedium(context).copyWith(fontWeight: FontWeight.w500),
                             ),
                           ],
                         ),
@@ -404,14 +359,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: _checkEventController.lastCheckOut != null
                               ? Row(
                                   children: [
-                                    Text(
+                                    TextBodyMedium(
                                       _checkEventController.lastCheckOut?.child.name ?? '-',
-                                      style: AppText.bodyMedium(context),
                                     ),
                                     const SizedBox(width: 8),
-                                    Text(
+                                    TextBodyMedium(
                                       formatTime(_checkEventController.lastCheckOut?.timestamp ?? DateTime.now()),
-                                      style: AppText.bodyMedium(context).copyWith(color: paragraph.withOpacity(0.6)),
                                     ),
                                   ],
                                 )

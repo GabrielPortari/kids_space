@@ -1,82 +1,496 @@
 import 'package:flutter/material.dart';
-import 'package:kids_space/view/design_system/app_theme_colors.dart';
 
 /// AppText: Design system de tipografia com variações prontas.
-/// Use `AppText.headerLarge(context)` ou `AppText.bodyMedium()` para obter estilos.
-class AppText {
+/// Use `AppText.headerLarge(context)` ou `AppText.bodyMedium(context)` para obter estilos.
 
-  // Headers
-  static TextStyle headerLarge([BuildContext? context]) => TextStyle(
-        fontSize: 28,
-        fontWeight: FontWeight.w700,
-        color: headline,
-        height: 1.2,
-      );
+class _TextWidgetBase extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final double? fontSize;
+  final TextOverflow? overflow;
+  final int? maxLines;
+  final bool heavy;
+  final TextStyle? themeStyle;
+  final TextAlign? textAlign;
+  final TextDirection? textDirection;
+  final String? semanticsLabel;
+  final bool? softWrap;
+  final double? textScaleFactor;
 
-  static TextStyle headerMedium([BuildContext? context]) => TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.w700,
-        color: headline,
-        height: 1.25,
-      );
+  const _TextWidgetBase({
+    Key? key,
+    required this.text,
+    this.style,
+    this.fontSize,
+    this.overflow,
+    this.maxLines,
+    this.heavy = false,
+    this.themeStyle,
+    this.textAlign,
+    this.textDirection,
+    this.semanticsLabel,
+    this.softWrap,
+    this.textScaleFactor,
+  }) : super(key: key);
 
-  static TextStyle headerSmall([BuildContext? context]) => TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        color: headline,
-        height: 1.3,
-      );
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    // Merge theme style and explicit style so explicit values override theme
+    TextStyle base = (themeStyle ?? const TextStyle()).merge(style);
+    if (fontSize != null) base = base.copyWith(fontSize: fontSize);
+    if (heavy) base = base.copyWith(fontWeight: FontWeight.w700);
 
-  // Titles / subtitles
-  static TextStyle title([BuildContext? context]) => TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        color: paragraph,
-      );
+    final Color finalColor = style?.color ?? themeStyle?.color ?? theme.colorScheme.onSurface;
+    base = base.copyWith(color: finalColor);
 
-  static TextStyle subtitle([BuildContext? context]) => TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: paragraph.withOpacity(0.85),
-      );
+    return Text(
+      text,
+      style: base,
+      overflow: overflow,
+      maxLines: maxLines,
+      textAlign: textAlign,
+      textDirection: textDirection,
+      semanticsLabel: semanticsLabel,
+      softWrap: softWrap,
+      textScaleFactor: textScaleFactor,
+    );
+  }
+}
 
-  // Body
-  static TextStyle bodyLarge([BuildContext? context]) => TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w400,
-        color: paragraph,
-        height: 1.4,
-      );
+// Now expose specific widgets that map to textTheme roles.
+class TextHeaderLarge extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final double? fontSize;
+  final TextOverflow? overflow;
+  final int? maxLines;
+  final bool heavy;
+    final TextAlign? textAlign;
+    final TextDirection? textDirection;
+    final String? semanticsLabel;
+    final bool? softWrap;
+    final double? textScaleFactor;
 
-  static TextStyle bodyMedium([BuildContext? context]) => TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w400,
-        color: paragraph,
-        height: 1.4,
-      );
+  const TextHeaderLarge(
+    this.text, {
+    Key? key,
+    this.style,
+    this.fontSize,
+    this.overflow,
+    this.maxLines,
+    this.heavy = false,
+    this.textAlign,
+    this.textDirection,
+    this.semanticsLabel,
+    this.softWrap,
+    this.textScaleFactor,
+  }) : super(key: key);
 
-  static TextStyle bodySmall([BuildContext? context]) => TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w400,
-        color: paragraph.withOpacity(0.9),
-        height: 1.3,
-      );
+  @override
+  Widget build(BuildContext context) {
+    final themeStyle = Theme.of(context).textTheme.headlineLarge ?? const TextStyle(fontSize: 28, height: 1.2);
+    return _TextWidgetBase(
+      text: text,
+      style: style,
+      fontSize: fontSize,
+      overflow: overflow,
+      maxLines: maxLines,
+      heavy: heavy,
+      themeStyle: themeStyle,
+      textAlign: textAlign,
+      textDirection: textDirection,
+      semanticsLabel: semanticsLabel,
+      softWrap: softWrap,
+      textScaleFactor: textScaleFactor,
+    );
+  }
+}
 
-  // Caption / helper
-  static TextStyle caption([BuildContext? context]) => TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w400,
-        color: paragraph.withOpacity(0.7),
-      );
+class TextHeaderMedium extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final double? fontSize;
+  final TextOverflow? overflow;
+  final int? maxLines;
+  final bool heavy;
+    final TextAlign? textAlign;
+    final TextDirection? textDirection;
+    final String? semanticsLabel;
+    final bool? softWrap;
+    final double? textScaleFactor;
 
-  // Button text
-  static TextStyle button([BuildContext? context]) => TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-        color: buttonText,
-      );
+  const TextHeaderMedium(
+    this.text, {
+    Key? key,
+    this.style,
+    this.fontSize,
+    this.overflow,
+    this.maxLines,
+    this.heavy = false,
+    this.textAlign,
+    this.textDirection,
+    this.semanticsLabel,
+    this.softWrap,
+    this.textScaleFactor,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final themeStyle = Theme.of(context).textTheme.headlineMedium ?? const TextStyle(fontSize: 22, height: 1.25);
+    return _TextWidgetBase(
+      text: text,
+      style: style,
+      fontSize: fontSize,
+      overflow: overflow,
+      maxLines: maxLines,
+      heavy: heavy,
+      themeStyle: themeStyle,
+      textAlign: textAlign,
+      textDirection: textDirection,
+      semanticsLabel: semanticsLabel,
+      softWrap: softWrap,
+      textScaleFactor: textScaleFactor,
+    );
+  }
+}
+
+class TextHeaderSmall extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final double? fontSize;
+  final TextOverflow? overflow;
+  final int? maxLines;
+  final bool heavy;
+    final TextAlign? textAlign;
+    final TextDirection? textDirection;
+    final String? semanticsLabel;
+    final bool? softWrap;
+    final double? textScaleFactor;
+
+  const TextHeaderSmall(
+    this.text, {
+    Key? key,
+    this.style,
+    this.fontSize,
+    this.overflow,
+    this.maxLines,
+    this.heavy = false,
+    this.textAlign,
+    this.textDirection,
+    this.semanticsLabel,
+    this.softWrap,
+    this.textScaleFactor,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final themeStyle = Theme.of(context).textTheme.headlineSmall ?? const TextStyle(fontSize: 18, height: 1.3);
+    return _TextWidgetBase(
+      text: text,
+      style: style,
+      fontSize: fontSize,
+      overflow: overflow,
+      maxLines: maxLines,
+      heavy: heavy,
+      themeStyle: themeStyle,
+      textAlign: textAlign,
+      textDirection: textDirection,
+      semanticsLabel: semanticsLabel,
+      softWrap: softWrap,
+      textScaleFactor: textScaleFactor,
+    );
+  }
+}
+
+class TextTitle extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final double? fontSize;
+  final TextOverflow? overflow;
+  final int? maxLines;
+  final bool heavy;
+    final TextAlign? textAlign;
+    final TextDirection? textDirection;
+    final String? semanticsLabel;
+    final bool? softWrap;
+    final double? textScaleFactor;
+
+  const TextTitle(
+    this.text, {
+    Key? key,
+    this.style,
+    this.fontSize,
+    this.overflow,
+    this.maxLines,
+    this.heavy = false,
+    this.textAlign,
+    this.textDirection,
+    this.semanticsLabel,
+    this.softWrap,
+    this.textScaleFactor,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final themeStyle = Theme.of(context).textTheme.titleLarge ?? const TextStyle(fontSize: 16);
+    return _TextWidgetBase(
+      text: text,
+      style: style,
+      fontSize: fontSize,
+      overflow: overflow,
+      maxLines: maxLines,
+      heavy: heavy,
+      themeStyle: themeStyle,
+      textAlign: textAlign,
+      textDirection: textDirection,
+      semanticsLabel: semanticsLabel,
+      softWrap: softWrap,
+      textScaleFactor: textScaleFactor,
+    );
+  }
+}
+
+class TextSubtitle extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final double? fontSize;
+  final TextOverflow? overflow;
+  final int? maxLines;
+  final bool heavy;
+    final TextAlign? textAlign;
+    final TextDirection? textDirection;
+    final String? semanticsLabel;
+    final bool? softWrap;
+    final double? textScaleFactor;
+
+  const TextSubtitle(
+    this.text, {
+    Key? key,
+    this.style,
+    this.fontSize,
+    this.overflow,
+    this.maxLines,
+    this.heavy = false,
+    this.textAlign,
+    this.textDirection,
+    this.semanticsLabel,
+    this.softWrap,
+    this.textScaleFactor,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final themeStyle = Theme.of(context).textTheme.titleMedium ?? const TextStyle(fontSize: 14);
+    return _TextWidgetBase(
+      text: text,
+      style: style,
+      fontSize: fontSize,
+      overflow: overflow,
+      maxLines: maxLines,
+      heavy: heavy,
+      themeStyle: themeStyle,
+      textAlign: textAlign,
+      textDirection: textDirection,
+      semanticsLabel: semanticsLabel,
+      softWrap: softWrap,
+      textScaleFactor: textScaleFactor,
+    );
+  }
+}
+
+class TextBodyLarge extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final double? fontSize;
+  final TextOverflow? overflow;
+  final int? maxLines;
+  final bool heavy;
+    final TextAlign? textAlign;
+    final TextDirection? textDirection;
+    final String? semanticsLabel;
+    final bool? softWrap;
+    final double? textScaleFactor;
+
+  const TextBodyLarge(
+    this.text, {
+    Key? key,
+    this.style,
+    this.fontSize,
+    this.overflow,
+    this.maxLines,
+    this.heavy = false,
+    this.textAlign,
+    this.textDirection,
+    this.semanticsLabel,
+    this.softWrap,
+    this.textScaleFactor,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final themeStyle = Theme.of(context).textTheme.bodyLarge ?? const TextStyle(fontSize: 16, height: 1.4);
+    return _TextWidgetBase(
+      text: text,
+      style: style,
+      fontSize: fontSize,
+      overflow: overflow,
+      maxLines: maxLines,
+      heavy: heavy,
+      themeStyle: themeStyle,
+      textAlign: textAlign,
+      textDirection: textDirection,
+      semanticsLabel: semanticsLabel,
+      softWrap: softWrap,
+      textScaleFactor: textScaleFactor,
+    );
+  }
+}
+
+class TextBodyMedium extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final double? fontSize;
+  final TextOverflow? overflow;
+  final int? maxLines;
+  final bool heavy;
+    final TextAlign? textAlign;
+    final TextDirection? textDirection;
+    final String? semanticsLabel;
+    final bool? softWrap;
+    final double? textScaleFactor;
+
+  const TextBodyMedium(
+    this.text, {
+    Key? key,
+    this.style,
+    this.fontSize,
+    this.overflow,
+    this.maxLines,
+    this.heavy = false,
+    this.textAlign,
+    this.textDirection,
+    this.semanticsLabel,
+    this.softWrap,
+    this.textScaleFactor,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final themeStyle = Theme.of(context).textTheme.bodyMedium ?? const TextStyle(fontSize: 14, height: 1.4);
+    return _TextWidgetBase(
+      text: text,
+      style: style,
+      fontSize: fontSize,
+      overflow: overflow,
+      maxLines: maxLines,
+      heavy: heavy,
+      themeStyle: themeStyle,
+      textAlign: textAlign,
+      textDirection: textDirection,
+      semanticsLabel: semanticsLabel,
+      softWrap: softWrap,
+      textScaleFactor: textScaleFactor,
+    );
+  }
+}
+
+class TextBodySmall extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final double? fontSize;
+  final TextOverflow? overflow;
+  final int? maxLines;
+  final bool heavy;
+    final TextAlign? textAlign;
+    final TextDirection? textDirection;
+    final String? semanticsLabel;
+    final bool? softWrap;
+    final double? textScaleFactor;
+
+  const TextBodySmall(
+    this.text, {
+    Key? key,
+    this.style,
+    this.fontSize,
+    this.overflow,
+    this.maxLines,
+    this.heavy = false,
+    this.textAlign,
+    this.textDirection,
+    this.semanticsLabel,
+    this.softWrap,
+    this.textScaleFactor,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final themeStyle = Theme.of(context).textTheme.bodySmall ?? const TextStyle(fontSize: 12, height: 1.3);
+    return _TextWidgetBase(
+      text: text,
+      style: style,
+      fontSize: fontSize,
+      overflow: overflow,
+      maxLines: maxLines,
+      heavy: heavy,
+      themeStyle: themeStyle,
+      textAlign: textAlign,
+      textDirection: textDirection,
+      semanticsLabel: semanticsLabel,
+      softWrap: softWrap,
+      textScaleFactor: textScaleFactor,
+    );
+  }
+}
+
+class TextButtonLabel extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final double? fontSize;
+  final TextOverflow? overflow;
+  final int? maxLines;
+  final bool heavy;
+    final TextAlign? textAlign;
+    final TextDirection? textDirection;
+    final String? semanticsLabel;
+    final bool? softWrap;
+    final double? textScaleFactor;
+
+  const TextButtonLabel(
+    this.text, {
+    Key? key,
+    this.style,
+    this.fontSize,
+    this.overflow,
+    this.maxLines,
+    this.heavy = false,
+    this.textAlign,
+    this.textDirection,
+    this.semanticsLabel,
+    this.softWrap,
+    this.textScaleFactor,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final themeStyle = Theme.of(context).textTheme.labelLarge ?? const TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
+    return _TextWidgetBase(
+      text: text,
+      style: style,
+      fontSize: fontSize,
+      overflow: overflow,
+      maxLines: maxLines,
+      heavy: heavy,
+      themeStyle: themeStyle,
+      textAlign: textAlign,
+      textDirection: textDirection,
+      semanticsLabel: semanticsLabel,
+      softWrap: softWrap,
+      textScaleFactor: textScaleFactor,
+    );
+  }
 }
 
 /// Usage examples:
-/// Text('Título', style: AppText.headerLarge(context))
-/// Text('Corpo', style: AppText.bodyMedium())
+/// TextHeader('home.title')
+/// Text('Corpo', style: AppText.bodyMedium(context))

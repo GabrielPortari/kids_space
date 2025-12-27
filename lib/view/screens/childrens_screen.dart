@@ -7,6 +7,7 @@ import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/model/user.dart';
+import 'package:kids_space/view/design_system/app_theme_colors.dart' as Pallette;
 import 'package:skeletonizer/skeletonizer.dart';
 
 class ChildrensScreen extends StatefulWidget {
@@ -101,17 +102,19 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 720),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  _searchField(),
-                  const SizedBox(height: 16),
-                  _childrenList(),
-                  const SizedBox(height: 16),
-                ],
+          Expanded(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 720),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    _searchField(),
+                    const SizedBox(height: 16),
+                    _childrenList(),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
             ),
           ),
@@ -218,8 +221,7 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
                 child: Center(
                   child: CircleAvatar(
                     radius: 20,
-                    backgroundColor: Colors.deepPurple.withOpacity(0.12),
-                    child: Text(_getInitials(child.name), style: const TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.w600)),
+                    child: Text(_getInitials(child.name), style: const TextStyle(fontWeight: FontWeight.w600)),
                   ),
                 ),
               ),
@@ -241,7 +243,7 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
                             width: 10,
                             height: 10,
                             decoration: const BoxDecoration(
-                              color: Colors.green,
+                              color: Pallette.success,
                               shape: BoxShape.circle,
                             ),
                           ),

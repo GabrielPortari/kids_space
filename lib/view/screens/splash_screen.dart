@@ -41,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.child_care, size: 80, color: Colors.deepPurple),
+            Icon(Icons.child_care, size: 80),
             const SizedBox(height: 24),
             Text(
               'Kids Space',

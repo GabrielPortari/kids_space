@@ -71,17 +71,19 @@ class _UsersScreenState extends State<UsersScreen> {
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 720),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  _searchField(),
-                  const SizedBox(height: 16),
-                  _userList(),
-                  const SizedBox(height: 16),
-                ],
+          Expanded(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 720),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    _searchField(),
+                    const SizedBox(height: 16),
+                    _userList(),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
             ),
           ),

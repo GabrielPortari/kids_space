@@ -46,16 +46,18 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  _searchField(),
-                  const SizedBox(height: 16),
-                  Expanded(child: _buildCompaniesArea()),
-                ],
+          Expanded(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    _searchField(),
+                    const SizedBox(height: 16),
+                    Expanded(child: _buildCompaniesArea()),
+                  ],
+                ),
               ),
             ),
           ),
