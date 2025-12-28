@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 // The application uses ColorScheme.fromSeed(seedColor: seedColor).
 const Color danger = Colors.red;
 const Color success = Colors.green;
-const Color dangerBg = Colors.white;
-const Color successBg = Colors.white;
+Color dangerBg = Colors.red.shade100;
+Color successBg = Colors.green.shade100;
 
-const Color seedColor = Colors.lightBlue;
+const Color seedColor = Colors.blue;
 
 class AppTheme {
   static ThemeData lightTheme() {

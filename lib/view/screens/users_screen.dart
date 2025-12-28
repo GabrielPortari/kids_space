@@ -66,8 +66,11 @@ class _UsersScreenState extends State<UsersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool showAppBar = Navigator.canPop(context);
+    final double topSpacing = showAppBar ? 8.0 : 8 + MediaQuery.of(context).padding.top;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Usuários Cadastrados'), automaticallyImplyLeading: false),
+      appBar: showAppBar ? AppBar(title: const Text('Usuários'), leading: Navigator.canPop(context) ? const BackButton() : null,) : null,
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -78,6 +81,7 @@ class _UsersScreenState extends State<UsersScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
+                    SizedBox(height: topSpacing),
                     _searchField(),
                     const SizedBox(height: 16),
                     _userList(),

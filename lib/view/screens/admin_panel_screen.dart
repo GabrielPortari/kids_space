@@ -35,11 +35,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Painel Admin'),
-        centerTitle: true,
-        elevation: 0,
-      ),
       floatingActionButton: FloatingActionButton(
         tooltip: 'Sair',
         onPressed: () {
@@ -73,22 +68,24 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 720),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              child: ListView.separated(
-                itemCount: _adminItems.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
-                itemBuilder: (context, index) {
-                  final model = _adminItems[index];
-                  return AdminTile(
-                    model: model,
-                    onTap: () {
-                      Navigator.pushNamed(context, getNavigationRoute(model.type));
-                    },
-                  );
-                },
+          Expanded(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 720),
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: ListView.separated(
+                  itemCount: _adminItems.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (context, index) {
+                    final model = _adminItems[index];
+                    return AdminTile(
+                      model: model,
+                      onTap: () {
+                        Navigator.pushNamed(context, getNavigationRoute(model.type));
+                      },
+                    );
+                  },
+                ),
               ),
             ),
           ),

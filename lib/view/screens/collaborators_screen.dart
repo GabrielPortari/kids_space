@@ -85,22 +85,28 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool showAppBar = Navigator.canPop(context);
+    final double topSpacing = showAppBar ? 8.0 : 8 + MediaQuery.of(context).padding.top;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Colaboradores'), automaticallyImplyLeading: false),
+      appBar: showAppBar ? AppBar(title: const Text('Usuários'), leading: Navigator.canPop(context) ? const BackButton() : null,) : null,
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 720),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  _searchField(),
-                  const SizedBox(height: 16),
-                  _list(),
-                  const SizedBox(height: 16),
-                ],
+          Expanded(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 720),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    SizedBox(height: topSpacing),
+                    _searchField(),
+                    const SizedBox(height: 16),
+                    _list(),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
             ),
           ),

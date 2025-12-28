@@ -107,9 +107,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   shape: BoxShape.circle,
                 ),
                 padding: const EdgeInsets.all(6),
-                child: const Icon(
+                child: Icon(
                   Icons.add_a_photo,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onPrimary,
                   size: 20,
                 ),
               ),
@@ -241,9 +241,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                               }
                             },
                           ),
-                          if (GetIt.I<CollaboratorController>().loggedCollaborator?.userType != UserType.admin)
+                          if (GetIt.I<CollaboratorController>().loggedCollaborator?.userType == UserType.admin)
                             IconButton(
-                              icon: const Icon(Icons.delete_outline, color: Palette.danger),
+                              icon: const Icon(Icons.delete_outline, color: danger),
                               onPressed: () {
                                 debugPrint('DebuggerLog: UserProfileScreen.deleteChild.tap -> childId=${c.id}');
                                 // TODO: Implementar exclusão de criança
@@ -310,7 +310,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ]),
           ),
           const SizedBox(height: 8),
-          if(GetIt.I<CollaboratorController>().loggedCollaborator?.userType != UserType.admin)
+          if(GetIt.I<CollaboratorController>().loggedCollaborator?.userType == UserType.admin)
             Align(
               alignment: Alignment.centerRight,
               child: Row(mainAxisSize: MainAxisSize.min, children: [

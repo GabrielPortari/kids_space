@@ -5,7 +5,7 @@ import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/model/user.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
-import 'package:kids_space/view/design_system/app_theme_colors.dart' as Pallette;
+import 'package:kids_space/view/design_system/app_theme.dart';
 
 class AllActiveChildrenScreen extends StatefulWidget {
   const AllActiveChildrenScreen({super.key});
@@ -159,7 +159,7 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
                         width: 10,
                         height: 10,
                         decoration: const BoxDecoration(
-                          color: Pallette.success,
+                          color: success,
                           shape: BoxShape.circle,
                         ),
                       ),

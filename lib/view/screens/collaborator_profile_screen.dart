@@ -52,13 +52,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const SizedBox(height: 24),
                         _collaboratorProfileInfo(displayed),
                         const SizedBox(height: 24),
-                        TextHeaderMedium(
-                          displayed != null ? displayed.name : 'Nome do Colaborador',
-                        ),
+                        TextHeaderMedium(displayed != null ? displayed.name : 'Nome do Colaborador'),
                         const SizedBox(height: 8),
-                        TextHeaderSmall(
-                          'Colaborador',
-                        ),
+                        TextHeaderSmall('Colaborador'),
                         const SizedBox(height: 24),
                         _collaboratorProfileCard(displayed),
                       ],
@@ -104,7 +100,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 8),
             // Logout button: hide if logged user is admin
-            if ((_collaboratorController.loggedCollaborator != null && _collaboratorController.loggedCollaborator!.userType != UserType.admin)) ...[
+            if ((_collaboratorController.loggedCollaborator != null && 
+            _collaboratorController.loggedCollaborator?.id == _collaboratorController.selectedCollaborator?.id &&
+            _collaboratorController.loggedCollaborator?.userType != UserType.admin)) ...[
               Align(
                 alignment: Alignment.centerRight,
                 child: Row(
@@ -188,6 +186,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         CircleAvatar(
           radius: 50,
+          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
           child: const Icon(Icons.person, size: 60),
         ),
         Positioned(
@@ -207,9 +206,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     shape: BoxShape.circle,
                   ),
                   padding: const EdgeInsets.all(6),
-                  child: const Icon(
+                  child: Icon(
                     Icons.add_a_photo,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     size: 20,
                   ),
                 ),

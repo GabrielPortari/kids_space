@@ -3,63 +3,57 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter/services.dart';
 import 'package:kids_space/controller/company_controller.dart';
+import 'package:kids_space/view/design_system/app_text.dart';
 
 final CompanyController _companyController = GetIt.I<CompanyController>();
 
-class AdminCompanyScreen extends StatefulWidget {
-  const AdminCompanyScreen({super.key});
+class CompanyProfileScreen extends StatefulWidget {
+  const CompanyProfileScreen({super.key});
 
   @override
-  State<AdminCompanyScreen> createState() => _AdminCompanyScreenState();
+  State<CompanyProfileScreen> createState() => _CompanyProfileScreenState();
 }
 
-class _AdminCompanyScreenState extends State<AdminCompanyScreen> {
+class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
   bool _fabOpen = false;
 
   @override
   void initState() {
     super.initState();
-    debugPrint('DebuggerLog: AdminCompanyScreen.initState');
+    debugPrint('DebuggerLog: CompanyProfileScreen.initState');
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('DebuggerLog: AdminCompanyScreen.build');
+    debugPrint('DebuggerLog: CompanyProfileScreen.build');
     return Scaffold(
       appBar: AppBar(title: const Text('Empresa')),
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 720),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Observer(
-                builder: (_) {
-                  final company = _companyController.companySelected;
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 24),
-                      _companyProfileInfo(company),
-                      const SizedBox(height: 24),
-                      Text(
-                        company?.name ?? 'Nome da Empresa',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Empresa',
-                        style: TextStyle(fontSize: 18, color: Colors.deepPurple),
-                      ),
-                      const SizedBox(height: 24),
-                      _companyProfileCard(company),
-                    ],
-                  );
-                },
+          Expanded(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 720),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Observer(
+                  builder: (_) {
+                    final company = _companyController.companySelected;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 24),
+                        _companyProfileInfo(company),
+                        const SizedBox(height: 24),
+                        TextHeaderMedium(company?.name ?? 'Nome da Empresa'),
+                        const SizedBox(height: 8),
+                        const TextHeaderSmall('Empresa'),
+                        const SizedBox(height: 24),
+                        _companyProfileCard(company),
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -88,7 +82,7 @@ class _AdminCompanyScreenState extends State<AdminCompanyScreen> {
                   FloatingActionButton(
                     heroTag: 'company_edit_fab',
                     onPressed: () {
-                      debugPrint('DebuggerLog: AdminCompanyScreen.editFab.tap');
+                      debugPrint('DebuggerLog: CompanyProfileScreen.editFab.tap');
                       _onEditCompany();
                       setState(() => _fabOpen = false);
                     },
@@ -117,7 +111,7 @@ class _AdminCompanyScreenState extends State<AdminCompanyScreen> {
                     heroTag: 'company_copy_fab',
                     onPressed: () async {
                       final id = _companyController.companySelected?.id ?? '';
-                      debugPrint('DebuggerLog: AdminCompanyScreen.copyId.tap -> $id');
+                      debugPrint('DebuggerLog: CompanyProfileScreen.copyId.tap -> $id');
                       if (id.isNotEmpty) {
                         await Clipboard.setData(ClipboardData(text: id));
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ID copiado para a área de transferência!')));
@@ -135,7 +129,7 @@ class _AdminCompanyScreenState extends State<AdminCompanyScreen> {
             heroTag: 'company_main_fab',
             onPressed: () {
               setState(() => _fabOpen = !_fabOpen);
-              debugPrint('DebuggerLog: AdminCompanyScreen.fab toggled -> $_fabOpen');
+              debugPrint('DebuggerLog: CompanyProfileScreen.fab toggled -> $_fabOpen');
             },
             child: Icon(_fabOpen ? Icons.close : Icons.menu),
           ),
@@ -150,8 +144,8 @@ class _AdminCompanyScreenState extends State<AdminCompanyScreen> {
       children: [
         CircleAvatar(
           radius: 50,
-          backgroundColor: Colors.deepPurple[100],
-          child: const Icon(Icons.business, size: 60, color: Colors.deepPurple),
+          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+          child: const Icon(Icons.business, size: 60,),
         ),
         Positioned(
           bottom: 0,
@@ -161,13 +155,13 @@ class _AdminCompanyScreenState extends State<AdminCompanyScreen> {
             child: InkWell(
               borderRadius: BorderRadius.circular(20),
               onTap: () {
-                debugPrint('DebuggerLog: AdminCompanyScreen.changeLogo tapped');
+                debugPrint('DebuggerLog: CompanyProfileScreen.changeLogo tapped');
                 // TODO: Implement logo upload/change
               },
               child: Container(
-                decoration: BoxDecoration(color: Colors.deepPurple, shape: BoxShape.circle),
+                decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle),
                 padding: const EdgeInsets.all(6),
-                child: const Icon(Icons.add_a_photo, color: Colors.white, size: 20),
+                child: Icon(Icons.add_a_photo, color: Theme.of(context).colorScheme.onPrimary, size: 20),
               ),
             ),
           ),
@@ -228,7 +222,7 @@ class _AdminCompanyScreenState extends State<AdminCompanyScreen> {
                 InkWell(
                   onTap: () async {
                     final id = company?.id ?? '';
-                    debugPrint('DebuggerLog: AdminCompanyScreen.copyId tapped -> $id');
+                    debugPrint('DebuggerLog: CompanyProfileScreen.copyId tapped -> $id');
                     if (id.isNotEmpty) {
                       await Clipboard.setData(ClipboardData(text: id));
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ID copiado para a área de transferência!')));
@@ -245,7 +239,7 @@ class _AdminCompanyScreenState extends State<AdminCompanyScreen> {
   }
 
   _onEditCompany() {
-    debugPrint('DebuggerLog: AdminCompanyScreen.openEditModal -> companyId=${_companyController.companySelected?.id ?? 'none'}');
+    debugPrint('DebuggerLog: CompanyProfileScreen.openEditModal -> companyId=${_companyController.companySelected?.id ?? 'none'}');
     final nameController = TextEditingController(text: _companyController.companySelected?.name ?? '');
     final emailController = TextEditingController(text: _companyController.companySelected?.toJson()['contactEmail'] ?? '');
     final phoneController = TextEditingController(text: _companyController.companySelected?.toJson()['phone'] ?? '');
@@ -296,7 +290,7 @@ class _AdminCompanyScreenState extends State<AdminCompanyScreen> {
                       children: [
                         TextButton(
                           onPressed: () {
-                            debugPrint('DebuggerLog: AdminCompanyScreen.editModal.cancel');
+                            debugPrint('DebuggerLog: CompanyProfileScreen.editModal.cancel');
                             Navigator.of(context).pop();
                           },
                           child: const Text('Cancelar'),
@@ -304,7 +298,7 @@ class _AdminCompanyScreenState extends State<AdminCompanyScreen> {
                         const SizedBox(width: 8),
                         ElevatedButton(
                           onPressed: () {
-                            debugPrint('DebuggerLog: AdminCompanyScreen.saveModal -> name=${nameController.text}, email=${emailController.text}, phone=${phoneController.text}');
+                            debugPrint('DebuggerLog: CompanyProfileScreen.saveModal -> name=${nameController.text}, email=${emailController.text}, phone=${phoneController.text}');
                             // TODO: Salvar alterações via _companyController
                             Navigator.of(context).pop();
                           },

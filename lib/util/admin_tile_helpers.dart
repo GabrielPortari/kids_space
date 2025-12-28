@@ -34,7 +34,7 @@ String messageForType(AdminTileType type) {
 String getNavigationRoute(AdminTileType type) {
   switch (type) {
     case AdminTileType.company:
-      return('/admin_company_screen');
+      return('/company_profile_screen');
     case AdminTileType.responsible:
       return('/users');
     case AdminTileType.child:

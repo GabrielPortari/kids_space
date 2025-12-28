@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kids_space/view/design_system/app_theme_colors.dart';
+import 'package:kids_space/view/design_system/app_theme.dart';
 
 /// AppTextField: campo de texto padronizável e visualmente customizável.
 ///

@@ -7,7 +7,7 @@ import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/model/user.dart';
-import 'package:kids_space/view/design_system/app_theme_colors.dart' as Pallette;
+import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class ChildrensScreen extends StatefulWidget {
@@ -97,8 +97,11 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool showAppBar = Navigator.canPop(context);
+    final double topSpacing = showAppBar ? 8.0 : 8 + MediaQuery.of(context).padding.top;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Crianças cadastradas'), automaticallyImplyLeading: false),
+      appBar: showAppBar ? AppBar(title: const Text('Usuários'), leading: Navigator.canPop(context) ? const BackButton() : null,) : null,
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -109,6 +112,7 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
+                    SizedBox(height: topSpacing),
                     _searchField(),
                     const SizedBox(height: 16),
                     _childrenList(),
@@ -243,7 +247,7 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
                             width: 10,
                             height: 10,
                             decoration: const BoxDecoration(
-                              color: Pallette.success,
+                              color: success,
                               shape: BoxShape.circle,
                             ),
                           ),

@@ -45,7 +45,6 @@ class _SplashScreenState extends State<SplashScreen> {
             const SizedBox(height: 24),
             Text(
               'Kids Space',
-              style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 16),
             const CircularProgressIndicator(),

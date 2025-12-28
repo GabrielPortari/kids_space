@@ -11,7 +11,7 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:kids_space/view/design_system/app_card.dart';
 import 'package:kids_space/view/design_system/app_button.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
-import 'package:kids_space/view/design_system/app_theme_colors.dart';
+import 'package:kids_space/view/design_system/app_theme.dart';
 
 final CompanyController _companyController = GetIt.I<CompanyController>();
 final CollaboratorController _collaboratorController =
@@ -27,18 +27,21 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late final ScrollController _scrollController;
+  late final ScrollController _logListController;
 
   @override
   void initState() {
     super.initState();
     debugPrint('DebuggerLog: HomeScreen.initState');
     _scrollController = ScrollController();
+    _logListController = ScrollController();
     _loadData();
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _logListController.dispose();
     super.dispose();
   }
 
@@ -130,50 +133,55 @@ class _HomeScreenState extends State<HomeScreen> {
                 SizedBox(
                   height: listHeight,
                   child: limited.isEmpty
-                      ? Center(
-                              child: TextBodyMedium(
-                                translate('home.no_presence_records'),
-                              ),
-                        )
-                      : Scrollbar(
-                          thumbVisibility: true,
-                          child: ListView.separated(
-                            primary: false,
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            itemCount: limited.length,
-                            separatorBuilder: (_, __) => const Divider(height: 1),
-                            itemBuilder: (context, idx) {
-                              final event = limited[idx];
-                              final isCheckin = event.checkType == CheckType.checkIn;
-                              return ListTile(
-                                contentPadding: const EdgeInsets.fromLTRB(4.0, 0.0, 8.0, 0.0),
-                                leading: CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: isCheckin ? successBg : dangerBg,
-                                  child: Icon(
-                                    isCheckin ? Icons.login : Icons.logout,
-                                    color: isCheckin ? success : danger,
-                                    size: 18,
+                        ? Center(
+                                child: TextBodyMedium(
+                                  translate('home.no_presence_records'),
+                                ),
+                          )
+                        : Scrollbar(
+                            controller: _logListController,
+                            thumbVisibility: true,
+                            child: ListView.separated(
+                              controller: _logListController,
+                              primary: false,
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              itemCount: limited.length,
+                              separatorBuilder: (_, __) => const Divider(height: 1),
+                              itemBuilder: (context, idx) {
+                                final event = limited[idx];
+                                final isCheckin = event.checkType == CheckType.checkIn;
+                                return ListTile(
+                                  contentPadding: const EdgeInsets.fromLTRB(4.0, 0.0, 8.0, 0.0),
+                                  leading: CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: isCheckin ? successBg : dangerBg,
+                                    child: Icon(
+                                      isCheckin ? Icons.login : Icons.logout,
+                                      color: isCheckin ? success : danger,
+                                      size: 18,
+                                    ),
                                   ),
-                                ),
-                                title: TextBodyMedium(
-                                  event.child.name,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                subtitle: TextBodySmall(
-                                  '${formatDate(event.timestamp)} • ${formatTime(event.timestamp)}',
-                                ),
-                                trailing: Chip(
-                                  label: TextBodySmall(
-                                    isCheckin ? translate('home.check_in') : translate('home.check_out'),
+                                  title: TextBodyMedium(
+                                    event.child.name,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  backgroundColor: isCheckin ? success : danger,
-                                ),
-                                onTap: () => debugPrint('DebuggerLog: HomeScreen.log tapped index=$idx child=${event.child.name}'),
-                              );
-                            },
+                                  subtitle: TextBodySmall(
+                                    '${formatDate(event.timestamp)} • ${formatTime(event.timestamp)}',
+                                  ),
+                                  trailing: Chip(
+                                    label: TextBodySmall(
+                                      isCheckin ? translate('home.check_in') : translate('home.check_out'),
+                                      style: TextStyle(
+                                        color: isCheckin ? successBg : dangerBg,
+                                      ),
+                                    ),
+                                    backgroundColor: isCheckin ? success : danger,
+                                  ),
+                                  onTap: () => debugPrint('DebuggerLog: HomeScreen.log tapped index=$idx child=${event.child.name}'),
+                                );
+                              },
+                            ),
                           ),
-                        ),
                 ),
               ],
             ),

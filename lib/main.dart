@@ -3,9 +3,8 @@ import 'package:get_it/get_it.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:kids_space/util/getit_factory.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:kids_space/view/design_system/app_theme_colors.dart';
-import 'package:kids_space/view/design_system/app_theme_colors.dart' as AppThemeColors;
-import 'package:kids_space/view/screens/admin_company_screen.dart';
+import 'package:kids_space/view/design_system/app_theme.dart';
+import 'package:kids_space/view/screens/company_profile_screen.dart';
 import 'package:kids_space/view/screens/admin_panel_screen.dart';
 import 'package:kids_space/view/screens/all_active_children_screen.dart';
 import 'package:kids_space/view/screens/childrens_screen.dart';
@@ -47,7 +46,9 @@ class MyApp extends StatelessWidget {
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       title: 'Kids Space',
-      theme: AppThemeColors.AppTheme.lightTheme(),
+      theme: AppTheme.lightTheme(),
+      darkTheme: AppTheme.darkTheme(),
+      themeMode: ThemeMode.system,
       initialRoute: '/splash',
       routes: {
         '/splash': (context) => const SplashScreen(),
@@ -62,7 +63,7 @@ class MyApp extends StatelessWidget {
         '/user_profile_screen': (context) => const UserProfileScreen(),
         '/all_active_children': (context) => const AllActiveChildrenScreen(),
         '/admin_panel': (context) => const AdminPanelScreen(),
-        '/admin_company_screen': (context) => const AdminCompanyScreen(),
+        '/company_profile_screen': (context) => const CompanyProfileScreen(),
       },
     );
   }

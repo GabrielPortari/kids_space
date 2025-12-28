@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kids_space/view/design_system/app_theme_colors.dart';
 
 /// Lightweight AppCard focused on theming and visual effects.
 ///
@@ -20,7 +19,7 @@ class AppCard extends StatelessWidget {
     this.padding = const EdgeInsets.all(24),
     this.margin,
     this.borderRadius = const BorderRadius.all(Radius.circular(12)),
-    this.elevation = 6.0,
+    this.elevation = 1,
     this.onTap,
   });
 
