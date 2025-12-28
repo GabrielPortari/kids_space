@@ -41,18 +41,19 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double topSpacing = 8 + MediaQuery.of(context).padding.top;
     return Scaffold(
-      appBar: AppBar(title: const Text('Selecionar Empresa')),
       body: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Expanded(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 720),
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16),
                 child: Column(
                   children: [
+                    SizedBox(height: topSpacing),
                     _searchField(),
                     const SizedBox(height: 16),
                     Expanded(child: _buildCompaniesArea()),
@@ -69,10 +70,19 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
   Widget _searchField() {
     return TextField(
       controller: _searchController,
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         labelText: 'Buscar empresa',
-        prefixIcon: Icon(Icons.search),
-        border: OutlineInputBorder(),
+        prefixIcon: const Icon(Icons.search),
+        border: const OutlineInputBorder(),
+        suffixIcon: _searchController.text.isEmpty
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: () {
+                  _searchController.clear();
+                  _filteredCompanies = [];
+                },
+              ),
       ),
     );
   }
@@ -97,6 +107,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
     }
 
     return ListView.builder(
+      padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
       itemCount: _filteredCompanies.length,
       itemBuilder: (context, index) {
         final company = _filteredCompanies[index];
