@@ -5,8 +5,8 @@ import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/user.dart';
-import 'package:kids_space/view/widgets/add_user_dialog.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class UsersScreen extends StatefulWidget {
@@ -51,17 +51,19 @@ class _UsersScreenState extends State<UsersScreen> {
     await _userController.refreshUsersForCompany(companyId);
   }
 
-  void _onAddUser() {
-    showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AddUserDialog(companyController: _companyController, userController: _userController),
-    ).then((created) {
-      if (created == true) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Usuário cadastrado')));
-      }
-    });
+  Future<void> _onAddUser() async {
+    final fields = [
+      FieldDefinition(key: 'name', label: 'Nome', required: true),
+      FieldDefinition(key: 'contactEmail', label: 'Email', required: true),
+      FieldDefinition(key: 'phone', label: 'Telefone', required: true),
+      FieldDefinition(key: 'document', label: 'Documento', required: true),
+    ];
+    
+    final result = await showEditEntityBottomSheet(context: context, title: 'Adicionar usuário', fields: fields,);
+    if (result != null) {
+      debugPrint('DebuggerLog: UsersScreen.editModal.result -> $result');
+      // TODO
+    }
   }
 
   @override

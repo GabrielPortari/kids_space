@@ -3,7 +3,9 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter/services.dart';
 import 'package:kids_space/controller/company_controller.dart';
+import 'package:kids_space/model/company.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
+import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
 
 final CompanyController _companyController = GetIt.I<CompanyController>();
 
@@ -238,82 +240,19 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
     );
   }
 
-  _onEditCompany() {
+  _onEditCompany() async {
     debugPrint('DebuggerLog: CompanyProfileScreen.openEditModal -> companyId=${_companyController.companySelected?.id ?? 'none'}');
-    final nameController = TextEditingController(text: _companyController.companySelected?.name ?? '');
-    final emailController = TextEditingController(text: _companyController.companySelected?.toJson()['contactEmail'] ?? '');
-    final phoneController = TextEditingController(text: _companyController.companySelected?.toJson()['phone'] ?? '');
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return SafeArea(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            decoration: BoxDecoration(
-              color: Theme.of(context).canvasColor,
-              borderRadius: BorderRadius.circular(16.0),
-            ),
-            child: Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Editar empresa', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        IconButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nome')),
-                    const SizedBox(height: 12),
-                    TextField(controller: emailController, decoration: const InputDecoration(labelText: 'Email')),
-                    const SizedBox(height: 12),
-                    TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Telefone')),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            debugPrint('DebuggerLog: CompanyProfileScreen.editModal.cancel');
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Cancelar'),
-                        ),
-                        const SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: () {
-                            debugPrint('DebuggerLog: CompanyProfileScreen.saveModal -> name=${nameController.text}, email=${emailController.text}, phone=${phoneController.text}');
-                            // TODO: Salvar alterações via _companyController
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Salvar'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
+    final fields = [
+      FieldDefinition(key: 'name', label: 'Nome', initialValue: _companyController.companySelected!.name, required: true),
+      FieldDefinition(key: 'contactEmail', label: 'Email', initialValue: _companyController.companySelected!.toJson()['contactEmail']),
+      FieldDefinition(key: 'phone', label: 'Telefone', initialValue: _companyController.companySelected!.toJson()['phone']),
+    ];
+    
+    final result = await showEditEntityBottomSheet(context: context, title: 'Editar empresa', fields: fields);
+    if (result != null) {
+      debugPrint('DebuggerLog: CompanyProfileScreen.editModal.result -> $result');
+      // Delegue para _companyController.updateCompanyFromMap(result)
+    }
   }
 }

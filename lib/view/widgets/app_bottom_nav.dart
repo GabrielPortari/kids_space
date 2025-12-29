@@ -57,11 +57,3 @@ class _AppBottomNavState extends State<AppBottomNav> {
     );
   }
 }
-
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Em desenvolvimento'));
-  }
-}

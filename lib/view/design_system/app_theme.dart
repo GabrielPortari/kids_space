@@ -8,12 +8,14 @@ const Color success = Colors.green;
 Color dangerBg = Colors.red.shade100;
 Color successBg = Colors.green.shade100;
 
-const Color seedColor = Colors.blue;
+const Color? themeColor = null;
+const Color? seedColor = themeColor ?? Colors.indigoAccent;
 
 class AppTheme {
   static ThemeData lightTheme() {
     final scheme = ColorScheme.fromSeed(
-      seedColor: seedColor,
+      seedColor: seedColor!,
+      surface: Color.lerp(Colors.white, seedColor!, 0.15),
       brightness: Brightness.light);
     final base = ThemeData.from(colorScheme: scheme);
 
@@ -49,7 +51,7 @@ class AppTheme {
   }
 
   static ThemeData darkTheme() {
-    final scheme = ColorScheme.fromSeed(seedColor: seedColor, brightness: Brightness.dark);
+    final scheme = ColorScheme.fromSeed(seedColor: seedColor!, brightness: Brightness.dark);
     final base = ThemeData.from(colorScheme: scheme);
 
     final textTheme = base.textTheme.copyWith(

@@ -1,15 +1,14 @@
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
-import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/model/user.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/service/child_service.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
-import 'package:kids_space/view/widgets/add_child_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
 import 'package:mobx/mobx.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -214,31 +213,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           IconButton(
                             icon: const Icon(Icons.edit_outlined),
                             onPressed: () async {
+                              _onRegisterChild(isEdit: true, child: c);
                               debugPrint('DebuggerLog: UserProfileScreen.editChild.tap -> childId=${c.id}');
-                              final updated = await showDialog<Child>(
-                                context: context,
-                                builder: (_) => AddChildDialog(
-                                  initialChild: c,
-                                  companyId: c.companyId,
-                                  responsibleUserId: c.responsibleUserIds.isNotEmpty ? c.responsibleUserIds.first : null,
-                                  onUpdate: (child) {
-                                    try {
-                                      GetIt.I<ChildController>().updateChild(child);
-                                      debugPrint('DebuggerLog: UserProfileScreen.onUpdate -> child id=${child.id}');
-                                    } catch (e) {
-                                      debugPrint('DebuggerLog: UserProfileScreen.onUpdate ERROR $e');
-                                    }
-                                  },
-                                ),
-                              );
-                              if (updated != null) {
-                                setState(() {
-                                  final idx = responsibleChildren.indexWhere((x) => x.id == updated.id);
-                                  if (idx >= 0) responsibleChildren[idx] = updated;
-                                });
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Criança atualizada')));
-                                debugPrint('DebuggerLog: UserProfileScreen.childUpdated -> id=${updated.id}');
-                              }
                             },
                           ),
                           if (GetIt.I<CollaboratorController>().loggedCollaborator?.userType == UserType.admin)
@@ -302,7 +278,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 heroTag: 'add_child_fab',
                 onPressed: () {
                   debugPrint('DebuggerLog: UserProfileScreen.addChildFab.tap');
-                  _onRegisterChild();
+                  _onRegisterChild(isEdit: false);
                   setState(() => _fabOpen = false);
                 },
                 child: const Icon(Icons.child_care),
@@ -356,98 +332,79 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
-  void _onEditProfile() {
+  Future<void> _onEditProfile() async {
     final user = _userController.selectedUser;
+
     debugPrint('DebuggerLog: UserProfileScreen.openEditDialog -> userId=${user?.id ?? 'none'}');
-    final nameController = TextEditingController(text: user?.name ?? '');
-    final emailController = TextEditingController(text: user?.email ?? '');
-    final phoneController = TextEditingController(text: user?.phone ?? '');
-    final documentController = TextEditingController(text: user?.document ?? '');
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Editar perfil'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nome')),
-              const SizedBox(height: 12),
-              TextField(controller: emailController, decoration: const InputDecoration(labelText: 'Email')),
-              const SizedBox(height: 12),
-              TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Telefone')),
-              const SizedBox(height: 12),
-              TextField(controller: documentController, decoration: const InputDecoration(labelText: 'Documento')),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: () async {
-              final confirm = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Confirmar alterações'),
-                  content: const Text('Deseja salvar as alterações no perfil?'),
-                  actions: [
-                    TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-                    ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Confirmar')),
-                  ],
-                ),
-              );
-              if (confirm != true) return;
+    final fields = [
+      FieldDefinition(key: 'name', label: 'Nome', initialValue: user?.name, required: true),
+      FieldDefinition(key: 'email', label: 'Email', initialValue: user?.email, required: true),
+      FieldDefinition(key: 'phone', label: 'Telefone', initialValue: user?.phone, required: true),
+      FieldDefinition(key: 'document', label: 'Documento', initialValue: user?.document, required: true),
+    ];
 
-              final user = _userController.selectedUser;
-              if (user == null) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Usuário não encontrado')));
-                return;
-              }
+    final result = await showEditEntityBottomSheet(context: context, title: 'Editar usuário', fields: fields);
 
-              debugPrint('DebuggerLog: UserProfileScreen.saveProfile -> name=${nameController.text}, email=${emailController.text}, phone=${phoneController.text}');
-              final updated = User(
-                id: user.id,
-                name: nameController.text.trim(),
-                email: emailController.text.trim(),
-                phone: phoneController.text.trim(),
-                document: user.document,
-                companyId: user.companyId,
-                childrenIds: user.childrenIds, 
-                createdAt: user.createdAt, 
-                updatedAt: user.updatedAt,
-              );
+    if (result != null) {
+      debugPrint('DebuggerLog: UsersScreen.editModal.result -> $result');
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Usuário não encontrado')));
+        return;
+      }
 
-              _userController.updateUser(updated);
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Perfil atualizado')));
-            },
-            child: const Text('Salvar'),
-          ),
-        ],
-      ),
-    );
+      debugPrint('DebuggerLog: UserProfileScreen.saveProfile -> name=${result['name']}, email=${result['email']}, phone=${result['phone']}');
+      final updated = User(
+        id: user.id,
+        name: result['name'].trim(),
+        email: result['email'].trim(),
+        phone: result['phone'].trim(),
+        document: user.document,
+        companyId: user.companyId,
+        childrenIds: user.childrenIds, 
+        createdAt: user.createdAt, 
+        updatedAt: user.updatedAt,
+      );
+      _userController.updateUser(updated);
+    }
+
   }
 
-  void _onRegisterChild() {
-    final user = _userController.selectedUser;
-    debugPrint('DebuggerLog: UserProfileScreen.openRegisterChild -> userId=${user?.id ?? 'none'}');
+  Future<void> _onRegisterChild({bool isEdit = false, Child? child}) async {
 
-    showDialog<Child>(
-      context: context,
-      builder: (_) => AddChildDialog(
-        companyId: user?.companyId,
-        responsibleUserId: user?.id,
-        onCreate: (child) {
-          ChildService().addChild(child);
-          debugPrint('DebuggerLog: UserProfileScreen.onCreate -> persisted child id=${child.id}');
-        },
-      ),
-    ).then((created) {
-      if (created == null) return;
-      setState(() => responsibleChildren.add(created));
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Criança cadastrada')));
-      debugPrint('DebuggerLog: UserProfileScreen.childCreated -> id=${created.id}, name=${created.name}');
-    });
+    final user = _userController.selectedUser;
+    debugPrint('DebuggerLog: UserProfileScreen._onRegisterChild -> userId=${user?.id ?? 'none'}');
+
+    final fields = [
+      FieldDefinition(key: 'name', label: 'Nome', initialValue: isEdit ? child?.name : null, required: true),
+      FieldDefinition(key: 'document', label: 'Documento', initialValue: isEdit ? child?.document : null, required: true),
+    ];
+
+    final result = await showEditEntityBottomSheet(context: context, title: isEdit ? 'Editar criança' : 'Adicionar criança', fields: fields);
+    
+    if (result != null) {
+      debugPrint('DebuggerLog: UserProfileScreen._onRegisterChild.result -> $result');
+      final id = isEdit ? child!.id : DateTime.now().millisecondsSinceEpoch.toString();
+      final childModel = Child(
+        id: id,
+        name: result['name'].trim(),
+        companyId: user!.companyId,
+        responsibleUserIds: [user.id],
+        document: result['document'].trim().isEmpty
+            ? null
+            : result['document'].trim(),
+        isActive: isEdit ? child!.isActive : true,
+        createdAt: isEdit ? child!.createdAt : DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      debugPrint('DebuggerLog: UserProfileScreen._onRegisterChild -> id=$id name=${childModel.name} responsible=${user.id}');
+      
+      setState(() {
+        ChildService().addChild(childModel);
+      });
+      debugPrint('DebuggerLog: UserProfileScreen._onRegisterChild -> id=${childModel.id}, name=${childModel.name}');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isEdit ? 'Criança atualizada' : 'Criança cadastrada')));
+    }
   }
 }

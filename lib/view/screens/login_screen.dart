@@ -32,15 +32,9 @@ class _LoginScreenState extends State<LoginScreen> {
       final collabController = GetIt.I<CollaboratorController>();
       final logged = collabController.loggedCollaborator;
       if (logged != null && logged.userType == UserType.admin) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login como administrador. Redirecionando...')),
-        );
-        Navigator.pushReplacementNamed(context, '/admin_panel');
+        Navigator.pushNamedAndRemoveUntil(context, '/admin_panel', (route) => false);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login realizado!')),
-        );
-        Navigator.pushReplacementNamed(context, '/app_bottom_nav');
+        Navigator.pushNamedAndRemoveUntil(context, '/app_bottom_nav', (route) => false);
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
