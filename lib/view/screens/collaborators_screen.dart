@@ -6,6 +6,7 @@ import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/service/collaborator_service.dart';
+import 'package:kids_space/view/design_system/app_text.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class CollaboratorsScreen extends StatefulWidget {
@@ -201,8 +202,8 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
                 child: Center(
                   child: CircleAvatar(
                     radius: 20,
-                    backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                    child: Text(_getInitials(c.name), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+                    backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                    child: TextBodyMedium(_getInitials(c.name)),
                   ),
                 ),
               ),
@@ -211,10 +212,9 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(c.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                    TextHeaderSmall(c.name, heavy: true),
                     const SizedBox(height: 4),
-                    Text(c.email, style: const TextStyle(fontSize: 15, color: Colors.grey)),
-                    if (c.phoneNumber != null) Text(c.phoneNumber!, style: const TextStyle(fontSize: 15)),
+                    TextBodyMedium(c.email, style:TextStyle( color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.8))),
                   ],
                 ),
               ),

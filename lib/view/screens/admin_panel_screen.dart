@@ -42,7 +42,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             context: context,
             builder: (context) => AlertDialog(
               title: const Text('Sair'),
-              content: const Text('Deseja deslogar do painel de administrador?'),
+              content: const Text('Deseja sair do painel de administrador?'),
               actions: [
                 TextButton(
                   onPressed: () {

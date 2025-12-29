@@ -45,14 +45,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 padding: const EdgeInsets.all(24.0),
                 child: Observer(
                   builder: (_) {
-                    final displayed = _collaboratorController.selectedCollaborator ?? _collaboratorController.loggedCollaborator;
+                    final displayed = _collaboratorController.selectedCollaborator!;
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const SizedBox(height: 24),
                         _collaboratorProfileInfo(displayed),
                         const SizedBox(height: 24),
-                        TextHeaderMedium(displayed != null ? displayed.name : 'Nome do Colaborador'),
+                        TextHeaderMedium(displayed.name ?? 'Nome do Colaborador'),
                         const SizedBox(height: 8),
                         TextHeaderSmall('Colaborador'),
                         const SizedBox(height: 24),
@@ -186,7 +186,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         CircleAvatar(
           radius: 50,
-          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
           child: const Icon(Icons.person, size: 60),
         ),
         Positioned(
@@ -293,10 +293,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return showDialog(
       context: context,
       builder: (context) {
-        debugPrint('DebuggerLog: ProfileScreen.openEditDialog -> collaboratorId=${_collaboratorController.loggedCollaborator?.id ?? 'none'}');
-        final nameController = TextEditingController(text: _collaboratorController.loggedCollaborator?.name ?? '');
-        final emailController = TextEditingController(text: _collaboratorController.loggedCollaborator?.email ?? '');
-        final phoneController = TextEditingController(text: _collaboratorController.loggedCollaborator?.phoneNumber ?? '');
+        debugPrint('DebuggerLog: ProfileScreen.openEditDialog -> collaboratorId=${_collaboratorController.selectedCollaborator?.id ?? 'none'}');
+        final nameController = TextEditingController(text: _collaboratorController.selectedCollaborator?.name ?? '');
+        final emailController = TextEditingController(text: _collaboratorController.selectedCollaborator?.email ?? '');
+        final phoneController = TextEditingController(text: _collaboratorController.selectedCollaborator?.phoneNumber ?? '');
         return AlertDialog(
           title: TextHeaderSmall('Editar perfil'),
           content: SingleChildScrollView(

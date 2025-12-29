@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kids_space/view/design_system/app_text.dart';
 import '../../util/admin_tile_helpers.dart';
 import '../../model/admin_tile_model.dart';
 
@@ -20,9 +21,11 @@ class AdminTile extends StatelessWidget {
         onTap: onTap,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-          leading: CircleAvatar(child: Icon(model.icon, size: 20)),
-          title: Text(title, overflow: TextOverflow.ellipsis),
-          subtitle: Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),
+          leading: CircleAvatar(
+            backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+            child: Icon(model.icon, size: 24),),
+          title: TextHeaderSmall(title),
+          subtitle: TextBodyMedium(subtitle, maxLines: 2),
           trailing: const Icon(Icons.chevron_right),
         ),
       ),

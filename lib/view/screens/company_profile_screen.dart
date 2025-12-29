@@ -144,7 +144,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
       children: [
         CircleAvatar(
           radius: 50,
-          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
           child: const Icon(Icons.business, size: 60,),
         ),
         Positioned(

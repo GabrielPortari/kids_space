@@ -12,7 +12,9 @@ const Color seedColor = Colors.blue;
 
 class AppTheme {
   static ThemeData lightTheme() {
-    final scheme = ColorScheme.fromSeed(seedColor: seedColor, brightness: Brightness.light);
+    final scheme = ColorScheme.fromSeed(
+      seedColor: seedColor,
+      brightness: Brightness.light);
     final base = ThemeData.from(colorScheme: scheme);
 
     final textTheme = base.textTheme.copyWith(

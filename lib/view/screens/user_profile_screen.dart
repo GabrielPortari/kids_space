@@ -84,7 +84,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       children: [
         CircleAvatar(
           radius: 50,
-          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
           child: Text(
             _getInitials(user?.name),
             style: TextStyle(fontSize: 40, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w600),
