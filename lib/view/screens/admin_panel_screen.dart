@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/auth_controller.dart';
+import 'package:kids_space/controller/collaborator_controller.dart';
+import 'package:kids_space/controller/company_controller.dart';
+import 'package:kids_space/model/company.dart';
+import 'package:kids_space/view/screens/profile_screen.dart';
 import '../../util/admin_tile_helpers.dart';
 import '../../model/admin_tile_model.dart';
 import '../widgets/admin_tile.dart';
@@ -23,7 +27,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     AdminTileModel(type: AdminTileType.child, icon: Icons.child_care),
     AdminTileModel(type: AdminTileType.collaborator, icon: Icons.group),
   ];
+  final CompanyController _companyController = GetIt.I.get<CompanyController>();
+  final CollaboratorController _collaboratorController = GetIt.I.get<CollaboratorController>();
 
+  Company get company => _companyController.getCompanyById(_collaboratorController.loggedCollaborator?.companyId ?? '');
 
   @override
   void dispose() {
@@ -81,7 +88,23 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     return AdminTile(
                       model: model,
                       onTap: () {
-                        Navigator.pushNamed(context, getNavigationRoute(model.type));
+                        if(model.type == AdminTileType.company){
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => 
+                            ProfileScreen(selectedCompany: company))
+                          );
+                          debugPrint('DebuggerLog: AdminPanelScreen.navigate.companies');
+                        } else if(model.type == AdminTileType.responsible){
+                          Navigator.pushNamed(context, getNavigationRoute(model.type));
+                          debugPrint('DebuggerLog: AdminPanelScreen.navigate.responsibles');
+                        } else if(model.type == AdminTileType.child){
+                          Navigator.pushNamed(context, getNavigationRoute(model.type));
+                          debugPrint('DebuggerLog: AdminPanelScreen.navigate.children');
+                        } else if(model.type == AdminTileType.collaborator){
+                          Navigator.pushNamed(context, getNavigationRoute(model.type));
+                          debugPrint('DebuggerLog: AdminPanelScreen.navigate.collaborators');
+                        }
+                        
                       },
                     );
                   },

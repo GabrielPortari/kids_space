@@ -5,7 +5,7 @@ import '../model/mock/model_mock.dart';
 class ChildService {
   // Retorna crianças com check-in ativo (isActive == true) para uma empresa
   List<Child> getActiveCheckedInChildren(String companyId) {
-    return mockChildren.where((child) => child.isActive && child.companyId == companyId).toList();
+    return mockChildren.where((child) => child.isActive! && child.companyId == companyId).toList();
   }
   
   // Busca uma criança pelo id

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
-import 'package:kids_space/model/collaborator.dart';
+import 'package:kids_space/model/base_user.dart';
 import 'package:kids_space/model/company.dart';
 import '../../controller/auth_controller.dart';
 import '../../controller/company_controller.dart';
@@ -80,7 +80,7 @@ class _SplashScreenState extends State<SplashScreen> {
           (c) => c.id == loggedUser.companyId,
         );
         _companyController.selectCompany(company);
-        debugPrint('SplashScreen: _checkLoggedUser -> selected company ${company.name} (id=${company.id})');
+        debugPrint('SplashScreen: _checkLoggedUser -> selected company ${company.fantasyName} (id=${company.id})');
       } catch (e) {
         debugPrint('SplashScreen: _checkLoggedUser -> no matching company for user: $e');
         company = null;

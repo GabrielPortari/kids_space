@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/model/company.dart';
+import 'package:kids_space/util/string_utils.dart';
+import 'package:kids_space/view/design_system/app_text.dart';
 import 'package:kids_space/view/screens/login_screen.dart';
 
 class CompanySelectionScreen extends StatefulWidget {
@@ -120,8 +122,17 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
-        title: Text(company.name),
-        leading: const Icon(Icons.business),
+        title: Text(company.fantasyName ?? ''),
+        leading: SizedBox(
+                width: 56,
+                child: Center(
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                    child: TextBodyMedium(getInitials(company.fantasyName ?? '')),
+                  ),
+                ),
+              ),
         onTap: () {
           _companyController.selectCompany(company);
           Navigator.push(

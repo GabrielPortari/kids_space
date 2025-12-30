@@ -3,7 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/auth_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
-import 'package:kids_space/model/collaborator.dart' show UserType;
+import 'package:kids_space/model/base_user.dart';
 import 'package:kids_space/view/design_system/app_button.dart';
 import 'package:kids_space/view/design_system/app_card.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
@@ -48,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final company = GetIt.I<CompanyController>().companySelected;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login - ${company?.name ?? "Empresa"}'),
+        title: Text('Login - ${company?.fantasyName ?? "Empresa"}'),
       ),
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       _buildLogo(),
                       const SizedBox(height: 24),
-                      _buildWelcome(company?.name),
+                      _buildWelcome(company?.fantasyName ?? ''),
                       const SizedBox(height: 24),
                       _emailField(),
                       const SizedBox(height: 16),

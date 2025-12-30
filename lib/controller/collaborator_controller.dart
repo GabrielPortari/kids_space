@@ -28,7 +28,7 @@ abstract class _CollaboratorController with Store {
         name: collaborator.name,
         email: collaborator.email,
         companyId: collaborator.companyId,
-        phoneNumber: collaborator.phoneNumber, 
+        phone: collaborator.phone, 
         userType: collaborator.userType,
         // adicione outros campos se houver
       );

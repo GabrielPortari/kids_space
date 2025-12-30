@@ -4,7 +4,7 @@ import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/model/user.dart';
-import 'package:kids_space/view/design_system/app_text.dart';
+import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
 
 class AllActiveChildrenScreen extends StatefulWidget {
@@ -36,14 +36,14 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
     setState(() {
       final query = _searchController.text.toLowerCase();
       _filteredChildren = _allChildren.where((child) {
-        final childName = child.name.toLowerCase();
+        final childName = child.name?.toLowerCase() ?? '';
         final responsibles = _childrenResponsibles[child.id] ?? [];
         final responsibleName = responsibles.isNotEmpty
-            ? responsibles.first.name.toLowerCase()
+            ? responsibles.first.name?.toLowerCase() ?? ''
             : '';
         return childName.contains(query) || responsibleName.contains(query);
       }).toList();
-      _filteredChildren.sort((a, b) => a.name.compareTo(b.name));
+      _filteredChildren.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
     });
   }
 
@@ -57,10 +57,7 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const TextHeaderSmall(
-          'Todas as crianças ativas',
-          textAlign: TextAlign.center,
-        ),
+        title: const Text('Todas as crianças ativas'),
       ),
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -131,8 +128,9 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
               child: Center(
                 child: CircleAvatar(
                   radius: 20,
+                  backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                   child: Text(
-                    _getInitials(child.name),
+                    getInitials(child.name),
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -146,7 +144,7 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
                   Row(
                     children: [
                       Text(
-                        child.name,
+                        child.name ?? '',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -183,18 +181,11 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
     );
   }
 
-  String _getInitials(String? name) {
-    if (name == null || name.trim().isEmpty) return '?';
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.length == 1) return parts[0][0].toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-
   void _loadActiveChildrenWithResponsibles() {
     final companyId = _companyController.companySelected?.id;
     if (companyId != null) {
       _allChildren = _childController.activeCheckedInChildren(companyId);
-      _allChildren.sort((a, b) => a.name.compareTo(b.name));
+      _allChildren.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
       _filteredChildren = List.from(_allChildren);
       _childrenResponsibles = _childController.getChildrenWithResponsibles(
         _allChildren,

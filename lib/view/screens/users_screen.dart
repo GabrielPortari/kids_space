@@ -6,6 +6,8 @@ import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/user.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:kids_space/util/string_utils.dart';
+import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -177,7 +179,7 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   Widget _userTile(User user) {
-    String document = user.document;
+    String document = user.document ?? '';
     document.length == 11 ?
       document = document.replaceRange(3, document.length, '.***.***-**') :
       document = document.replaceRange(2, document.length, '.***.***-*');
@@ -188,8 +190,11 @@ class _UsersScreenState extends State<UsersScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          _userController.selectedUserId = user.id;
-          Navigator.of(context).pushNamed('/user_profile_screen');
+          _userController.selectedUserId = user.id;    
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => 
+            ProfileScreen(selectedUser: user))
+          );
         },
         child: Padding(
           padding: const EdgeInsets.all(12.0),
@@ -201,8 +206,8 @@ class _UsersScreenState extends State<UsersScreen> {
                 child: Center(
                   child: CircleAvatar(
                     radius: 20,
-                    backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                    child: Text(_getInitials(user.name), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+                    backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha:0.2),
+                    child: Text(getInitials(user.name), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
                   ),
                 ),
               ),
@@ -211,7 +216,7 @@ class _UsersScreenState extends State<UsersScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(user.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                    Text(user.name ?? '', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 4),
                     Text(document, style: const TextStyle(fontSize: 15, color: Colors.grey)),
                   ],
@@ -223,12 +228,4 @@ class _UsersScreenState extends State<UsersScreen> {
       ),
     );
   }
-
-  String _getInitials(String? name) {
-    if (name == null || name.trim().isEmpty) return '?';
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.length == 1) return parts[0][0].toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-
 }

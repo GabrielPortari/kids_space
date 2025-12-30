@@ -850,8 +850,8 @@ abstract class _CheckEventController {
   - RelatoriosScreen (futura)
 
 **UI Helpers**:
-- `_getInitials(String name)` reutilizado em múltiplas screens (Avatars)
-- `_buildEmptyState(String message)` reutilizado para "Nenhuma criança encontrada"
+- `getInitials(String name)` reutilizado em múltiplas screens (Avatars)
+- `buildEmptyState(String message)` reutilizado para "Nenhuma entidade encontrada"
 - Pattern de "widget helpers privados" copiável em novas screens
 
 #### 3.4.3 Manutenção

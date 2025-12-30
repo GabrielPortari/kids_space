@@ -12,9 +12,7 @@ class ChildController {
   void updateResponsibleUsers(String childId, List<String> newResponsibleUserIds) {
     final child = _childService.getChildById(childId);
     if (child != null) {
-      child.responsibleUserIds
-        ..clear()
-        ..addAll(newResponsibleUserIds);
+      child.responsibleUserIds?..clear()..addAll(newResponsibleUserIds);
     }
   }
   // Retorna um mapa de childId para lista de responsáveis (User)
@@ -22,9 +20,8 @@ class ChildController {
     final Map<String, List<User>> result = {};
     for (final child in children) {
       final responsibles = mockUsers
-          .where((u) => child.responsibleUserIds.contains(u.id))
-          .toList();
-      result[child.id] = responsibles;
+          .where((u) => child.responsibleUserIds?.contains(u.id) ?? false).toList();
+      result[child.id ?? '0'] = responsibles;
     }
     return result;
   }

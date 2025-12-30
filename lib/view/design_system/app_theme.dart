@@ -9,13 +9,13 @@ Color dangerBg = Colors.red.shade100;
 Color successBg = Colors.green.shade100;
 
 const Color? themeColor = null;
-const Color? seedColor = themeColor ?? Colors.indigoAccent;
+const Color? seedColor = themeColor ?? Colors.brown;
 
 class AppTheme {
   static ThemeData lightTheme() {
     final scheme = ColorScheme.fromSeed(
       seedColor: seedColor!,
-      surface: Color.lerp(Colors.white, seedColor!, 0.15),
+      surface: Color.lerp(Colors.white, seedColor!, 0.2),
       brightness: Brightness.light);
     final base = ThemeData.from(colorScheme: scheme);
 
@@ -44,7 +44,7 @@ class AppTheme {
     return base.copyWith(
       textTheme: textTheme,
       inputDecorationTheme: inputDecoration,
-      appBarTheme: base.appBarTheme.copyWith(backgroundColor: scheme.primary, foregroundColor: scheme.onPrimary),
+      appBarTheme: base.appBarTheme.copyWith(backgroundColor: scheme.primary, foregroundColor: scheme.onPrimary, titleTextStyle: textTheme.titleLarge?.copyWith(color: scheme.onPrimary), toolbarTextStyle: textTheme.titleMedium?.copyWith(color: scheme.onPrimary)),
       floatingActionButtonTheme: base.floatingActionButtonTheme.copyWith(backgroundColor: scheme.primary, foregroundColor: scheme.onPrimary),
       elevatedButtonTheme: ElevatedButtonThemeData(style: ElevatedButton.styleFrom(backgroundColor: scheme.primary, foregroundColor: scheme.onPrimary)),
     );

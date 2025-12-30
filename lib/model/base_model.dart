@@ -1,12 +1,14 @@
 class BaseModel {
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final String? id;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
-  const BaseModel({required this.createdAt, required this.updatedAt});
+  const BaseModel({required this.id, required this.createdAt, required this.updatedAt});
 
-  Map<String, dynamic> toJsonTimestamps() => {
-        'createdAt': createdAt.toIso8601String(),
-        'updatedAt': updatedAt.toIso8601String(),
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'createdAt': createdAt?.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
       };
 
   static DateTime? tryParseTimestamp(dynamic value) {
@@ -17,14 +19,14 @@ class BaseModel {
     return null;
   }
 
-  static BaseModel? fromJsonTimestamps(Map<String, dynamic>? json) {
+  static BaseModel? fromJson(Map<String, dynamic>? json) {
     if (json == null) return null;
     final created = tryParseTimestamp(json['createdAt']);
     final updated = tryParseTimestamp(json['updatedAt']);
-    if (created == null && updated == null) return null;
     return BaseModel(
-      createdAt: created ?? DateTime.fromMillisecondsSinceEpoch(0),
-      updatedAt: updated ?? created ?? DateTime.fromMillisecondsSinceEpoch(0),
+      id: json['id'] as String?,
+      createdAt: created,
+      updatedAt: updated ?? created,
     );
   }
 }

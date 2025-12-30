@@ -18,11 +18,15 @@ class CompanyController {
   List<Company> filterCompanies(String query) {
     if (query.isEmpty) return _companies;
     return _companies
-        .where((company) => company.name.toLowerCase().contains(query.toLowerCase()))
+        .where((company) => company.fantasyName?.toLowerCase().contains(query.toLowerCase()) ?? false)
         .toList();
   }
   
   void selectCompany(Company company) {
     _companySelected = company;
+  }
+
+  Company getCompanyById(String id) {
+    return _companies.firstWhere((company) => company.id == id);
   }
 }

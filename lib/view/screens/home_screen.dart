@@ -6,6 +6,7 @@ import 'package:kids_space/model/check_event.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/util/date_hour_util.dart';
 import 'package:kids_space/util/localization_service.dart';
+import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:kids_space/view/design_system/app_card.dart';
@@ -162,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ),
                                   title: TextBodyMedium(
-                                    event.child.name,
+                                    event.child.name ?? '',
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   subtitle: TextBodySmall(
@@ -215,8 +216,11 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: AppCard(
                 onTap: () {
-                  debugPrint('DebuggerLog: HomeScreen.navigate -> /profile');
-                  Navigator.of(context).pushNamed('/profile');
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => 
+                    ProfileScreen(selectedCollaborator: _collaboratorController.loggedCollaborator))
+                  );
+                  debugPrint('DebuggerLog: HomeScreen.navigate -> /profile, arguments: ${_collaboratorController.loggedCollaborator}');
                 },
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -234,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           TextHeaderMedium(
-                            _companyController.companySelected?.name ?? translate('home.company_name'),
+                            _companyController.companySelected?.fantasyName ?? translate('home.company_name'),
                           ),
                           const SizedBox(height: 2),
                           TextBodyMedium(translate('home.collaborator_name', namedArgs: {

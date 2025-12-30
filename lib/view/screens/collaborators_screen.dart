@@ -6,7 +6,9 @@ import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/service/collaborator_service.dart';
+import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
+import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class CollaboratorsScreen extends StatefulWidget {
@@ -50,9 +52,9 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
       final q = _searchController.text.trim().toLowerCase();
       setState(() {
         _filtered = _all.where((c) {
-          return c.name.toLowerCase().contains(q) || c.email.toLowerCase().contains(q);
+          return (c.name ?? '').toLowerCase().contains(q) || (c.email ?? '').toLowerCase().contains(q);
         }).toList();
-        _filtered.sort((a, b) => a.name.compareTo(b.name));
+        _filtered.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
       });
     });
   }
@@ -68,7 +70,7 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
     }
     setState(() => _loading = true);
     final list = await _service.getCollaboratorsByCompanyId(companyId);
-    list.sort((a, b) => a.name.compareTo(b.name));
+    list.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
     setState(() {
       _all = list;
       _filtered = List.from(_all);
@@ -81,7 +83,10 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
   void _onTapCollaborator(Collaborator c) async {
     await _collaboratorController.setSelectedCollaborator(c);
     if (!mounted) return;
-    Navigator.of(context).pushNamed('/profile');
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => 
+      ProfileScreen(selectedCollaborator: c))
+    );
   }
 
   @override
@@ -203,7 +208,7 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
                   child: CircleAvatar(
                     radius: 20,
                     backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-                    child: TextBodyMedium(_getInitials(c.name)),
+                    child: TextBodyMedium(getInitials(c.name)),
                   ),
                 ),
               ),
@@ -212,9 +217,9 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextHeaderSmall(c.name, heavy: true),
+                    TextHeaderSmall(c.name ?? '', heavy: true),
                     const SizedBox(height: 4),
-                    TextBodyMedium(c.email, style:TextStyle( color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.8))),
+                    TextBodyMedium(c.email ?? '', style:TextStyle( color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.8))),
                   ],
                 ),
               ),
@@ -223,12 +228,5 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
         ),
       ),
     );
-  }
-
-  String _getInitials(String? name) {
-    if (name == null || name.trim().isEmpty) return '?';
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.length == 1) return parts[0][0].toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 }

@@ -1,3 +1,4 @@
+import 'package:kids_space/model/base_user.dart';
 import '../company.dart';
 import '../user.dart';
 import '../collaborator.dart';
@@ -182,28 +183,28 @@ final mockCheckEvents = [
 final mockCompanies = [
   Company(
     id: '1',
-    name: 'Tech Kids',
+    fantasyName: 'Tech Kids',
     collaborators: [mockCollaborators[0]],
     createdAt: DateTime.now().subtract(Duration(days: 365)),
     updatedAt: DateTime.now(),
   ),
   Company(
     id: '2',
-    name: 'EducaPlay',
+    fantasyName: 'EducaPlay',
     collaborators: [mockCollaborators[1]],
     createdAt: DateTime.now().subtract(Duration(days: 365)),
     updatedAt: DateTime.now(),
   ),
   Company(
     id: '3',
-    name: 'Brincar & Aprender',
+    fantasyName: 'Brincar & Aprender',
     collaborators: [mockCollaborators[2]],
     createdAt: DateTime.now().subtract(Duration(days: 365)),
     updatedAt: DateTime.now(),
   ),
   Company(
     id: '4',
-    name: 'Mundo Infantil',
+    fantasyName: 'Mundo Infantil',
     collaborators: [mockCollaborators[3]],
     createdAt: DateTime.now().subtract(Duration(days: 365)),
     updatedAt: DateTime.now(),

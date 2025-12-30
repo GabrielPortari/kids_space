@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kids_space/util/localization_service.dart';
-import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/screens/childrens_screen.dart';
 import 'package:kids_space/view/screens/home_screen.dart';
 import 'package:kids_space/view/screens/users_screen.dart';

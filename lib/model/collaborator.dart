@@ -1,63 +1,57 @@
-enum UserType {
-  collaborator,
-  admin
-}
+import 'package:kids_space/model/base_user.dart';
 
-class Collaborator {
-  final String id;
-  final String name;
-  final String companyId;
-  final String email;
-  final UserType userType;
-  final String? phoneNumber;
+class Collaborator extends BaseUser {
   final String? password;
-  
+
   Collaborator({
-    required this.id,
-    required this.name,
-    required this.companyId,
-    required this.email,
-    required this.userType,
-    this.phoneNumber,
     this.password,
+    super.userType,
+    super.name,
+    super.email,
+    super.birthDate,
+    super.document,
+    super.phone,
+    super.address,
+    super.adressNumber,
+    super.adressComplement,
+    super.neighborhood,
+    super.city,
+    super.state,
+    super.zipCode,
+    super.companyId,
+    super.id,
+    super.createdAt,
+    super.updatedAt,
   });
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'companyId': companyId,
-    'email': email,
-    'userType': userType.toString().split('.').last,
-    'phoneNumber': phoneNumber,
-  };
+  @override
+  Map<String, dynamic> toJson() {
+    final base = super.toJson();
+    base['password'] = password;
+    return base;
+  }
 
   factory Collaborator.fromJson(Map<String, dynamic> json) {
-    final raw = json['userType'];
-    UserType parsedUserType = UserType.collaborator;
-
-    if (raw != null) {
-      final rawStr = raw.toString();
-      try {
-        if (rawStr.contains('.')) {
-          // Accept full enum string like 'UserType.admin' or just the enum name 'admin'
-          parsedUserType = UserType.values.firstWhere((e) => e.toString() == rawStr);
-        } else {
-          parsedUserType = UserType.values.firstWhere((e) => e.toString() == 'UserType.$rawStr');
-        }
-      } catch (_) {
-        // fallback to collaborator if parsing fails
-        parsedUserType = UserType.collaborator;
-      }
-    }
-
+    final base = BaseUser.fromJson(json);
     return Collaborator(
-      id: json['id'],
-      name: json['name'],
-      companyId: json['companyId'],
-      email: json['email'],
-      userType: parsedUserType,
-      phoneNumber: json['phoneNumber'],
-      password: json['password'],
+      password: json['password'] as String?,
+      userType: base.userType,
+      name: base.name,
+      email: base.email,
+      birthDate: base.birthDate,
+      document: base.document,
+      phone: base.phone,
+      address: base.address,
+      adressNumber: base.adressNumber,
+      adressComplement: base.adressComplement,
+      neighborhood: base.neighborhood,
+      city: base.city,
+      state: base.state,
+      zipCode: base.zipCode,
+      companyId: base.companyId,
+      id: base.id,
+      createdAt: base.createdAt,
+      updatedAt: base.updatedAt,
     );
   }
 }

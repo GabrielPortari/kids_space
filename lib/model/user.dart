@@ -1,45 +1,59 @@
-import 'package:kids_space/model/base_model.dart';
+import 'package:kids_space/model/base_user.dart';
 
-class User extends BaseModel{
-  final String id;
-  final String name;
-  final String email;
-  final String phone;
-  final String document;
-  final String companyId;
-  final List<String> childrenIds; 
+class User extends BaseUser{
+
+  final List<String>? childrenIds; 
 
   User({
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.phone,
-    required this.document,
-    required this.companyId,
-    required this.childrenIds, 
-    required super.createdAt, 
-    required super.updatedAt,
+    this.childrenIds,
+    super.userType,
+    super.name,
+    super.email,
+    super.birthDate,
+    super.document,
+    super.phone,
+    super.address,
+    super.adressNumber,
+    super.adressComplement,
+    super.neighborhood,
+    super.city,
+    super.state,
+    super.zipCode,
+    super.companyId,
+    super.id,
+    super.createdAt,
+    super.updatedAt,
   });
 
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'email': email,
-        'phone': phone,
-        'document': document,
-        'companyId': companyId,
-        'childrenIds': childrenIds,
-      };
+  @override
+  Map<String, dynamic> toJson() {
+    final base = super.toJson();
+    base['childrenIds'] = childrenIds;
+    return base;
+  }
 
-  factory User.fromJson(Map<String, dynamic> json) => User(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        email: json['email'] as String,
-        phone: json['phone'] as String,
-        document: json['document'] as String,
-        companyId: json['companyId'] as String,
-        childrenIds: List<String>.from(json['childrenIds'] ?? <String>[]),
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
+  factory User.fromJson(Map<String, dynamic> json) {
+    final base = BaseUser.fromJson(json);
+    return User(
+      childrenIds: (json['childrenIds'] as List<dynamic>?)?.cast<String>(),
+      userType: base.userType,
+      name: base.name,
+      email: base.email,
+      birthDate: base.birthDate,
+      document: base.document,
+      phone: base.phone,
+      address: base.address,
+      adressNumber: base.adressNumber,
+      adressComplement: base.adressComplement,
+      neighborhood: base.neighborhood,
+      city: base.city,
+      state: base.state,
+      zipCode: base.zipCode,
+      companyId: base.companyId,
+      id: base.id,
+      createdAt: base.createdAt,
+      updatedAt: base.updatedAt,
+    );
+  }
+
 }

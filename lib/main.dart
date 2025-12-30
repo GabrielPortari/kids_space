@@ -4,17 +4,15 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:kids_space/util/getit_factory.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
-import 'package:kids_space/view/screens/company_profile_screen.dart';
 import 'package:kids_space/view/screens/admin_panel_screen.dart';
 import 'package:kids_space/view/screens/all_active_children_screen.dart';
 import 'package:kids_space/view/screens/childrens_screen.dart';
+import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/view/widgets/app_bottom_nav.dart';
 import 'package:kids_space/view/screens/company_selection_screen.dart';
 import 'package:kids_space/view/screens/home_screen.dart';
 import 'package:kids_space/view/screens/login_screen.dart';
-import 'package:kids_space/view/screens/collaborator_profile_screen.dart';
 import 'package:kids_space/view/screens/splash_screen.dart';
-import 'package:kids_space/view/screens/user_profile_screen.dart';
 import 'package:kids_space/view/screens/users_screen.dart';
 import 'package:kids_space/view/screens/collaborators_screen.dart';
 
@@ -60,10 +58,8 @@ class MyApp extends StatelessWidget {
         '/childrens': (context) => const ChildrensScreen(),
         '/app_bottom_nav': (context) => const AppBottomNav(),
         '/profile': (context) => const ProfileScreen(),
-        '/user_profile_screen': (context) => const UserProfileScreen(),
         '/all_active_children': (context) => const AllActiveChildrenScreen(),
         '/admin_panel': (context) => const AdminPanelScreen(),
-        '/company_profile_screen': (context) => const CompanyProfileScreen(),
       },
     );
   }

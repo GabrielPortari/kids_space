@@ -1,10 +1,11 @@
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
-import 'package:kids_space/model/collaborator.dart';
+import 'package:kids_space/model/base_user.dart';
 import 'package:kids_space/model/user.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/service/child_service.dart';
+import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
@@ -85,7 +86,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           radius: 50,
           backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
           child: Text(
-            _getInitials(user?.name),
+            getInitials(user?.name),
             style: TextStyle(fontSize: 40, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w600),
           ),
         ),
@@ -117,13 +118,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         ),
       ],
     );
-  }
-
-  String _getInitials(String? name) {
-    if (name == null || name.trim().isEmpty) return '?';
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.length == 1) return parts[0][0].toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 
   Widget _buildHeaderSection(User? user) {
@@ -205,8 +199,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   return Column(children: [
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text(c.name),
-                      subtitle: Text('${c.isActive ? 'Ativa' : 'Inativa'}${c.document != null && c.document!.isNotEmpty ? ' · ${c.document}' : ''}'),
+                      title: Text(c.name ?? ''),
+                      subtitle: Text('${(c.isActive ?? false) ? 'Ativa' : 'Inativa'}${c.document != null && c.document!.isNotEmpty ? ' · ${c.document}' : ''}'),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -326,7 +320,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     responsibleChildren.clear();
     if (user == null) return;
     final service = ChildService();
-    for (final cid in user.childrenIds) {
+    for (final cid in user.childrenIds ?? []) {
       final child = service.getChildById(cid);
       if (child != null) responsibleChildren.add(child);
     }
@@ -367,7 +361,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       );
       _userController.updateUser(updated);
     }
-
   }
 
   Future<void> _onRegisterChild({bool isEdit = false, Child? child}) async {
@@ -388,17 +381,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       final childModel = Child(
         id: id,
         name: result['name'].trim(),
-        companyId: user!.companyId,
-        responsibleUserIds: [user.id],
+        companyId: user?.companyId ?? '',
+        responsibleUserIds: [user?.id ?? ''],
         document: result['document'].trim().isEmpty
             ? null
             : result['document'].trim(),
-        isActive: isEdit ? child!.isActive : true,
-        createdAt: isEdit ? child!.createdAt : DateTime.now(),
+        isActive: isEdit ? (child?.isActive ?? false) : true,
+        createdAt: isEdit ? child?.createdAt ?? DateTime.parse('1969-07-20 20:18:04Z') : DateTime.now(),
         updatedAt: DateTime.now(),
       );
 
-      debugPrint('DebuggerLog: UserProfileScreen._onRegisterChild -> id=$id name=${childModel.name} responsible=${user.id}');
+      debugPrint('DebuggerLog: UserProfileScreen._onRegisterChild -> id=$id name=${childModel.name} responsible=${user?.id}');
       
       setState(() {
         ChildService().addChild(childModel);

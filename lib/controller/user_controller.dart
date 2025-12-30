@@ -21,9 +21,9 @@ abstract class _UserController with Store {
     } else {
       return users
           .where((u) =>
-              u.name.toLowerCase().contains(filter) ||
-              u.email.toLowerCase().contains(filter) ||
-              u.document.toLowerCase().contains(filter))
+              (u.name?.toLowerCase().contains(filter) ?? false) ||
+              (u.email?.toLowerCase().contains(filter) ?? false) ||
+              (u.document?.toLowerCase().contains(filter) ?? false))
           .toList();
     }
   }

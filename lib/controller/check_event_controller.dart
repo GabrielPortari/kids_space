@@ -123,7 +123,7 @@ abstract class _CheckEventController with Store {
     final events = await getEventsByCompany(companyId);
     final Map<String, CheckEvent> lastEventByChild = {};
     for (final event in events) {
-      final childId = event.child.id;
+      final childId = event.child.id ?? '0';
       if (!lastEventByChild.containsKey(childId) || event.timestamp.isAfter(lastEventByChild[childId]!.timestamp)) {
         lastEventByChild[childId] = event;
       }
