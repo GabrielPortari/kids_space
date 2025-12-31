@@ -59,6 +59,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   child: const Text('Cancelar'),
                 ),
                 TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  ),
                   onPressed: () async {
                     debugPrint('DebuggerLog: AdminPanelScreen.logout.confirm');
                     await _authController.logout();

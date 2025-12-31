@@ -58,6 +58,17 @@ final List<User> mockUsers = [
     createdAt: DateTime.now().subtract(Duration(days: 30)),
     updatedAt: DateTime.now(),
   ),
+  User(
+    id: 'u5',
+    name: 'Paulo',
+    companyId: '1',
+    email: 'paulo@techkids.com',
+    phone: '32682717',
+    document: '8820581672',
+    childrenIds: [],
+    createdAt: DateTime.now().subtract(Duration(days: 20)),
+    updatedAt: DateTime.now(),
+  ),
 ];
 
 final List<Child> mockChildren = [

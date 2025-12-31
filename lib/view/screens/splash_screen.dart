@@ -93,10 +93,10 @@ class _SplashScreenState extends State<SplashScreen> {
     if (loggedUser != null && company != null) {
       if (loggedUser.userType == UserType.admin) {
         debugPrint('SplashScreen: _checkLoggedUser -> navigating to /admin_panel for admin user');
-        Navigator.pushReplacementNamed(context, '/admin_panel');
+        Navigator.pushNamedAndRemoveUntil(context, '/admin_panel', (route) => false);
       } else {
         debugPrint('SplashScreen: _checkLoggedUser -> navigating to /app_bottom_nav for collaborator user');
-        Navigator.pushReplacementNamed(context, '/app_bottom_nav');
+        Navigator.pushNamedAndRemoveUntil(context, '/app_bottom_nav', (route) => false);
       }
     } else {
       debugPrint('SplashScreen: _checkLoggedUser -> no logged user or no company; navigating to /company_selection');
