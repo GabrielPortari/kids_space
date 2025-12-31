@@ -351,60 +351,99 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final canEditChild = loggedType == UserType.admin || loggedType == UserType.collaborator;
     final canDeleteChild = loggedType == UserType.admin;
 
+    final collapsed = _collapsedCards['children'] ?? false;
+
+    final header = Row(children: [
+      Expanded(
+        child: const Text(
+          'Crianças sob responsabilidade',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ),
+      IconButton(
+        icon: Icon(collapsed ? Icons.expand_more : Icons.expand_less),
+        onPressed: () => setState(() => _collapsedCards['children'] = !collapsed),
+      ),
+    ]);
+
+    final firstChildWidget = children.isEmpty
+        ? Center(child: Text('Nenhuma criança cadastrada.', style: TextStyle(color: Theme.of(context).colorScheme.primary)))
+        : ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(children.first.name ?? ''),
+            subtitle: Text('${(children.first.isActive ?? false) ? 'Ativa' : 'Inativa'}${children.first.document != null && children.first.document!.isNotEmpty ? ' · ${children.first.document}' : ''}'),
+            trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+              if (canEditChild)
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () {
+                    debugPrint('DebuggerLog: ProfileScreen.editChild.tap -> childId=${children.first.id}');
+                  },
+                ),
+              if (canDeleteChild)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: () {
+                    debugPrint('DebuggerLog: ProfileScreen.deleteChild.tap -> childId=${children.first.id}');
+                  },
+                ),
+            ]),
+          );
+
+    final fullListWidget = children.isEmpty
+        ? Center(child: Text('Nenhuma criança cadastrada.', style: TextStyle(color: Theme.of(context).colorScheme.primary)))
+        : Column(
+            children: children.map((c) {
+              return Column(children: [
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(c.name ?? ''),
+                  subtitle: Text('${(c.isActive ?? false) ? 'Ativa' : 'Inativa'}${c.document != null && c.document!.isNotEmpty ? ' · ${c.document}' : ''}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (canEditChild)
+                        IconButton(
+                          icon: const Icon(Icons.edit_outlined),
+                          onPressed: () {
+                            debugPrint('DebuggerLog: ProfileScreen.editChild.tap -> childId=${c.id}');
+                            // TODO: Implementar edição de criança (abrir modal)
+                          },
+                        ),
+                      if (canDeleteChild)
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: () {
+                            debugPrint('DebuggerLog: ProfileScreen.deleteChild.tap -> childId=${c.id}');
+                            // TODO: Implementar exclusão de criança
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+              ]);
+            }).toList(),
+          );
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Expanded(
-                child: const Text(
-                  'Crianças sob responsabilidade',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ]),
-            const SizedBox(height: 12),
-            if (children.isEmpty)
-              Center(child: Text('Nenhuma criança cadastrada.', style: TextStyle(color: Theme.of(context).colorScheme.primary)))
-            else
-              Column(
-                children: children.map((c) {
-                  return Column(children: [
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(c.name ?? ''),
-                      subtitle: Text('${(c.isActive ?? false) ? 'Ativa' : 'Inativa'}${c.document != null && c.document!.isNotEmpty ? ' · ${c.document}' : ''}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (canEditChild)
-                            IconButton(
-                              icon: const Icon(Icons.edit_outlined),
-                              onPressed: () {
-                                debugPrint('DebuggerLog: ProfileScreen.editChild.tap -> childId=${c.id}');
-                                // TODO: Implementar edição de criança (abrir modal)
-                              },
-                            ),
-                          if (canDeleteChild)
-                            IconButton(
-                              icon: const Icon(Icons.delete_outline),
-                              onPressed: () {
-                                debugPrint('DebuggerLog: ProfileScreen.deleteChild.tap -> childId=${c.id}');
-                                // TODO: Implementar exclusão de criança
-                              },
-                            ),
-                        ],
-                      ),
-                    ),
-                    const Divider(height: 1),
-                  ]);
-                }).toList(),
-              ),
-          ]),
+          header,
+          const SizedBox(height: 12),
+          AnimatedCrossFade(
+            firstChild: firstChildWidget,
+            secondChild: fullListWidget,
+            crossFadeState: collapsed ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+            duration: const Duration(milliseconds: 220),
+            firstCurve: Curves.easeInOut,
+            secondCurve: Curves.easeInOut,
+            sizeCurve: Curves.easeInOut,
+          ),
         ]),
       ),
     );
