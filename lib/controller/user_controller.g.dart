@@ -109,6 +109,16 @@ mixin _$UserController on _UserController, Store {
     );
   }
 
+  late final _$deleteUserAsyncAction = AsyncAction(
+    '_UserController.deleteUser',
+    context: context,
+  );
+
+  @override
+  Future<bool> deleteUser(String? id) {
+    return _$deleteUserAsyncAction.run(() => super.deleteUser(id));
+  }
+
   late final _$_UserControllerActionController = ActionController(
     name: '_UserController',
     context: context,
@@ -121,18 +131,6 @@ mixin _$UserController on _UserController, Store {
     );
     try {
       return super.addUser(user);
-    } finally {
-      _$_UserControllerActionController.endAction(_$actionInfo);
-    }
-  }
-
-  @override
-  void removeUserById(String id) {
-    final _$actionInfo = _$_UserControllerActionController.startAction(
-      name: '_UserController.removeUserById',
-    );
-    try {
-      return super.removeUserById(id);
     } finally {
       _$_UserControllerActionController.endAction(_$actionInfo);
     }

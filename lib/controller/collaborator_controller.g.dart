@@ -27,6 +27,28 @@ mixin _$CollaboratorController on _CollaboratorController, Store {
     });
   }
 
+  late final _$selectedCollaboratorAtom = Atom(
+    name: '_CollaboratorController.selectedCollaborator',
+    context: context,
+  );
+
+  @override
+  Collaborator? get selectedCollaborator {
+    _$selectedCollaboratorAtom.reportRead();
+    return super.selectedCollaborator;
+  }
+
+  @override
+  set selectedCollaborator(Collaborator? value) {
+    _$selectedCollaboratorAtom.reportWrite(
+      value,
+      super.selectedCollaborator,
+      () {
+        super.selectedCollaborator = value;
+      },
+    );
+  }
+
   late final _$setLoggedCollaboratorAsyncAction = AsyncAction(
     '_CollaboratorController.setLoggedCollaborator',
     context: context,
@@ -36,6 +58,18 @@ mixin _$CollaboratorController on _CollaboratorController, Store {
   Future<void> setLoggedCollaborator(Collaborator? collaborator) {
     return _$setLoggedCollaboratorAsyncAction.run(
       () => super.setLoggedCollaborator(collaborator),
+    );
+  }
+
+  late final _$setSelectedCollaboratorAsyncAction = AsyncAction(
+    '_CollaboratorController.setSelectedCollaborator',
+    context: context,
+  );
+
+  @override
+  Future<void> setSelectedCollaborator(Collaborator? collaborator) {
+    return _$setSelectedCollaboratorAsyncAction.run(
+      () => super.setSelectedCollaborator(collaborator),
     );
   }
 
@@ -63,10 +97,23 @@ mixin _$CollaboratorController on _CollaboratorController, Store {
     );
   }
 
+  late final _$deleteCollaboratorAsyncAction = AsyncAction(
+    '_CollaboratorController.deleteCollaborator',
+    context: context,
+  );
+
+  @override
+  Future<bool> deleteCollaborator(String? id) {
+    return _$deleteCollaboratorAsyncAction.run(
+      () => super.deleteCollaborator(id),
+    );
+  }
+
   @override
   String toString() {
     return '''
-loggedCollaborator: ${loggedCollaborator}
+loggedCollaborator: ${loggedCollaborator},
+selectedCollaborator: ${selectedCollaborator}
     ''';
   }
 }
