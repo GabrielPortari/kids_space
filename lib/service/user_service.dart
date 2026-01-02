@@ -16,4 +16,9 @@ class UserService {
 		return mockUsers.where((user) => user.companyId == companyId).toList();
 	}
 
+  Future<bool> deleteUser(String id) async {
+    await Future.delayed(Duration(milliseconds: 500));
+    // Simula exclusão bem-sucedida
+    return true;
+  }
 }

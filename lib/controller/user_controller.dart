@@ -2,6 +2,7 @@ import 'package:mobx/mobx.dart';
 
 import '../model/user.dart';
 import '../service/user_service.dart';
+import '../controller/child_controller.dart';
 
 part 'user_controller.g.dart';
 
@@ -9,6 +10,7 @@ class UserController = _UserController with _$UserController;
 
 abstract class _UserController with Store {
 	final UserService _userService = UserService();
+  final ChildController _childController = ChildController();
 
   @observable
   String userFilter = '';
@@ -82,7 +84,35 @@ abstract class _UserController with Store {
 	void addUser(User user) => users.add(user);
 
 	@action
-	void removeUserById(String id) => users.removeWhere((u) => u.id == id);
+	Future<bool> deleteUser(String? id) async {
+    if(id != null && id.isNotEmpty){
+			// antes de excluir o usuário, verificar suas crianças
+			final user = getUserById(id);
+			final childIds = user?.childrenIds ?? [];
+			for (final cid in childIds) {
+				final child = _childController.getChildById(cid);
+				if (child == null) continue;
+				final responsibles = List<String>.from(child.responsibleUserIds ?? []);
+				if (!responsibles.contains(id)) continue;
+				if (responsibles.length > 1) {
+					// apenas remover este id da lista de responsáveis da criança
+					child.responsibleUserIds?.removeWhere((r) => r == id);
+					_childController.updateChild(child);
+				} else {
+					// era o único responsável, excluir a criança também
+					_childController.deleteChild(cid);
+				}
+			}
+
+			final success = await _userService.deleteUser(id);
+			if(success){
+				users.removeWhere((u) => u.id == id);
+			}
+			return success;
+    } else {
+      return false;
+    }
+  }
 
 	@action
 	void updateUser(User updated) {

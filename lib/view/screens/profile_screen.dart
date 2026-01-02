@@ -130,7 +130,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           switch(selectedProfileType) {
             case SelectedProfileType.user:
               if (widget.selectedUser != null) {
-                //_userController.deleteUser(widget.selectedUser?.id ?? '');
+                if(await _userController.deleteUser(widget.selectedUser?.id ?? '')){
+                  Navigator.pop(context);
+                  debugPrint('DebuggerLog: Usuário excluído com sucesso');
+                } else {
+                  debugPrint('DebuggerLog: Falha ao excluir usuário');
+                }
               }
               break;
             case SelectedProfileType.collaborator:

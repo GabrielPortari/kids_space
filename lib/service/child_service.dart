@@ -31,6 +31,11 @@ class ChildService {
     }
   }
 
+  // Remove uma criança pelo id (mock persistence)
+  void deleteChild(String childId) {
+    mockChildren.removeWhere((child) => child.id == childId);
+  }
+
   // Busca todas as crianças da empresa (mock async)
   Future<List<Child>> getChildrenByCompanyId(String companyId) async {
     await Future.delayed(const Duration(milliseconds: 300));

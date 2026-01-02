@@ -39,6 +39,16 @@ class ChildController {
     _childService.updateChild(child);
   }
 
+  // Expõe busca de criança por id delegando ao serviço
+  Child? getChildById(String childId) {
+    return _childService.getChildById(childId);
+  }
+
+  // Expõe exclusão de criança delegando ao serviço
+  void deleteChild(String childId) {
+    _childService.deleteChild(childId);
+  }
+
   // Busca crianças da empresa (delegando ao serviço)
   Future<List<Child>> getChildrenByCompanyId(String companyId) {
     return _childService.getChildrenByCompanyId(companyId);

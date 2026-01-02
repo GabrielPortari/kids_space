@@ -67,7 +67,8 @@ abstract class _CollaboratorController with Store {
     loggedCollaborator = null;
     return false;
   }
-
+  
+  @action
   Future<bool> deleteCollaborator(String? id) async {
     if(id != null && id.isNotEmpty){
       return _collaboratorService.deleteCollaborator(id);
