@@ -31,4 +31,10 @@ class CollaboratorService {
     await Future.delayed(Duration(milliseconds: 500));
     return mockCollaborators.where((c) => c.companyId == companyId).toList();
   }
+
+  Future<bool> deleteCollaborator(String id) async {
+    await Future.delayed(Duration(milliseconds: 500));
+    // Simula exclusão bem-sucedida
+    return true;
+  }
 }

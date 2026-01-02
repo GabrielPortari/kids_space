@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/auth_controller.dart';
+import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
+import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/base_user.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/model/company.dart';
@@ -38,9 +40,9 @@ class _AppBarConfig {
 class ProfileScreen extends StatefulWidget {
   
   final User? selectedUser;
-  
   final Collaborator? selectedCollaborator;
   final Company? selectedCompany;
+
   const ProfileScreen({super.key, this.selectedUser, this.selectedCollaborator, this.selectedCompany});
   
   @override
@@ -49,6 +51,8 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
+  final UserController _userController = GetIt.I<UserController>();
+  final ChildController _childController = GetIt.I<ChildController>();
   final AuthController _authController = GetIt.I<AuthController>();
 
   SelectedProfileType? get selectedProfileType {
@@ -122,7 +126,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
         onAddChild: () {
           debugPrint('DebuggerLog: Perfil - cadastrar criança selecionado');
         },
-        onDelete: () {
+        onDelete: () async {
+          switch(selectedProfileType) {
+            case SelectedProfileType.user:
+              if (widget.selectedUser != null) {
+                //_userController.deleteUser(widget.selectedUser?.id ?? '');
+              }
+              break;
+            case SelectedProfileType.collaborator:
+              if (widget.selectedCollaborator != null) {
+                if(await _collaboratorController.deleteCollaborator(widget.selectedCollaborator?.id ?? '')){
+                  Navigator.pop(context);
+                  debugPrint('DebuggerLog: Colaborador excluído com sucesso');
+                } else {
+                  debugPrint('DebuggerLog: Falha ao excluir colaborador');
+                }
+              }
+              break;
+            default:
+              break;
+          }
           debugPrint('DebuggerLog: Perfil - excluir selecionado');
         },
         onLogout: () {

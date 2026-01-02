@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:kids_space/service/collaborator_service.dart';
 import 'package:mobx/mobx.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,6 +10,8 @@ part 'collaborator_controller.g.dart';
 class CollaboratorController = _CollaboratorController with _$CollaboratorController;
 
 abstract class _CollaboratorController with Store {
+  
+  final CollaboratorService _collaboratorService = CollaboratorService();
   
   @observable
   Collaborator? loggedCollaborator;
@@ -63,5 +66,13 @@ abstract class _CollaboratorController with Store {
     }
     loggedCollaborator = null;
     return false;
+  }
+
+  Future<bool> deleteCollaborator(String? id) async {
+    if(id != null && id.isNotEmpty){
+      return _collaboratorService.deleteCollaborator(id);
+    } else {
+      return false;
+    }
   }
 }
