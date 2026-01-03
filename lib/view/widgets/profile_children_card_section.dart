@@ -5,6 +5,9 @@ import 'package:kids_space/model/base_user.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/model/user.dart';
 import 'package:kids_space/service/child_service.dart';
+import 'package:kids_space/controller/child_controller.dart';
+import 'package:kids_space/view/widgets/profile_edit_helper.dart';
+
 
 class ProfileChildrenCardSection extends StatefulWidget {
   final User? user;
@@ -17,6 +20,7 @@ class ProfileChildrenCardSection extends StatefulWidget {
 
 class _ProfileChildrenCardSectionState extends State<ProfileChildrenCardSection> {
   final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
+  final ChildController _childController = GetIt.I.get<ChildController>();
   final List<Child> _children = [];
   bool _collapsed = false;
 
@@ -74,17 +78,17 @@ class _ProfileChildrenCardSectionState extends State<ProfileChildrenCardSection>
               if (canEditChild)
                 IconButton(
                   icon: const Icon(Icons.edit_outlined),
-                  onPressed: () {
+                  onPressed: () async {
                     debugPrint('DebuggerLog: ProfileChildrenCardSection.editChild.tap -> childId=${_children.first.id}');
-                    // TODO: abrir modal de edição
+                    await _editChild(_children.first);
                   },
                 ),
               if (canDeleteChild)
                 IconButton(
                   icon: const Icon(Icons.delete_outline),
-                  onPressed: () {
+                  onPressed: () async {
                     debugPrint('DebuggerLog: ProfileChildrenCardSection.deleteChild.tap -> childId=${_children.first.id}');
-                    // TODO: implementar exclusão
+                    await _deleteChild(_children.first);
                   },
                 ),
             ]),
@@ -105,15 +109,17 @@ class _ProfileChildrenCardSectionState extends State<ProfileChildrenCardSection>
                       if (canEditChild)
                         IconButton(
                           icon: const Icon(Icons.edit_outlined),
-                          onPressed: () {
+                          onPressed: () async {
                             debugPrint('DebuggerLog: ProfileChildrenCardSection.editChild.tap -> childId=${c.id}');
+                            await _editChild(c);
                           },
                         ),
                       if (canDeleteChild)
                         IconButton(
                           icon: const Icon(Icons.delete_outline),
-                          onPressed: () {
+                          onPressed: () async {
                             debugPrint('DebuggerLog: ProfileChildrenCardSection.deleteChild.tap -> childId=${c.id}');
+                            await _deleteChild(c);
                           },
                         ),
                     ],
@@ -144,5 +150,48 @@ class _ProfileChildrenCardSectionState extends State<ProfileChildrenCardSection>
         ]),
       ),
     );
+  }
+  Future<void> _editChild(Child c) async {
+    final success = await showChildEditDialogs(context, child: c, childController: _childController);
+    if (success == true) {
+      final updated = await Future.value(_childController.getChildById(c.id ?? ''));
+      final idx = _children.indexWhere((e) => e.id == c.id);
+      if (idx != -1 && updated != null) {
+        _children[idx] = updated;
+        setState(() {});
+      } else {
+        // fallback: reload full list
+        _loadChildren();
+      }
+    }
+  }
+
+  Future<void> _deleteChild(Child c) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirmar exclusão'),
+        content: const Text('Deseja realmente excluir esta criança?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Excluir')),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
+    final success = await _childController.deleteChild(c.id ?? '');
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(success ? 'Sucesso' : 'Erro'),
+        content: Text(success ? 'Criança excluída com sucesso.' : 'Falha ao excluir criança.'),
+        actions: [TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('OK'))],
+      ),
+    );
+
+    if (success) {
+      setState(() {});
+    }
   }
 }

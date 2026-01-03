@@ -8,6 +8,7 @@ import 'package:kids_space/view/screens/admin_panel_screen.dart';
 import 'package:kids_space/view/screens/all_active_children_screen.dart';
 import 'package:kids_space/view/screens/childrens_screen.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
+import 'package:kids_space/view/screens/reports_screen.dart';
 import 'package:kids_space/view/widgets/app_bottom_nav.dart';
 import 'package:kids_space/view/screens/company_selection_screen.dart';
 import 'package:kids_space/view/screens/home_screen.dart';
@@ -59,6 +60,7 @@ class MyApp extends StatelessWidget {
         '/app_bottom_nav': (context) => const AppBottomNav(),
         '/profile': (context) => const ProfileScreen(),
         '/all_active_children': (context) => const AllActiveChildrenScreen(),
+        '/reports': (context) => const ReportsScreen(),
         '/admin_panel': (context) => const AdminPanelScreen(),
       },
     );

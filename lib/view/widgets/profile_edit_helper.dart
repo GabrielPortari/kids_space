@@ -4,6 +4,8 @@ import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/base_model.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/model/user.dart';
+import 'package:kids_space/model/child.dart';
+import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
 
@@ -273,4 +275,151 @@ Future<void> _editAddress(
       }
     }
   }
+}
+
+/// Show edit dialogs for a [Child] following the same pattern used for User/Collaborator.
+/// Returns `true` if an update occurred successfully, `false` on failure, or `null` if cancelled.
+Future<bool?> showChildEditDialogs(
+  BuildContext context, {
+  Child? child,
+  required ChildController childController,
+}) async {
+  final choice = await showModalBottomSheet<String?>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    builder: (_) => SafeArea(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(color: Theme.of(context).canvasColor, borderRadius: BorderRadius.circular(12)),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          const SizedBox(height: 16),
+          const Text('Editar dados da criança', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Divider(),
+
+          ListTile(
+            leading: const Icon(Icons.person),
+            title: const Text('Editar dados pessoais'),
+            onTap: () => Navigator.of(context).pop('personal'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.home),
+            title: const Text('Editar endereço'),
+            onTap: () => Navigator.of(context).pop('address'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.close, color: danger),
+            title: const Text('Cancelar'),
+            onTap: () => Navigator.of(context).pop(null),
+          ),
+        ]),
+      ),
+    ),
+  );
+
+  if (choice == 'personal') {
+    return await _editChildPersonal(context, child: child, childController: childController);
+  } else if (choice == 'address') {
+    return await _editChildAddress(context, child: child, childController: childController);
+  }
+  return null;
+}
+
+Future<bool?> _editChildPersonal(
+  BuildContext context, {
+  Child? child,
+  required ChildController childController,
+}) async {
+  if (child == null) return null;
+  final c = child;
+  DateTime? parsedBirth = BaseModel.tryParseTimestamp(c.birthDate);
+  final fields = [
+    FieldDefinition(key: 'name', label: 'Nome', initialValue: c.name ?? '', required: true),
+    FieldDefinition(key: 'email', label: 'Email', type: FieldType.email, initialValue: c.email ?? ''),
+    FieldDefinition(key: 'birthDate', label: 'Data de Nascimento', type: FieldType.date, initialValue: parsedBirth),
+    FieldDefinition(key: 'phone', label: 'Telefone', type: FieldType.phone, initialValue: c.phone ?? ''),
+    FieldDefinition(key: 'document', label: 'Documento', initialValue: c.document ?? ''),
+  ];
+
+  final res = await showEditEntityBottomSheet(context: context, title: 'Editar dados pessoais', fields: fields);
+  if (res == null) return null;
+
+  final confirmed = await _confirmDialog(context, 'Confirmar alteração', 'Deseja aplicar as alterações nos dados pessoais?');
+  if (confirmed != true) return null;
+
+  final updated = Child(
+    responsibleUserIds: c.responsibleUserIds,
+    isActive: c.isActive,
+    userType: c.userType,
+    name: res['name']?.toString() ?? c.name,
+    email: res['email']?.toString() ?? c.email,
+    birthDate: (res['birthDate'] is DateTime) ? (res['birthDate'] as DateTime).toIso8601String() : c.birthDate,
+    document: res['document']?.toString() ?? c.document,
+    phone: res['phone']?.toString() ?? c.phone,
+    address: c.address,
+    adressNumber: c.adressNumber,
+    adressComplement: c.adressComplement,
+    neighborhood: c.neighborhood,
+    city: c.city,
+    state: c.state,
+    zipCode: c.zipCode,
+    companyId: c.companyId,
+    id: c.id,
+    createdAt: c.createdAt,
+    updatedAt: DateTime.now(),
+  );
+
+  final success = await childController.updateChild(updated);
+  await _showResultDialog(context, success, 'Dados pessoais atualizados com sucesso.', 'Falha ao atualizar dados pessoais.');
+  return success;
+}
+
+Future<bool?> _editChildAddress(
+  BuildContext context, {
+  Child? child,
+  required ChildController childController,
+}) async {
+  if (child == null) return null;
+  final c = child;
+  final fields = [
+    FieldDefinition(key: 'address', label: 'Endereço', initialValue: c.address ?? ''),
+    FieldDefinition(key: 'adressNumber', label: 'Número', initialValue: c.adressNumber ?? ''),
+    FieldDefinition(key: 'adressComplement', label: 'Complemento', initialValue: c.adressComplement ?? ''),
+    FieldDefinition(key: 'neighborhood', label: 'Bairro', initialValue: c.neighborhood ?? ''),
+    FieldDefinition(key: 'city', label: 'Cidade', initialValue: c.city ?? ''),
+    FieldDefinition(key: 'state', label: 'Estado', initialValue: c.state ?? ''),
+    FieldDefinition(key: 'zipCode', label: 'CEP', initialValue: c.zipCode ?? ''),
+  ];
+
+  final res = await showEditEntityBottomSheet(context: context, title: 'Editar endereço', fields: fields);
+  if (res == null) return null;
+
+  final confirmed = await _confirmDialog(context, 'Confirmar alteração', 'Deseja aplicar as alterações no endereço?');
+  if (confirmed != true) return null;
+
+  final updated = Child(
+    responsibleUserIds: c.responsibleUserIds,
+    isActive: c.isActive,
+    userType: c.userType,
+    name: c.name,
+    email: c.email,
+    birthDate: c.birthDate,
+    document: c.document,
+    phone: c.phone,
+    address: res['address']?.toString() ?? c.address,
+    adressNumber: res['adressNumber']?.toString() ?? c.adressNumber,
+    adressComplement: res['adressComplement']?.toString() ?? c.adressComplement,
+    neighborhood: res['neighborhood']?.toString() ?? c.neighborhood,
+    city: res['city']?.toString() ?? c.city,
+    state: res['state']?.toString() ?? c.state,
+    zipCode: res['zipCode']?.toString() ?? c.zipCode,
+    companyId: c.companyId,
+    id: c.id,
+    createdAt: c.createdAt,
+    updatedAt: DateTime.now(),
+  );
+
+  final success = await childController.updateChild(updated);
+  await _showResultDialog(context, success, 'Endereço atualizado com sucesso.', 'Falha ao atualizar endereço.');
+  return success;
 }

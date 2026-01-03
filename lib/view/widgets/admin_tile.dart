@@ -7,7 +7,7 @@ class AdminTile extends StatelessWidget {
   final AdminTileModel model;
   final VoidCallback? onTap;
 
-  const AdminTile({Key? key, required this.model, this.onTap}) : super(key: key);
+  const AdminTile({super.key, required this.model, this.onTap});
 
   @override
   Widget build(BuildContext context) {

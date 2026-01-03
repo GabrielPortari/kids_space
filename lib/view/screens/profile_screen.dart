@@ -130,10 +130,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         onDelete: () async {
           await _confirmAndDelete();
         },
-        onLogout: () {
-          debugPrint('DebuggerLog: Perfil - deslogar selecionado');
-          _authController.logout();
-          Navigator.pushNamedAndRemoveUntil(context, '/company_selection', (route) => false);
+        onLogout: () async {
+          await _confirmAndLogout();
         },
       ),
       body: Row(
@@ -310,6 +308,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
       userController: _userController,
       collaboratorController: _collaboratorController,
     );
+  }
+
+  Future<void> _confirmAndLogout() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirmar logout'),
+        content: const Text('Deseja realmente sair da conta?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Sair')),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    _authController.logout();
+    Navigator.pushNamedAndRemoveUntil(context, '/company_selection', (route) => false);
   }
 
   
