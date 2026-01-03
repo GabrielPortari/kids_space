@@ -76,7 +76,7 @@ As capturas adicionadas estão em `assets/screenshots/` — visual abaixo:
 	<tr>
 		<td style="padding:8px;vertical-align:top;text-align:center">
 			<figure style="margin:0">
-				<a href="assets/screenshots/Screenshot_Admin_Panel.png"><img src="assets/screenshots/Screenshot_Admin_Pannel.png" alt="Admin panel" style="width:320px;max-width:100%;height:auto;" /></a>
+				<a href="assets/screenshots/Screenshot_Admin_Panel.png"><img src="assets/screenshots/Screenshot_Admin_Panel.png" alt="Admin panel" style="width:320px;max-width:100%;height:auto;" /></a>
 				<figcaption style="font-size:13px;margin-top:6px">Painel administrativo — controles e relatórios</figcaption>
 			</figure>
 		</td>
