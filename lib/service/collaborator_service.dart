@@ -27,6 +27,15 @@ class CollaboratorService {
     }
   }
 
+  Future<Collaborator?> getCollaboratorById(String id) async {
+    await Future.delayed(Duration(milliseconds: 200));
+    try {
+      return mockCollaborators.firstWhere((c) => c.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<List<Collaborator>> getCollaboratorsByCompanyId(String companyId) async {
     await Future.delayed(Duration(milliseconds: 500));
     return mockCollaborators.where((c) => c.companyId == companyId).toList();

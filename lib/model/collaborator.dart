@@ -8,6 +8,7 @@ class Collaborator extends BaseUser {
     super.userType,
     super.name,
     super.email,
+    super.photoUrl,
     super.birthDate,
     super.document,
     super.phone,

@@ -1,12 +1,26 @@
 import 'package:uuid/uuid.dart';
 import 'package:kids_space/model/activity_log.dart';
+import 'package:kids_space/model/mock/model_mock.dart' as mock;
 
 /// Simple in-memory activity log service. Can be replaced later with
 /// persistent storage (file, DB or API).
 class ActivityLogService {
   static final ActivityLogService _instance = ActivityLogService._internal();
   factory ActivityLogService() => _instance;
-  ActivityLogService._internal();
+  
+  ActivityLogService._internal() {
+    _seedFromMocks();
+  }
+
+  // Seed with mock logs if available so UI that depends on in-memory
+  // service can show example data during development.
+  void _seedFromMocks() {
+    if (_logs.isEmpty) {
+      try {
+        _logs.addAll(mock.mockActivityLogs);
+      } catch (_) {}
+    }
+  }
 
   final List<ActivityLog> _logs = [];
   final _uuid = const Uuid();

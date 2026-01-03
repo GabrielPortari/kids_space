@@ -12,6 +12,7 @@ class Child extends BaseUser{
     super.birthDate,
     super.document,
     super.phone,
+    super.photoUrl,
     super.address,
     super.adressNumber,
     super.adressComplement,

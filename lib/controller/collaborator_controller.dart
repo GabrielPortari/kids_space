@@ -76,4 +76,9 @@ abstract class _CollaboratorController with Store {
       return false;
     }
   }
+
+  /// Busca colaborador por id delegando ao serviço
+  Future<Collaborator?> getCollaboratorById(String id) {
+    return _collaboratorService.getCollaboratorById(id);
+  }
 }

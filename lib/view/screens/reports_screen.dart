@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:kids_space/service/activity_log_service.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kids_space/controller/activity_log_controller.dart';
+import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/model/activity_log.dart';
+import 'package:kids_space/controller/check_event_controller.dart';
+import 'package:kids_space/controller/company_controller.dart';
+import 'package:kids_space/model/check_event.dart';
+import 'package:kids_space/controller/user_controller.dart';
+import 'package:kids_space/controller/collaborator_controller.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -11,11 +18,16 @@ class ReportsScreen extends StatefulWidget {
 }
 
 class _ReportsScreenState extends State<ReportsScreen> {
-  final ActivityLogService _logService = ActivityLogService();
+  final ActivityLogController _controller = GetIt.I<ActivityLogController>();
+  final CheckEventController _checkController = GetIt.I<CheckEventController>();
+  final CompanyController _companyController = GetIt.I<CompanyController>();
+  final UserController _userController = GetIt.I<UserController>();
+  final CollaboratorController _collabController = GetIt.I<CollaboratorController>();
   DateTime? _from;
   DateTime? _to;
-  List<ActivityLog> _logs = [];
   final DateFormat _fmt = DateFormat('dd/MM/yyyy HH:mm');
+  final List<_ReportItem> _items = [];
+  bool _isRefreshing = false;
 
   @override
   void initState() {
@@ -24,8 +36,68 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Future<void> _refresh() async {
-    final logs = await _logService.getLogs(from: _from, to: _to);
-    setState(() => _logs = logs);
+    if (_isRefreshing) return;
+    _isRefreshing = true;
+    try {
+      await _controller.loadLogs(from: _from, to: _to);
+    // determine companyId (use selected if available)
+    String companyId = _companyController.companySelected?.id ?? 'comp1';
+    await _checkController.loadLog(companyId);
+    // Build display items by resolving names to avoid many FutureBuilders in list
+    _items.clear();
+    final activity = _controller.logs.where((l) {
+      final ts = l.createdAt;
+      if (ts == null) return false;
+      if (_from != null && ts.isBefore(_from!)) return false;
+      if (_to != null && ts.isAfter(_to!)) return false;
+      return true;
+    }).toList();
+
+    final checks = _checkController.logEvents.where((e) {
+      final ts = e.createdAt;
+      if (ts == null) return false;
+      if (_from != null && ts.isBefore(_from!)) return false;
+      if (_to != null && ts.isAfter(_to!)) return false;
+      return true;
+    }).toList();
+
+    // Resolve activity items
+    for (final l in activity) {
+      String? entityName = await _resolveEntityNameAsync(l.entityType, l.entityId);
+      String? actorName = await _resolveActorNameAsync(l.actorId);
+      _items.add(_ReportItem(
+        kind: _ReportKind.activity,
+        title: '${l.action.name.toUpperCase()} — ${l.entityType.name}',
+        primary: entityName ?? l.entityId,
+        secondary: actorName,
+        date: l.createdAt ?? DateTime.now(),
+        details: l.entityCreatedAt != null ? 'Entidade criada: ${_fmt.format(l.entityCreatedAt!)}' : null,
+      ));
+    }
+
+    // Resolve check items
+    for (final e in checks) {
+      final childName = _resolveChildNameSync(e.childId) ?? e.childId;
+      final actorName = await _resolveActorNameAsync(e.collaboratorId);
+      final when = e.checkinTime ?? e.checkoutTime ?? e.createdAt ?? DateTime.now();
+      _items.add(_ReportItem(
+        kind: _ReportKind.check,
+        title: 'CHECK-${e.checkType == CheckType.checkIn ? 'IN' : 'OUT'} — ${childName ?? '-'}',
+        primary: e.childId,
+        secondary: actorName,
+        date: when,
+        details: null,
+        checkType: e.checkType,
+      ));
+    }
+
+    // sort desc
+    _items.sort((a, b) => b.date.compareTo(a.date));
+
+    } finally {
+      _isRefreshing = false;
+      setState(() {});
+    }
   }
 
   Future<void> _pickFrom() async {
@@ -63,24 +135,84 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Widget _buildList() {
-    if (_logs.isEmpty) return const Center(child: Padding(padding: EdgeInsets.all(24), child: Text('Nenhum registro encontrado.')));
+    if (_items.isEmpty) return const Center(child: Padding(padding: EdgeInsets.all(24), child: Text('Nenhum registro encontrado.')));
+
     return ListView.separated(
       padding: const EdgeInsets.all(8),
-      itemCount: _logs.length,
-      separatorBuilder: (_, __) => const Divider(),
+      itemCount: _items.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (ctx, i) {
-        final l = _logs[i];
-        return ListTile(
-          title: Text('${l.action.name.toUpperCase()} — ${l.entityType.name}'),
-          subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            if (l.entityId != null) Text('ID: ${l.entityId}'),
-            if (l.actorId != null) Text('Por: ${l.actorId}'),
-            if (l.entityCreatedAt != null) Text('Entidade criada em: ${_fmt.format(l.entityCreatedAt!)}'),
-            if (l.createdAt != null) Text('Registro: ${_fmt.format(l.createdAt!)}'),
-          ]),
-        );
+        final it = _items[i];
+        return _buildItemCard(it);
       },
     );
+  }
+
+  Widget _buildItemCard(_ReportItem it) {
+    final color = it.kind == _ReportKind.activity ? Colors.blue.shade50 : Colors.green.shade50;
+    final icon = it.kind == _ReportKind.activity ? Icons.event_note : (it.checkType == CheckType.checkIn ? Icons.login : Icons.logout);
+
+    return Card(
+      color: color,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Container(
+            margin: const EdgeInsets.only(right: 12, top: 4),
+            child: CircleAvatar(backgroundColor: Colors.white, child: Icon(icon, size: 20, color: Colors.black54)),
+          ),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Flexible(child: Text(it.title, style: const TextStyle(fontWeight: FontWeight.w600))),
+              Text(_fmt.format(it.date), style: const TextStyle(color: Colors.black54, fontSize: 12)),
+            ]),
+            const SizedBox(height: 6),
+            if (it.primary != null) Text('Nome/ID: ${it.primary}', style: const TextStyle(color: Colors.black87)),
+            if (it.secondary != null) Padding(padding: const EdgeInsets.only(top:4), child: Text('Por: ${it.secondary}', style: const TextStyle(color: Colors.black54))),
+            if (it.details != null) Padding(padding: const EdgeInsets.only(top:6), child: Text(it.details!, style: const TextStyle(fontSize: 12, color: Colors.black54))),
+          ])),
+        ]),
+      ),
+    );
+  }
+  
+  String? _resolveChildNameSync(String? id) {
+    if (id == null) return null;
+    final ch = GetIt.I<ChildController>().getChildById(id);
+    return ch?.name;
+  }
+
+  Future<String?> _resolveActorNameAsync(String? id) async {
+    if (id == null) return null;
+    final c = await _collabController.getCollaboratorById(id);
+    if (c != null) return c.name;
+    final u = _userController.getUserById(id);
+    if (u != null) return u.name;
+    return null;
+  }
+
+  Future<String?> _resolveEntityNameAsync(ActivityEntityType type, String? id) async {
+    if (id == null) return null;
+    switch (type) {
+      case ActivityEntityType.company:
+        try {
+          final comp = _companyController.getCompanyById(id);
+          return comp.fantasyName ?? comp.corporateName;
+        } catch (_) {
+          return null;
+        }
+      case ActivityEntityType.collaborator:
+        final c = await _collabController.getCollaboratorById(id);
+        return c?.name;
+      case ActivityEntityType.user:
+        final u = _userController.getUserById(id);
+        return u?.name;
+      case ActivityEntityType.child:
+        final ch = GetIt.I<ChildController>().getChildById(id);
+        return ch?.name;
+      case ActivityEntityType.other:
+      return null;
+    }
   }
 
   @override
@@ -97,4 +229,18 @@ class _ReportsScreenState extends State<ReportsScreen> {
       ),
     );
   }
+}
+
+enum _ReportKind { activity, check }
+
+class _ReportItem {
+  final _ReportKind kind;
+  final String title;
+  final String? primary;
+  final String? secondary;
+  final DateTime date;
+  final String? details;
+  final CheckType? checkType;
+
+  _ReportItem({required this.kind, required this.title, this.primary, this.secondary, required this.date, this.details, this.checkType});
 }
