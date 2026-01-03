@@ -58,19 +58,13 @@ configuração.
 ## Capturas de tela
 As capturas adicionadas estão em `assets/screenshots/` — visual abaixo:
 
-![Home screen](assets/screenshots/Screenshot_Home_Screen.png)
+<img src="assets/screenshots/Screenshot_Home_Screen.png" alt="Home screen" style="width:800px;max-width:100%;height:auto;" />
 
-![Childrens screen](assets/screenshots/Screenshot_Childrens_Screen.png)
+<img src="assets/screenshots/Screenshot_Childrens_Screen.png" alt="Childrens screen" style="width:800px;max-width:100%;height:auto;" />
 
-![Admin panel](assets/screenshots/Screenshot_Admin_Pannel.png)
+<img src="assets/screenshots/Screenshot_Admin_Pannel.png" alt="Admin panel" style="width:800px;max-width:100%;height:auto;" />
 
-![Profile screen](assets/screenshots/Screenshot_Profile_Screen.png)
-
-## Contribuindo
-- Abra issues para bugs e features.
-- Fork → Branch → Pull Request.
-- Ao modificar controllers MobX, execute o `build_runner` para atualizar os
-arquivos `*.g.dart`.
+<img src="assets/screenshots/Screenshot_Profile_Screen.png" alt="Profile screen" style="width:800px;max-width:100%;height:auto;" />
 
 ## Recursos e imagens
 - Assets como imagens e ícones estão em `assets/images/` e `assets/langs/`.
