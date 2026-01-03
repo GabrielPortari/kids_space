@@ -3,6 +3,7 @@ enum AdminTileType {
   responsible,
   child,
   collaborator,
+  reports,
 }
 
 String titleForType(AdminTileType type) {
@@ -15,6 +16,8 @@ String titleForType(AdminTileType type) {
       return 'Crianças';
     case AdminTileType.collaborator:
       return 'Colaboradores';
+    case AdminTileType.reports:
+      return 'Relatórios';
   }
 }
 
@@ -28,6 +31,8 @@ String messageForType(AdminTileType type) {
       return('Gerencie as crianças');
     case AdminTileType.collaborator:
       return('Gerencie os collaborator');
+    case AdminTileType.reports:
+      return('Visualize os relatórios e logs');
   }
 }
 
@@ -41,5 +46,7 @@ String getNavigationRoute(AdminTileType type) {
       return('/childrens');
     case AdminTileType.collaborator:
       return('/collaborators');
+    case AdminTileType.reports:
+      return('/reports');
   }
 }

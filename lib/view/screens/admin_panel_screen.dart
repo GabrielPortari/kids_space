@@ -26,6 +26,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     AdminTileModel(type: AdminTileType.responsible, icon: Icons.person),
     AdminTileModel(type: AdminTileType.child, icon: Icons.child_care),
     AdminTileModel(type: AdminTileType.collaborator, icon: Icons.group),
+    AdminTileModel(type: AdminTileType.reports, icon: Icons.bar_chart),
   ];
   final CompanyController _companyController = GetIt.I.get<CompanyController>();
   final CollaboratorController _collaboratorController = GetIt.I.get<CollaboratorController>();
@@ -107,8 +108,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         } else if(model.type == AdminTileType.collaborator){
                           Navigator.pushNamed(context, getNavigationRoute(model.type));
                           debugPrint('DebuggerLog: AdminPanelScreen.navigate.collaborators');
+                        } else if(model.type == AdminTileType.reports){
+                          //Navigator.pushNamed(context, getNavigationRoute(model.type));
+                          debugPrint('DebuggerLog: AdminPanelScreen.navigate.reports');
                         }
-                        
                       },
                     );
                   },

@@ -58,13 +58,36 @@ configuração.
 ## Capturas de tela
 As capturas adicionadas estão em `assets/screenshots/` — visual abaixo:
 
-<a href="assets/screenshots/Screenshot_Home_Screen.png"><img src="assets/screenshots/Screenshot_Home_Screen.png" alt="Home screen" style="width:360px;max-width:100%;height:auto;" /></a>
-
-<a href="assets/screenshots/Screenshot_Childrens_Screen.png"><img src="assets/screenshots/Screenshot_Childrens_Screen.png" alt="Childrens screen" style="width:360px;max-width:100%;height:auto;" /></a>
-
-<a href="assets/screenshots/Screenshot_Admin_Pannel.png"><img src="assets/screenshots/Screenshot_Admin_Pannel.png" alt="Admin panel" style="width:360px;max-width:100%;height:auto;" /></a>
-
-<a href="assets/screenshots/Screenshot_Profile_Screen.png"><img src="assets/screenshots/Screenshot_Profile_Screen.png" alt="Profile screen" style="width:360px;max-width:100%;height:auto;" /></a>
+<table>
+	<tr>
+		<td style="padding:8px;vertical-align:top;text-align:center">
+			<figure style="margin:0">
+				<a href="assets/screenshots/Screenshot_Home_Screen.png"><img src="assets/screenshots/Screenshot_Home_Screen.png" alt="Home screen" style="width:320px;max-width:100%;height:auto;" /></a>
+				<figcaption style="font-size:13px;margin-top:6px">Tela inicial — visão geral e status</figcaption>
+			</figure>
+		</td>
+		<td style="padding:8px;vertical-align:top;text-align:center">
+			<figure style="margin:0">
+				<a href="assets/screenshots/Screenshot_Childrens_Screen.png"><img src="assets/screenshots/Screenshot_Childrens_Screen.png" alt="Childrens screen" style="width:320px;max-width:100%;height:auto;" /></a>
+				<figcaption style="font-size:13px;margin-top:6px">Lista de crianças — adicionar/editar dependentes</figcaption>
+			</figure>
+		</td>
+	</tr>
+	<tr>
+		<td style="padding:8px;vertical-align:top;text-align:center">
+			<figure style="margin:0">
+				<a href="assets/screenshots/Screenshot_Admin_Panel.png"><img src="assets/screenshots/Screenshot_Admin_Pannel.png" alt="Admin panel" style="width:320px;max-width:100%;height:auto;" /></a>
+				<figcaption style="font-size:13px;margin-top:6px">Painel administrativo — controles e relatórios</figcaption>
+			</figure>
+		</td>
+		<td style="padding:8px;vertical-align:top;text-align:center">
+			<figure style="margin:0">
+				<a href="assets/screenshots/Screenshot_Profile_Screen.png"><img src="assets/screenshots/Screenshot_Profile_Screen.png" alt="Profile screen" style="width:320px;max-width:100%;height:auto;" /></a>
+				<figcaption style="font-size:13px;margin-top:6px">Perfil — dados do responsável/colaborador</figcaption>
+			</figure>
+		</td>
+	</tr>
+</table>
 
 ## Recursos e imagens
 - Assets como imagens e ícones estão em `assets/images/` e `assets/langs/`.
