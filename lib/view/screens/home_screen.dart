@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kids_space/util/date_hour_util.dart';
 import 'package:kids_space/util/localization_service.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
+import 'package:kids_space/controller/child_controller.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:kids_space/view/design_system/app_card.dart';
@@ -19,6 +20,7 @@ final CollaboratorController _collaboratorController =
     GetIt.I<CollaboratorController>();
 final CheckEventController _checkEventController =
     GetIt.I<CheckEventController>();
+final ChildController _childController = GetIt.I<ChildController>();
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -163,11 +165,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ),
                                   title: TextBodyMedium(
-                                    event.child.name ?? '',
+                                    _childController.getChildById(event.childId ?? '')?.name ?? '',
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   subtitle: TextBodySmall(
-                                    '${formatDate(event.timestamp)} • ${formatTime(event.timestamp)}',
+                                    '${formatDate(event.checkinTime ?? event.checkoutTime ?? DateTime.now())} • ${formatTime(event.checkinTime ?? event.checkoutTime ?? DateTime.now())}',
                                   ),
                                   trailing: Chip(
                                     label: TextBodySmall(
@@ -178,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     backgroundColor: isCheckin ? success : danger,
                                   ),
-                                  onTap: () => debugPrint('DebuggerLog: HomeScreen.log tapped index=$idx child=${event.child.name}'),
+                                  onTap: () => debugPrint('DebuggerLog: HomeScreen.log tapped index=$idx childId=${event.childId}'),
                                 );
                               },
                             ),
@@ -346,11 +348,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               ? Row(
                                   children: [
                                     TextBodyMedium(
-                                      _checkEventController.lastCheckIn?.child.name ?? '-',
+                                      _childController.getChildById(_checkEventController.lastCheckIn?.childId ?? '')?.name ?? (_checkEventController.lastCheckIn?.childId ?? '-'),
                                     ),
                                     const SizedBox(width: 8),
                                     TextBodyMedium(
-                                      formatTime(_checkEventController.lastCheckIn?.timestamp ?? DateTime.now()),
+                                      formatTime(_checkEventController.lastCheckIn?.checkinTime ?? _checkEventController.lastCheckIn?.checkoutTime ?? DateTime.now()),
                                     ),
                                   ],
                                 )
@@ -372,11 +374,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               ? Row(
                                   children: [
                                     TextBodyMedium(
-                                      _checkEventController.lastCheckOut?.child.name ?? '-',
+                                                                     _childController.getChildById(_checkEventController.lastCheckOut?.childId ?? '')?.name ?? (_checkEventController.lastCheckOut?.childId ?? '-'),
                                     ),
                                     const SizedBox(width: 8),
                                     TextBodyMedium(
-                                      formatTime(_checkEventController.lastCheckOut?.timestamp ?? DateTime.now()),
+                                      formatTime(_checkEventController.lastCheckOut?.checkoutTime ?? _checkEventController.lastCheckOut?.checkinTime ?? DateTime.now()),
                                     ),
                                   ],
                                 )

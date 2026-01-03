@@ -46,18 +46,16 @@ class ChildController {
   }
 
   // Expõe busca de criança por id delegando ao serviço
-  Future<Child?> getChildById(String? id) async {
-    if(id != null && id.isNotEmpty){
-      Child? children = await _childService.getChildById(id);
-      return children;
-    }else{
-      return null;
+  Child? getChildById(String? id) {
+    if (id != null && id.isNotEmpty) {
+      return _childService.getChildById(id);
     }
+    return null;
   }
 
   // Expõe exclusão de criança delegando ao serviço
-  Future<bool> deleteChild(String childId) {
-    return _childService.deleteChild(childId);
+  Future<bool> deleteChild(String childId) async {
+    return await _childService.deleteChild(childId);
   }
 
   // Busca crianças da empresa (delegando ao serviço)

@@ -109,7 +109,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                           Navigator.pushNamed(context, getNavigationRoute(model.type));
                           debugPrint('DebuggerLog: AdminPanelScreen.navigate.collaborators');
                         } else if(model.type == AdminTileType.reports){
-                          //Navigator.pushNamed(context, getNavigationRoute(model.type));
+                          Navigator.pushNamed(context, getNavigationRoute(model.type));
                           debugPrint('DebuggerLog: AdminPanelScreen.navigate.reports');
                         }
                       },

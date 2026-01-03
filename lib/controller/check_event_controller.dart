@@ -123,8 +123,10 @@ abstract class _CheckEventController with Store {
     final events = await getEventsByCompany(companyId);
     final Map<String, CheckEvent> lastEventByChild = {};
     for (final event in events) {
-      final childId = event.child.id ?? '0';
-      if (!lastEventByChild.containsKey(childId) || event.timestamp.isAfter(lastEventByChild[childId]!.timestamp)) {
+      final childId = event.childId ?? '0';
+      DateTime? et = event.checkinTime ?? event.checkoutTime;
+      DateTime? prevt = lastEventByChild[childId] == null ? null : (lastEventByChild[childId]!.checkinTime ?? lastEventByChild[childId]!.checkoutTime);
+      if (!lastEventByChild.containsKey(childId) || (et != null && (prevt == null || et.isAfter(prevt)))) {
         lastEventByChild[childId] = event;
       }
     }

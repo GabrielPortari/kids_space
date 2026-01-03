@@ -19,13 +19,17 @@ class CheckEventService {
     DateTime? timestamp,
   }) {
     return Future.delayed(_serviceDelay, () {
+      final now = timestamp ?? DateTime.now();
       final event = CheckEvent(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         companyId: companyId,
-        child: child,
-        collaborator: collaborator,
-        timestamp: timestamp ?? DateTime.now(),
+        childId: child.id,
+        collaboratorId: collaborator.id,
+        checkinTime: checkType == CheckType.checkIn ? now : null,
+        checkoutTime: checkType == CheckType.checkOut ? now : null,
         checkType: checkType,
+        createdAt: now,
+        updatedAt: now,
       );
       _events.add(event);
       return event;
@@ -44,28 +48,40 @@ class CheckEventService {
   /// Retorna eventos por criança
   Future<List<CheckEvent>> getEventsByChild(String childId) =>
     Future.delayed(_serviceDelay,
-      () => _events.where((e) => e.child.id == childId).toList());
+      () => _events.where((e) => e.childId == childId).toList());
 
   /// Retorna eventos por colaborador
   Future<List<CheckEvent>> getEventsByCollaborator(String collaboratorId) =>
     Future.delayed(_serviceDelay,
-      () => _events.where((e) => e.collaborator.id == collaboratorId).toList());
+      () => _events.where((e) => e.collaboratorId == collaboratorId).toList());
 
   /// Retorna o último check-in e check-out da empresa
   Future<Map<CheckType, CheckEvent?>> getLastCheckinAndCheckout(
       String companyId) async {
     // Reuse getEventsByCompany which already has a simulated delay
     final events = await getEventsByCompany(companyId);
+    DateTime? _eventTime(CheckEvent e) => e.checkinTime ?? e.checkoutTime;
     CheckEvent? lastCheckIn = events
         .where((e) => e.checkType == CheckType.checkIn)
         .toList()
-        .fold<CheckEvent?>(
-            null, (prev, e) => prev == null || e.timestamp.isAfter(prev.timestamp) ? e : prev);
+        .fold<CheckEvent?>(null, (prev, e) {
+      final et = _eventTime(e);
+      final prevt = prev == null ? null : _eventTime(prev);
+      if (prevt == null) return e;
+      if (et == null) return prev;
+      return et.isAfter(prevt) ? e : prev;
+    });
+
     CheckEvent? lastCheckOut = events
         .where((e) => e.checkType == CheckType.checkOut)
         .toList()
-        .fold<CheckEvent?>(
-            null, (prev, e) => prev == null || e.timestamp.isAfter(prev.timestamp) ? e : prev);
+        .fold<CheckEvent?>(null, (prev, e) {
+      final et = _eventTime(e);
+      final prevt = prev == null ? null : _eventTime(prev);
+      if (prevt == null) return e;
+      if (et == null) return prev;
+      return et.isAfter(prevt) ? e : prev;
+    });
     return {
       CheckType.checkIn: lastCheckIn,
       CheckType.checkOut: lastCheckOut,
@@ -73,10 +89,17 @@ class CheckEventService {
   }
 
   /// Retorna os últimos eventos (check-in e check-out) da empresa, ordenados do mais recente para o mais antigo
-  Future<List<CheckEvent>> getLastEventsByCompany(String companyId,
-      {int limit = 30}) async {
+  Future<List<CheckEvent>> getLastEventsByCompany(String companyId, {int limit = 30}) async {
     final events = await getEventsByCompany(companyId);
-    events.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    DateTime? _eventTime(CheckEvent e) => e.checkinTime ?? e.checkoutTime;
+    events.sort((a, b) {
+      final at = _eventTime(a);
+      final bt = _eventTime(b);
+      if (at == null && bt == null) return 0;
+      if (at == null) return 1;
+      if (bt == null) return -1;
+      return bt.compareTo(at);
+    });
     return events.take(limit).toList();
   }
 
