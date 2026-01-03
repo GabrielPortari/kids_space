@@ -1,16 +1,79 @@
-# kids_space
+# Kids Space
 
-A new Flutter project.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Getting Started
+Despreocupando a vida dos pais: sistema de check-in/check-out para espaços kids.
 
-This project is a starting point for a Flutter application.
+**Descrição:** Aplicativo mobile Flutter para controle de presença de crianças em
+espaços infantis, com login para colaboradores e administradores, gerenciamento
+de usuários e crianças como dependentes, edição/remoção, e log de check-ins/
+check-outs.
 
-A few resources to get you started if this is your first Flutter project:
+---
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Principais funcionalidades
+- **Login** para colaboradores e administradores
+- **Gerenciamento de usuários**: adicionar, editar, remover responsáveis
+- **Gerenciamento de crianças**: adicionar como dependentes, editar, remover
+- **Check-in / Check-out** com histórico (logs)
+- **Visão de crianças ativas** e painel administrativo
+- **Internacionalização** (`pt-BR`, `en-US`)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Tecnologias
+- Flutter & Dart (ver `pubspec.yaml`)
+- State management: MobX
+- Dependency Injection: GetIt
+- Localização: `easy_localization`
+
+## Arquitetura e pontos importantes
+- Estrutura em camadas: `view/`, `controller/`, `model/`, `service/`, `util/`
+- Controllers MobX com geração de código (observe `*.g.dart` gerados)
+- Injeção via [lib/util/getit_factory.dart](lib/util/getit_factory.dart)
+- Entrada do app: [lib/main.dart](lib/main.dart)
+
+## Como rodar (desenvolvimento)
+
+### Pré-requisitos
+- Flutter >= 3.8
+- SDK Dart compatível (definido em `pubspec.yaml`)
+
+### Passos
+
+```bash
+# instalar dependências
+flutter pub get
+
+# gerar código MobX (se editar stores)
+flutter pub run build_runner build --delete-conflicting-outputs
+
+# rodar no dispositivo/emulador
+flutter run
+```
+
+## Localização
+- Textos traduzidos em `assets/langs/` (`pt-BR.json`, `en-US.json`). A
+aplicação inicializa com `pt-BR` como fallback. Veja [lib/main.dart](lib/main.dart) para
+configuração.
+
+## Capturas de tela
+As capturas adicionadas estão em `assets/screenshots/` — visual abaixo:
+
+![Home screen](assets/screenshots/Screenshot_Home_Screen.png)
+
+![Childrens screen](assets/screenshots/Screenshot_Childrens_Screen.png)
+
+![Admin panel](assets/screenshots/Screenshot_Admin_Pannel.png)
+
+![Profile screen](assets/screenshots/Screenshot_Profile_Screen.png)
+
+## Contribuindo
+- Abra issues para bugs e features.
+- Fork → Branch → Pull Request.
+- Ao modificar controllers MobX, execute o `build_runner` para atualizar os
+arquivos `*.g.dart`.
+
+## Recursos e imagens
+- Assets como imagens e ícones estão em `assets/images/` e `assets/langs/`.
+
+## Licença
+- Este projeto está licenciado sob a licença MIT — veja o arquivo [LICENSE](LICENSE) para detalhes.
