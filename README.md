@@ -58,13 +58,13 @@ configuração.
 ## Capturas de tela
 As capturas adicionadas estão em `assets/screenshots/` — visual abaixo:
 
-<img src="assets/screenshots/Screenshot_Home_Screen.png" alt="Home screen" style="width:800px;max-width:100%;height:auto;" />
+<a href="assets/screenshots/Screenshot_Home_Screen.png"><img src="assets/screenshots/Screenshot_Home_Screen.png" alt="Home screen" style="width:360px;max-width:100%;height:auto;" /></a>
 
-<img src="assets/screenshots/Screenshot_Childrens_Screen.png" alt="Childrens screen" style="width:800px;max-width:100%;height:auto;" />
+<a href="assets/screenshots/Screenshot_Childrens_Screen.png"><img src="assets/screenshots/Screenshot_Childrens_Screen.png" alt="Childrens screen" style="width:360px;max-width:100%;height:auto;" /></a>
 
-<img src="assets/screenshots/Screenshot_Admin_Pannel.png" alt="Admin panel" style="width:800px;max-width:100%;height:auto;" />
+<a href="assets/screenshots/Screenshot_Admin_Pannel.png"><img src="assets/screenshots/Screenshot_Admin_Pannel.png" alt="Admin panel" style="width:360px;max-width:100%;height:auto;" /></a>
 
-<img src="assets/screenshots/Screenshot_Profile_Screen.png" alt="Profile screen" style="width:800px;max-width:100%;height:auto;" />
+<a href="assets/screenshots/Screenshot_Profile_Screen.png"><img src="assets/screenshots/Screenshot_Profile_Screen.png" alt="Profile screen" style="width:360px;max-width:100%;height:auto;" /></a>
 
 ## Recursos e imagens
 - Assets como imagens e ícones estão em `assets/images/` e `assets/langs/`.
