@@ -1,5 +1,4 @@
 import 'package:mobx/mobx.dart';
-
 import '../model/user.dart';
 import '../service/user_service.dart';
 import '../controller/child_controller.dart';
@@ -90,24 +89,24 @@ abstract class _UserController with Store {
 			final user = getUserById(id);
 			final childIds = user?.childrenIds ?? [];
 			for (final cid in childIds) {
-				final child = _childController.getChildById(cid);
-				if (child == null) continue;
-				final responsibles = List<String>.from(child.responsibleUserIds ?? []);
-				if (!responsibles.contains(id)) continue;
-				if (responsibles.length > 1) {
-					// apenas remover este id da lista de responsáveis da criança
-					child.responsibleUserIds?.removeWhere((r) => r == id);
-					_childController.updateChild(child);
-				} else {
-					// era o único responsável, excluir a criança também
-					_childController.deleteChild(cid);
-				}
+				final child = await _childController.getChildById(cid);
+				if (child != null){
+          final responsibles = List<String>.from(child.responsibleUserIds ?? []);
+            if (!responsibles.contains(id)){
+            if (responsibles.length > 1) {
+              // apenas remover este id da lista de responsáveis da criança
+              child.responsibleUserIds?.removeWhere((r) => r == id);
+              _childController.updateChild(child);
+            } else {
+              // era o único responsável, excluir a criança também
+              _childController.deleteChild(cid);
+            }
+          }
+        }
 			}
 
 			final success = await _userService.deleteUser(id);
-			if(success){
-				users.removeWhere((u) => u.id == id);
-			}
+      
 			return success;
     } else {
       return false;
@@ -115,10 +114,13 @@ abstract class _UserController with Store {
   }
 
 	@action
-	void updateUser(User updated) {
-		final i = users.indexWhere((u) => u.id == updated.id);
-		if (i >= 0) {
-			users[i] = updated;
-		}
+	Future<bool> updateUser(User updated) async {
+    String? id = updated.id;
+		if(id != null && id.isNotEmpty){
+      final success = await _userService.updateUser(updated);
+			return success;
+    } else {
+      return false;
+    }
 	}
 }

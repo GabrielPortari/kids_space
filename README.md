@@ -63,13 +63,13 @@ As capturas adicionadas estão em `assets/screenshots/` — visual abaixo:
 		<td style="padding:8px;vertical-align:top;text-align:center">
 			<figure style="margin:0">
 				<a href="assets/screenshots/Screenshot_Home_Screen.png"><img src="assets/screenshots/Screenshot_Home_Screen.png" alt="Home screen" style="width:320px;max-width:100%;height:auto;" /></a>
-				<figcaption style="font-size:13px;margin-top:6px">Tela inicial — visão geral e status</figcaption>
+				<figcaption style="font-size:13px;margin-top:6px"><br>Tela inicial — visão geral e status</figcaption>
 			</figure>
 		</td>
 		<td style="padding:8px;vertical-align:top;text-align:center">
 			<figure style="margin:0">
 				<a href="assets/screenshots/Screenshot_Childrens_Screen.png"><img src="assets/screenshots/Screenshot_Childrens_Screen.png" alt="Childrens screen" style="width:320px;max-width:100%;height:auto;" /></a>
-				<figcaption style="font-size:13px;margin-top:6px">Lista de crianças — adicionar/editar dependentes</figcaption>
+				<figcaption style="font-size:13px;margin-top:6px"><br>Lista de crianças — adicionar/editar dependentes</figcaption>
 			</figure>
 		</td>
 	</tr>
@@ -77,13 +77,13 @@ As capturas adicionadas estão em `assets/screenshots/` — visual abaixo:
 		<td style="padding:8px;vertical-align:top;text-align:center">
 			<figure style="margin:0">
 				<a href="assets/screenshots/Screenshot_Admin_Panel.png"><img src="assets/screenshots/Screenshot_Admin_Panel.png" alt="Admin panel" style="width:320px;max-width:100%;height:auto;" /></a>
-				<figcaption style="font-size:13px;margin-top:6px">Painel administrativo — controles e relatórios</figcaption>
+				<figcaption style="font-size:13px;margin-top:6px"><br>Painel administrativo — controles e relatórios</figcaption>
 			</figure>
 		</td>
 		<td style="padding:8px;vertical-align:top;text-align:center">
 			<figure style="margin:0">
 				<a href="assets/screenshots/Screenshot_Profile_Screen.png"><img src="assets/screenshots/Screenshot_Profile_Screen.png" alt="Profile screen" style="width:320px;max-width:100%;height:auto;" /></a>
-				<figcaption style="font-size:13px;margin-top:6px">Perfil — dados do responsável/colaborador</figcaption>
+				<figcaption style="font-size:13px;margin-top:6px"><br>Perfil — dados do responsável/colaborador</figcaption>
 			</figure>
 		</td>
 	</tr>

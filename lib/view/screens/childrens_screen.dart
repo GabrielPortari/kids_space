@@ -102,7 +102,7 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
     final double topSpacing = showAppBar ? 8.0 : 8 + MediaQuery.of(context).padding.top;
 
     return Scaffold(
-      appBar: showAppBar ? AppBar(title: const Text('Usuários'), leading: Navigator.canPop(context) ? const BackButton() : null,) : null,
+      appBar: showAppBar ? AppBar(title: const Text('Crianças'), leading: Navigator.canPop(context) ? const BackButton() : null,) : null,
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

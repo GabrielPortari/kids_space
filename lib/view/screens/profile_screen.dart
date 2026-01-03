@@ -3,6 +3,8 @@ import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/auth_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
+import 'package:kids_space/model/base_model.dart';
+import 'package:kids_space/view/widgets/profile_edit_helper.dart';
 import 'package:kids_space/model/base_user.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/model/company.dart';
@@ -12,6 +14,7 @@ import 'package:kids_space/view/widgets/profile_header_section.dart';
 import 'package:kids_space/view/widgets/profile_info_card_section.dart';
 import 'package:kids_space/view/widgets/profile_children_card_section.dart';
 import 'package:kids_space/view/widgets/profile_app_bar.dart';
+import 'package:kids_space/util/date_hour_util.dart';
 
 enum SelectedProfileType {
   user,
@@ -119,37 +122,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         canLogout: appBarConfig.canLogout,
         canDelete: appBarConfig.canDelete,
         onEdit: () {
-          debugPrint('DebuggerLog: Perfil - editar selecionado');
+          _showEditChoice();
         },
         onAddChild: () {
           debugPrint('DebuggerLog: Perfil - cadastrar criança selecionado');
         },
         onDelete: () async {
-          switch(selectedProfileType) {
-            case SelectedProfileType.user:
-              if (widget.selectedUser != null) {
-                if(await _userController.deleteUser(widget.selectedUser?.id ?? '')){
-                  Navigator.pop(context);
-                  debugPrint('DebuggerLog: Usuário excluído com sucesso');
-                } else {
-                  debugPrint('DebuggerLog: Falha ao excluir usuário');
-                }
-              }
-              break;
-            case SelectedProfileType.collaborator:
-              if (widget.selectedCollaborator != null) {
-                if(await _collaboratorController.deleteCollaborator(widget.selectedCollaborator?.id ?? '')){
-                  Navigator.pop(context);
-                  debugPrint('DebuggerLog: Colaborador excluído com sucesso');
-                } else {
-                  debugPrint('DebuggerLog: Falha ao excluir colaborador');
-                }
-              }
-              break;
-            default:
-              break;
-          }
-          debugPrint('DebuggerLog: Perfil - excluir selecionado');
+          await _confirmAndDelete();
         },
         onLogout: () {
           debugPrint('DebuggerLog: Perfil - deslogar selecionado');
@@ -210,22 +189,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future<void> _confirmAndDelete() async {
+    final type = selectedProfileType;
+    if (type != SelectedProfileType.user && type != SelectedProfileType.collaborator) return;
+
+    final targetName = type == SelectedProfileType.user ? 'usuário' : 'colaborador';
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirmar exclusão'),
+        content: Text('Deseja realmente excluir este $targetName?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Excluir')),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    bool success = false;
+    if (type == SelectedProfileType.user && widget.selectedUser != null) {
+      success = await _userController.deleteUser(widget.selectedUser?.id ?? '');
+    } else if (type == SelectedProfileType.collaborator && widget.selectedCollaborator != null) {
+      success = await _collaboratorController.deleteCollaborator(widget.selectedCollaborator?.id ?? '');
+    }
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(success ? 'Sucesso' : 'Erro'),
+        content: Text(success ? 'Operação concluída: $targetName excluído.' : 'Falha ao excluir $targetName.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('OK')),
+        ],
+      ),
+    );
+
+    if (success) Navigator.pop(context);
+  }
+
   Map<String, String> _getProfileData() {
     if (selectedProfileType == SelectedProfileType.user && widget.selectedUser != null) {
       final u = widget.selectedUser!;
+      final dt = BaseModel.tryParseTimestamp(u.birthDate);
       return {
         'Nome': u.name ?? '-',
         'Email': u.email ?? '-',
-        'Data de Nascimento': u.birthDate ?? '-',
+        'Data de Nascimento': dt == null ? '-' : formatDateFull(dt),
         'Telefone': u.phone ?? '-',
         'Documento': u.document ?? '-',
       };
     } else if ((selectedProfileType == SelectedProfileType.collaborator || selectedProfileType == SelectedProfileType.admin) && widget.selectedCollaborator != null) {
       final c = widget.selectedCollaborator!;
+      final dt = BaseModel.tryParseTimestamp(c.birthDate);
       return {
         'Nome': c.name ?? '-',
         'Email': c.email ?? '-',
-        'Data de Nascimento': c.birthDate ?? '-',
+        'Data de Nascimento': dt == null ? '-' : formatDateFull(dt),
         'Telefone': c.phone ?? '-',
         'Documento': c.document ?? '-',
       };
@@ -279,4 +301,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
     return {};
   }
+
+  Future<void> _showEditChoice() async {
+    await showProfileEditDialogs(
+      context,
+      user: widget.selectedUser,
+      collaborator: widget.selectedCollaborator,
+      userController: _userController,
+      collaboratorController: _collaboratorController,
+    );
+  }
+
+  
 }

@@ -21,4 +21,11 @@ class UserService {
     // Simula exclusão bem-sucedida
     return true;
   }
+
+  Future<bool> updateUser(User user) async {
+    await Future.delayed(Duration(milliseconds: 500));
+    // Simula atualização do usuário
+    return true;
+  }
+
 }

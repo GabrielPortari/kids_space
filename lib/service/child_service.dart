@@ -17,23 +17,21 @@ class ChildService {
   }
 
   // Adiciona uma criança (mock persistence)
-  void addChild(Child child) {
-    mockChildren.add(child);
+  Future<bool> addChild(Child child) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return true;
   }
 
   // Atualiza uma criança existente pelo id (mock persistence)
-  void updateChild(Child child) {
-    for (var i = 0; i < mockChildren.length; i++) {
-      if (mockChildren[i].id == child.id) {
-        mockChildren[i] = child;
-        return;
-      }
-    }
+  Future<bool> updateChild(Child child) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return true;
   }
 
   // Remove uma criança pelo id (mock persistence)
-  void deleteChild(String childId) {
-    mockChildren.removeWhere((child) => child.id == childId);
+  Future<bool> deleteChild(String childId) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return true;
   }
 
   // Busca todas as crianças da empresa (mock async)

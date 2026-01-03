@@ -1,0 +1,276 @@
+import 'package:flutter/material.dart';
+import 'package:kids_space/controller/collaborator_controller.dart';
+import 'package:kids_space/controller/user_controller.dart';
+import 'package:kids_space/model/base_model.dart';
+import 'package:kids_space/model/collaborator.dart';
+import 'package:kids_space/model/user.dart';
+import 'package:kids_space/view/design_system/app_theme.dart';
+import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
+
+/// Helper that shows a choice modal to edit personal data or address and
+/// opens the generic `EditEntityBottomSheet` to apply changes.
+Future<void> showProfileEditDialogs(
+  BuildContext context, {
+  User? user,
+  Collaborator? collaborator,
+  required UserController userController,
+  required CollaboratorController collaboratorController,
+}) async {
+  final choice = await showModalBottomSheet<String?>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    builder: (_) => SafeArea(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(color: Theme.of(context).canvasColor, borderRadius: BorderRadius.circular(12)),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          const SizedBox(height: 16),
+          const Text('Editar dados do usuário', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Divider(),
+
+          ListTile(
+            leading: const Icon(Icons.person),
+            title: const Text('Editar dados pessoais'),
+            onTap: () => Navigator.of(context).pop('personal'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.home),
+            title: const Text('Editar endereço'),
+            onTap: () => Navigator.of(context).pop('address'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.close, color: danger),
+            title: const Text('Cancelar'),
+            onTap: () => Navigator.of(context).pop(null),
+          ),
+        ]),
+      ),
+    ),
+  );
+
+  if (choice == 'personal') {
+    await _editPersonal(context, user: user, collaborator: collaborator, userController: userController, collaboratorController: collaboratorController);
+  } else if (choice == 'address') {
+    await _editAddress(context, user: user, collaborator: collaborator, userController: userController, collaboratorController: collaboratorController);
+  }
+}
+
+Future<bool?> _confirmDialog(BuildContext context, String title, String content) {
+  return showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(title),
+      content: Text(content),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancelar')),
+        TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Confirmar')),
+      ],
+    ),
+  );
+}
+
+Future<void> _showResultDialog(BuildContext context, bool success, String successMsg, String errorMsg) {
+  return showDialog<void>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(success ? 'Sucesso' : 'Erro'),
+      content: Text(success ? successMsg : errorMsg),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('OK')),
+      ],
+    ),
+  );
+}
+
+Future<void> _editPersonal(
+  BuildContext context, {
+  User? user,
+  Collaborator? collaborator,
+  required UserController userController,
+  required CollaboratorController collaboratorController,
+}) async {
+  if (user != null) {
+    final u = user;
+    DateTime? parsedBirth = BaseModel.tryParseTimestamp(u.birthDate);
+    final fields = [
+      FieldDefinition(key: 'name', label: 'Nome', initialValue: u.name ?? '', required: true),
+      FieldDefinition(key: 'email', label: 'Email', type: FieldType.email, initialValue: u.email ?? '', required: true),
+      FieldDefinition(key: 'birthDate', label: 'Data de Nascimento', type: FieldType.date, initialValue: parsedBirth),
+      FieldDefinition(key: 'phone', label: 'Telefone', type: FieldType.phone, initialValue: u.phone ?? ''),
+      FieldDefinition(key: 'document', label: 'Documento', initialValue: u.document ?? ''),
+    ];
+
+    final res = await showEditEntityBottomSheet(context: context, title: 'Editar dados pessoais', fields: fields);
+    if (res != null) {
+      final confirmed = await _confirmDialog(context, 'Confirmar alteração', 'Deseja aplicar as alterações nos dados pessoais?');
+      if (confirmed != true) return;
+
+      final updated = User(
+        childrenIds: u.childrenIds,
+        userType: u.userType,
+        name: res['name']?.toString() ?? u.name,
+        email: res['email']?.toString() ?? u.email,
+        birthDate: (res['birthDate'] is DateTime) ? (res['birthDate'] as DateTime).toIso8601String() : u.birthDate,
+        document: res['document']?.toString() ?? u.document,
+        phone: res['phone']?.toString() ?? u.phone,
+        address: u.address,
+        adressNumber: u.adressNumber,
+        adressComplement: u.adressComplement,
+        neighborhood: u.neighborhood,
+        city: u.city,
+        state: u.state,
+        zipCode: u.zipCode,
+        companyId: u.companyId,
+        id: u.id,
+        createdAt: u.createdAt,
+        updatedAt: DateTime.now(),
+      );
+      final success = await userController.updateUser(updated);
+      await _showResultDialog(context, success, 'Dados pessoais atualizados com sucesso.', 'Falha ao atualizar dados pessoais.');
+    }
+  } else if (collaborator != null) {
+    final c = collaborator;
+    DateTime? parsedBirth = BaseModel.tryParseTimestamp(c.birthDate);
+    final fields = [
+      FieldDefinition(key: 'name', label: 'Nome', initialValue: c.name ?? '', required: true),
+      FieldDefinition(key: 'email', label: 'Email', type: FieldType.email, initialValue: c.email ?? '', required: true),
+      FieldDefinition(key: 'birthDate', label: 'Data de Nascimento', type: FieldType.date, initialValue: parsedBirth),
+      FieldDefinition(key: 'phone', label: 'Telefone', type: FieldType.phone, initialValue: c.phone ?? ''),
+      FieldDefinition(key: 'document', label: 'Documento', initialValue: c.document ?? ''),
+    ];
+
+    final res = await showEditEntityBottomSheet(context: context, title: 'Editar dados pessoais', fields: fields);
+    if (res != null) {
+      final confirmed = await _confirmDialog(context, 'Confirmar alteração', 'Deseja aplicar as alterações nos dados pessoais?');
+      if (confirmed != true) return;
+
+      final updated = Collaborator(
+        password: c.password,
+        userType: c.userType,
+        name: res['name']?.toString() ?? c.name,
+        email: res['email']?.toString() ?? c.email,
+        birthDate: (res['birthDate'] is DateTime) ? (res['birthDate'] as DateTime).toIso8601String() : c.birthDate,
+        document: res['document']?.toString() ?? c.document,
+        phone: res['phone']?.toString() ?? c.phone,
+        address: c.address,
+        adressNumber: c.adressNumber,
+        adressComplement: c.adressComplement,
+        neighborhood: c.neighborhood,
+        city: c.city,
+        state: c.state,
+        zipCode: c.zipCode,
+        companyId: c.companyId,
+        id: c.id,
+        createdAt: c.createdAt,
+        updatedAt: DateTime.now(),
+      );
+      try {
+        await collaboratorController.setSelectedCollaborator(updated);
+        if (collaboratorController.loggedCollaborator?.id == updated.id) {
+          await collaboratorController.setLoggedCollaborator(updated);
+        }
+        await _showResultDialog(context, true, 'Dados pessoais atualizados com sucesso.', '');
+      } catch (_) {
+        await _showResultDialog(context, false, '', 'Falha ao atualizar dados pessoais.');
+      }
+    }
+  }
+}
+
+Future<void> _editAddress(
+  BuildContext context, {
+  User? user,
+  Collaborator? collaborator,
+  required UserController userController,
+  required CollaboratorController collaboratorController,
+}) async {
+  if (user != null) {
+    final u = user;
+    final fields = [
+      FieldDefinition(key: 'address', label: 'Endereço', initialValue: u.address ?? ''),
+      FieldDefinition(key: 'adressNumber', label: 'Número', initialValue: u.adressNumber ?? ''),
+      FieldDefinition(key: 'adressComplement', label: 'Complemento', initialValue: u.adressComplement ?? ''),
+      FieldDefinition(key: 'neighborhood', label: 'Bairro', initialValue: u.neighborhood ?? ''),
+      FieldDefinition(key: 'city', label: 'Cidade', initialValue: u.city ?? ''),
+      FieldDefinition(key: 'state', label: 'Estado', initialValue: u.state ?? ''),
+      FieldDefinition(key: 'zipCode', label: 'CEP', initialValue: u.zipCode ?? ''),
+    ];
+
+    final res = await showEditEntityBottomSheet(context: context, title: 'Editar endereço', fields: fields);
+    if (res != null) {
+      final confirmed = await _confirmDialog(context, 'Confirmar alteração', 'Deseja aplicar as alterações no endereço?');
+      if (confirmed != true) return;
+
+      final updated = User(
+        childrenIds: u.childrenIds,
+        userType: u.userType,
+        name: u.name,
+        email: u.email,
+        birthDate: u.birthDate,
+        document: u.document,
+        phone: u.phone,
+        address: res['address']?.toString() ?? u.address,
+        adressNumber: res['adressNumber']?.toString() ?? u.adressNumber,
+        adressComplement: res['adressComplement']?.toString() ?? u.adressComplement,
+        neighborhood: res['neighborhood']?.toString() ?? u.neighborhood,
+        city: res['city']?.toString() ?? u.city,
+        state: res['state']?.toString() ?? u.state,
+        zipCode: res['zipCode']?.toString() ?? u.zipCode,
+        companyId: u.companyId,
+        id: u.id,
+        createdAt: u.createdAt,
+        updatedAt: DateTime.now(),
+      );
+      final success = await userController.updateUser(updated);
+      await _showResultDialog(context, success, 'Endereço atualizado com sucesso.', 'Falha ao atualizar endereço.');
+    }
+  } else if (collaborator != null) {
+    final c = collaborator;
+    final fields = [
+      FieldDefinition(key: 'address', label: 'Endereço', initialValue: c.address ?? ''),
+      FieldDefinition(key: 'adressNumber', label: 'Número', initialValue: c.adressNumber ?? ''),
+      FieldDefinition(key: 'adressComplement', label: 'Complemento', initialValue: c.adressComplement ?? ''),
+      FieldDefinition(key: 'neighborhood', label: 'Bairro', initialValue: c.neighborhood ?? ''),
+      FieldDefinition(key: 'city', label: 'Cidade', initialValue: c.city ?? ''),
+      FieldDefinition(key: 'state', label: 'Estado', initialValue: c.state ?? ''),
+      FieldDefinition(key: 'zipCode', label: 'CEP', initialValue: c.zipCode ?? ''),
+    ];
+
+    final res = await showEditEntityBottomSheet(context: context, title: 'Editar endereço', fields: fields);
+    if (res != null) {
+      final confirmed = await _confirmDialog(context, 'Confirmar alteração', 'Deseja aplicar as alterações no endereço?');
+      if (confirmed != true) return;
+
+      final updated = Collaborator(
+        password: c.password,
+        userType: c.userType,
+        name: c.name,
+        email: c.email,
+        birthDate: c.birthDate,
+        document: c.document,
+        phone: c.phone,
+        address: res['address']?.toString() ?? c.address,
+        adressNumber: res['adressNumber']?.toString() ?? c.adressNumber,
+        adressComplement: res['adressComplement']?.toString() ?? c.adressComplement,
+        neighborhood: res['neighborhood']?.toString() ?? c.neighborhood,
+        city: res['city']?.toString() ?? c.city,
+        state: res['state']?.toString() ?? c.state,
+        zipCode: res['zipCode']?.toString() ?? c.zipCode,
+        companyId: c.companyId,
+        id: c.id,
+        createdAt: c.createdAt,
+        updatedAt: DateTime.now(),
+      );
+      try {
+        await collaboratorController.setSelectedCollaborator(updated);
+        if (collaboratorController.loggedCollaborator?.id == updated.id) {
+          await collaboratorController.setLoggedCollaborator(updated);
+        }
+        await _showResultDialog(context, true, 'Endereço atualizado com sucesso.', '');
+      } catch (_) {
+        await _showResultDialog(context, false, '', 'Falha ao atualizar endereço.');
+      }
+    }
+  }
+}
