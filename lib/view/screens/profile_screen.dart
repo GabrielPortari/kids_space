@@ -252,11 +252,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } else if (selectedProfileType == SelectedProfileType.company && widget.selectedCompany != null) {
       final co = widget.selectedCompany!;
       return {
-        'Nome': co.fantasyName ?? co.corporateName ?? '-',
+        'Nome fantasia': co.fantasyName ?? '-',
+        'Razão social': co.corporateName ?? '-',
         'CNPJ': co.cnpj ?? '-',
         'Site': co.website ?? '-',
-        'Telefone': co.address ?? '-',
-        'Endereço': '${co.address ?? '-'}${co.adressNumber != null ? ', ${co.adressNumber}' : ''}',
+        'Responsável': co.responsible?.name ?? '-',
+        'Logo (URL)': co.logoUrl ?? '-',
+        'Colaboradores': (co.collaborators?.length ?? 0).toString(),
+        'Usuários': (co.users?.length ?? 0).toString(),
+        'Crianças': (co.children?.length ?? 0).toString(),
       };
     }
     return {};
