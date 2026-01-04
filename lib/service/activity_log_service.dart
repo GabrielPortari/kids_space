@@ -1,6 +1,7 @@
 import 'package:uuid/uuid.dart';
 import 'package:kids_space/model/activity_log.dart';
 import 'package:kids_space/model/mock/model_mock.dart' as mock;
+import 'dart:developer' as developer;
 
 /// Simple in-memory activity log service. Can be replaced later with
 /// persistent storage (file, DB or API).
@@ -32,6 +33,8 @@ class ActivityLogService {
     String? actorId,
     DateTime? entityCreatedAt,
   }) async {
+    developer.log('addLog called: action=$action entityType=$entityType entityId=$entityId actorId=$actorId', name: 'ActivityLogService');
+    await Future.delayed(const Duration(milliseconds: 300));
     final now = DateTime.now();
     final log = ActivityLog(
       id: _uuid.v4(),
@@ -44,11 +47,13 @@ class ActivityLogService {
       entityCreatedAt: entityCreatedAt,
     );
     _logs.insert(0, log);
+    developer.log('addLog inserted: id=${log.id}', name: 'ActivityLogService');
   }
 
   /// Get logs optionally filtered by date range (inclusive) and/or entity type.
   Future<List<ActivityLog>> getLogs({DateTime? from, DateTime? to, ActivityEntityType? entityType}) async {
-    return _logs.where((l) {
+    developer.log('getLogs called: from=$from to=$to entityType=$entityType', name: 'ActivityLogService');
+    final result = _logs.where((l) {
       final ts = l.createdAt;
       if (ts == null) return false;
       if (from != null && ts.isBefore(from)) return false;
@@ -56,10 +61,15 @@ class ActivityLogService {
       if (entityType != null && l.entityType != entityType) return false;
       return true;
     }).toList();
+    developer.log('getLogs returning ${result.length} entries', name: 'ActivityLogService');
+    return result;
   }
 
   /// Clear logs (for testing)
   Future<void> clear() async {
+    developer.log('clear called: clearing ${_logs.length} logs', name: 'ActivityLogService');
+    await Future.delayed(const Duration(milliseconds: 300));
     _logs.clear();
+    developer.log('clear completed', name: 'ActivityLogService');
   }
 }

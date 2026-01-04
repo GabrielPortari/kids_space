@@ -54,18 +54,55 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   Future<void> _onAddUser() async {
-    final fields = [
+    // Step 1: personal data
+    final personalFields = [
       FieldDefinition(key: 'name', label: 'Nome', required: true),
-      FieldDefinition(key: 'contactEmail', label: 'Email', required: true),
-      FieldDefinition(key: 'phone', label: 'Telefone', required: true),
-      FieldDefinition(key: 'document', label: 'Documento', required: true),
+      FieldDefinition(key: 'birthDate', label: 'Data de Nascimento', type: FieldType.date),
+      FieldDefinition(key: 'email', label: 'Email', type: FieldType.email, required: true),
+      FieldDefinition(key: 'phone', label: 'Telefone', type: FieldType.phone),
+      FieldDefinition(key: 'document', label: 'Documento'),
     ];
-    
-    final result = await showEditEntityBottomSheet(context: context, title: 'Adicionar usuário', fields: fields,);
-    if (result != null) {
-      debugPrint('DebuggerLog: UsersScreen.editModal.result -> $result');
-      // TODO
-    }
+
+    final personal = await showEditEntityBottomSheet(context: context, title: 'Dados pessoais', fields: personalFields);
+    if (personal == null) return; // cancelled
+
+    // Step 2: address data
+    final addressFields = [
+      FieldDefinition(key: 'address', label: 'Endereço'),
+      FieldDefinition(key: 'adressNumber', label: 'Número'),
+      FieldDefinition(key: 'adressComplement', label: 'Complemento'),
+      FieldDefinition(key: 'neighborhood', label: 'Bairro'),
+      FieldDefinition(key: 'city', label: 'Cidade'),
+      FieldDefinition(key: 'state', label: 'Estado'),
+      FieldDefinition(key: 'zipCode', label: 'CEP'),
+    ];
+
+    final address = await showEditEntityBottomSheet(context: context, title: 'Endereço', fields: addressFields);
+    if (address == null) return; // cancelled
+
+    final now = DateTime.now();
+    final newUser = User(
+      childrenIds: const [],
+      userType: null,
+      name: personal['name']?.toString(),
+      email: personal['email']?.toString(),
+      birthDate: (personal['birthDate'] is DateTime) ? (personal['birthDate'] as DateTime).toIso8601String() : personal['birthDate']?.toString(),
+      document: personal['document']?.toString(),
+      phone: personal['phone']?.toString(),
+      address: address['address']?.toString(),
+      adressNumber: address['adressNumber']?.toString(),
+      adressComplement: address['adressComplement']?.toString(),
+      neighborhood: address['neighborhood']?.toString(),
+      city: address['city']?.toString(),
+      state: address['state']?.toString(),
+      zipCode: address['zipCode']?.toString(),
+      companyId: _companyController.companySelected?.id,
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    _userController.addUser(newUser);
   }
 
   @override

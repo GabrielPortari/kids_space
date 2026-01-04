@@ -151,11 +151,11 @@ class _ProfileChildrenCardSectionState extends State<ProfileChildrenCardSection>
       ),
     );
   }
-  Future<void> _editChild(Child c) async {
+  Future<void> _editChild(Child? c) async {
     final success = await showChildEditDialogs(context, child: c, childController: _childController);
     if (success == true) {
-      final updated = await Future.value(_childController.getChildById(c.id ?? ''));
-      final idx = _children.indexWhere((e) => e.id == c.id);
+      final updated = await Future.value(_childController.getChildById(c?.id ?? ''));
+      final idx = _children.indexWhere((e) => e.id == c?.id);
       if (idx != -1 && updated != null) {
         _children[idx] = updated;
         setState(() {});

@@ -2,6 +2,7 @@ import 'package:kids_space/model/check_event.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/model/mock/model_mock.dart';
+import 'dart:developer' as developer;
 // import 'package:uuid/uuid.dart';
 
 class CheckEventService {
@@ -18,6 +19,7 @@ class CheckEventService {
     required CheckType checkType,
     DateTime? timestamp,
   }) {
+    developer.log('registerEvent called: companyId=$companyId childId=${child.id} collaboratorId=${collaborator.id} checkType=$checkType', name: 'CheckEventService');
     return Future.delayed(_serviceDelay, () {
       final now = timestamp ?? DateTime.now();
       final event = CheckEvent(
@@ -32,28 +34,41 @@ class CheckEventService {
         updatedAt: now,
       );
       _events.add(event);
+      developer.log('registerEvent created id=${event.id}', name: 'CheckEventService');
       return event;
     });
   }
 
   /// Retorna todos os eventos registrados
   Future<List<CheckEvent>> getAllEvents() =>
-      Future.delayed(_serviceDelay, () => List.unmodifiable(_events));
+      Future.delayed(_serviceDelay, () {
+        developer.log('getAllEvents returning ${_events.length} events', name: 'CheckEventService');
+        return List.unmodifiable(_events);
+      });
 
   /// Retorna eventos por empresa
   Future<List<CheckEvent>> getEventsByCompany(String companyId) =>
-    Future.delayed(_serviceDelay,
-      () => _events.where((e) => e.companyId == companyId).toList());
+    Future.delayed(_serviceDelay, () {
+      final result = _events.where((e) => e.companyId == companyId).toList();
+      developer.log('getEventsByCompany companyId=$companyId returning ${result.length} events', name: 'CheckEventService');
+      return result;
+    });
 
   /// Retorna eventos por criança
   Future<List<CheckEvent>> getEventsByChild(String childId) =>
-    Future.delayed(_serviceDelay,
-      () => _events.where((e) => e.childId == childId).toList());
+    Future.delayed(_serviceDelay, () {
+      final result = _events.where((e) => e.childId == childId).toList();
+      developer.log('getEventsByChild childId=$childId returning ${result.length} events', name: 'CheckEventService');
+      return result;
+    });
 
   /// Retorna eventos por colaborador
   Future<List<CheckEvent>> getEventsByCollaborator(String collaboratorId) =>
-    Future.delayed(_serviceDelay,
-      () => _events.where((e) => e.collaboratorId == collaboratorId).toList());
+    Future.delayed(_serviceDelay, () {
+      final result = _events.where((e) => e.collaboratorId == collaboratorId).toList();
+      developer.log('getEventsByCollaborator collaboratorId=$collaboratorId returning ${result.length} events', name: 'CheckEventService');
+      return result;
+    });
 
   /// Retorna o último check-in e check-out da empresa
   Future<Map<CheckType, CheckEvent?>> getLastCheckinAndCheckout(

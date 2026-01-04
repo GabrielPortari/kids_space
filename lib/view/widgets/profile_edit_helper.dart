@@ -167,15 +167,8 @@ Future<void> _editPersonal(
         createdAt: c.createdAt,
         updatedAt: DateTime.now(),
       );
-      try {
-        await collaboratorController.setSelectedCollaborator(updated);
-        if (collaboratorController.loggedCollaborator?.id == updated.id) {
-          await collaboratorController.setLoggedCollaborator(updated);
-        }
-        await _showResultDialog(context, true, 'Dados pessoais atualizados com sucesso.', '');
-      } catch (_) {
-        await _showResultDialog(context, false, '', 'Falha ao atualizar dados pessoais.');
-      }
+      final success = await collaboratorController.updateCollaborator(updated);
+      await _showResultDialog(context, success, 'Dados pessoais atualizados com sucesso.', 'Falha ao atualizar dados pessoais.');
     }
   }
 }
@@ -264,15 +257,8 @@ Future<void> _editAddress(
         createdAt: c.createdAt,
         updatedAt: DateTime.now(),
       );
-      try {
-        await collaboratorController.setSelectedCollaborator(updated);
-        if (collaboratorController.loggedCollaborator?.id == updated.id) {
-          await collaboratorController.setLoggedCollaborator(updated);
-        }
-        await _showResultDialog(context, true, 'Endereço atualizado com sucesso.', '');
-      } catch (_) {
-        await _showResultDialog(context, false, '', 'Falha ao atualizar endereço.');
-      }
+      final success = await collaboratorController.updateCollaborator(updated);
+      await _showResultDialog(context, success, 'Endereço atualizado com sucesso.', 'Falha ao atualizar endereço.');
     }
   }
 }
@@ -296,7 +282,6 @@ Future<bool?> showChildEditDialogs(
           const Text('Editar dados da criança', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Divider(),
-
           ListTile(
             leading: const Icon(Icons.person),
             title: const Text('Editar dados pessoais'),

@@ -77,6 +77,22 @@ abstract class _CollaboratorController with Store {
     }
   }
 
+  /// Atualiza colaborador via serviço e mantém estado local consistente
+  @action
+  Future<bool> updateCollaborator(Collaborator collaborator) async {
+    final success = await _collaboratorService.updateCollaborator(collaborator);
+    if (success) {
+      // atualiza selected e logged se necessário
+      if (selectedCollaborator?.id == collaborator.id) {
+        selectedCollaborator = collaborator;
+      }
+      if (loggedCollaborator?.id == collaborator.id) {
+        await setLoggedCollaborator(collaborator);
+      }
+    }
+    return success;
+  }
+
   /// Busca colaborador por id delegando ao serviço
   Future<Collaborator?> getCollaboratorById(String id) {
     return _collaboratorService.getCollaboratorById(id);
