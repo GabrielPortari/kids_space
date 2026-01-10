@@ -1,6 +1,5 @@
 import 'package:uuid/uuid.dart';
 import 'package:kids_space/model/activity_log.dart';
-import 'package:kids_space/model/mock/model_mock.dart' as mock;
 import 'dart:developer' as developer;
 
 /// Simple in-memory activity log service. Can be replaced later with
@@ -16,11 +15,7 @@ class ActivityLogService {
   // Seed with mock logs if available so UI that depends on in-memory
   // service can show example data during development.
   void _seedFromMocks() {
-    if (_logs.isEmpty) {
-      try {
-        _logs.addAll(mock.mockActivityLogs);
-      } catch (_) {}
-    }
+
   }
 
   final List<ActivityLog> _logs = [];

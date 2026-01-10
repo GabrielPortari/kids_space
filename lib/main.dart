@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:kids_space/service/api_client.dart';
+import 'package:kids_space/service/auth_service.dart';
 import 'package:kids_space/util/getit_factory.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
@@ -19,6 +23,17 @@ import 'package:kids_space/view/screens/collaborators_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  ApiClient().init( 
+    baseUrl: 'http://10.0.2.2:3000',
+    tokenProvider: () async {
+      final authService = AuthService(ApiClient().dio);
+      return await authService.getIdToken();
+    },
+    refreshToken: () async {
+      final authService = AuthService(ApiClient().dio);
+      return await authService.refreshToken();
+    },
+  );
   await EasyLocalization.ensureInitialized();
   setup(GetIt.I);
   runApp(

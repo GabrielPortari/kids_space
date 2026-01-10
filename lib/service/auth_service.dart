@@ -1,29 +1,51 @@
 // Serviço de autenticação
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:kids_space/model/mock/model_mock.dart';
-import 'dart:developer' as developer;
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
 
-  // Simulação de autenticação usando mockCollaborators
-  Future<bool> login(String email, String password) async {
-    developer.log('login called: email=$email', name: 'AuthService');
-    await Future.delayed(const Duration(milliseconds: 300));
+  final Dio _dio;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
-    final exists = mockCollaborators.any(
-      (c) => c.email == email && c.password == password,
-    );
-
-    developer.log('login result for email=$email: $exists', name: 'AuthService');
-    return exists;
-
+  AuthService(this._dio);
+  
+  Future<void> persistTokens(String idToken, String refreshToken, int expiresIn) async {
+    final expireAt = DateTime.now().add(Duration(seconds: expiresIn));
+    await _secureStorage.write(key: 'id_token', value: idToken);
+    await _secureStorage.write(key: 'refresh_token', value: refreshToken);
+    await _secureStorage.write(key: 'token_expire_at', value: expireAt.toIso8601String());
   }
 
-  Future<String?> getLoggedUser() async {
-    developer.log('getLoggedUser called', name: 'AuthService');
-    final prefs = await SharedPreferences.getInstance();
-    final v = prefs.getString('logged_user');
-    developer.log('getLoggedUser returning ${v != null}', name: 'AuthService');
-    return v;
+  Future<bool> login(String email, String password) async {
+    final resp = await _dio.post('/auth/login', data: {'email': email, 'password': password});
+    if (resp.statusCode == 200) {
+      final data = resp.data;
+      await persistTokens(data['idToken'], data['refreshToken'], int.parse(data['expiresIn'].toString()));
+      return true;
+    }
+    return false;
+  }
+
+  Future<String?> getIdToken() async => await _secureStorage.read(key: 'id_token');
+  Future<String?> getRefreshToken() async => await _secureStorage.read(key: 'refresh_token');
+  Future<DateTime?> getTokenExpireAt() async {
+    final expireAt = await _secureStorage.read(key: 'token_expire_at');
+    return expireAt == null ? null : DateTime.parse(expireAt);
+  }
+
+  Future<String?> refreshToken() async{
+    final refresh = await getRefreshToken();
+    if (refresh == null) return null;
+    final response = await _dio.post('/auth/refresh', data: {'refreshToken': refresh});
+    if (response.statusCode == 200) {
+      final data = response.data;
+      await persistTokens(data['idToken'], data['refreshToken'], int.parse(data['expiresIn'].toString()));
+      return data['idToken'];
+    }
+    return null;
+  }
+
+  Future<void> logout() async{
+    await _secureStorage.deleteAll();
   }
 }

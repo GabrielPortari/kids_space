@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/company_controller.dart';
-import 'package:kids_space/controller/check_event_controller.dart';
-import 'package:kids_space/model/check_event.dart';
+import 'package:kids_space/controller/attendance_controller.dart';
+import 'package:kids_space/model/attendance.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/util/date_hour_util.dart';
 import 'package:kids_space/util/localization_service.dart';
@@ -18,8 +18,8 @@ import 'package:kids_space/view/design_system/app_theme.dart';
 final CompanyController _companyController = GetIt.I<CompanyController>();
 final CollaboratorController _collaboratorController =
     GetIt.I<CollaboratorController>();
-final CheckEventController _checkEventController =
-    GetIt.I<CheckEventController>();
+final AttendanceController _attendanceController =
+    GetIt.I<AttendanceController>();
 final ChildController _childController = GetIt.I<ChildController>();
 
 class HomeScreen extends StatefulWidget {
@@ -114,11 +114,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _presenceLogCard(double listHeight) {
     return Observer(
       builder: (_) {
-        final events = _checkEventController.logEvents;
+        final events = _attendanceController.logEvents;
         final limited = events.take(30).toList();
 
         return Skeletonizer(
-          enabled: _checkEventController.isLoadingLog,
+          enabled: _attendanceController.isLoadingLog,
           child: AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               separatorBuilder: (_, __) => const Divider(height: 1),
                               itemBuilder: (context, idx) {
                                 final event = limited[idx];
-                                final isCheckin = event.checkType == CheckType.checkIn;
+                                final isCheckin = event.attendanceType == AttendanceType.checkin;
                                 return ListTile(
                                   contentPadding: const EdgeInsets.fromLTRB(4.0, 0.0, 8.0, 0.0),
                                   leading: CircleAvatar(
@@ -199,10 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (companyId != null) {
       debugPrint('DebuggerLog: HomeScreen._loadData START for $companyId');
       await Future.wait([
-        _checkEventController.loadEvents(companyId),
-        _checkEventController.loadLastCheckinAndOut(companyId),
-        _checkEventController.loadActiveCheckins(companyId),
-        _checkEventController.loadLog(companyId, limit: 30),
+
       ]);
       debugPrint('DebuggerLog: HomeScreen._loadData DONE');
     }
@@ -211,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _infoCompanyCard() {
     return Observer(
       builder: (_) => Skeletonizer(
-        enabled: _checkEventController.isLoadingEvents,
+        enabled: _attendanceController.isLoadingEvents,
         child: Builder(
           builder: (context) {
             return Padding(
@@ -263,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Observer(
       builder: (_) {
         return Skeletonizer(
-          enabled: !_checkEventController.allLoaded,
+          enabled: !_attendanceController.allLoaded,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
                   child: Row(
@@ -296,8 +293,8 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (_) {
         return Skeletonizer(
           enabled:
-              _checkEventController.isLoadingActiveCheckins ||
-              _checkEventController.isLoadingLastCheck,
+              _attendanceController.isLoadingActiveCheckins ||
+              _attendanceController.isLoadingLastCheck,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: AppCard(
@@ -318,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               translate('home.actives'),
                             ),
                             TextHeaderLarge(
-                              '${_checkEventController.activeCheckins?.length ?? 0}',
+                              '${_attendanceController.activeCheckins?.length ?? 0}',
                             ),
                             TextBodyMedium(
                               translate('home.see_more'),
@@ -344,15 +341,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(left: 32.0, top: 2.0),
-                          child: _checkEventController.lastCheckIn != null
+                          child: _attendanceController.lastCheckIn != null
                               ? Row(
                                   children: [
                                     TextBodyMedium(
-                                      _childController.getChildById(_checkEventController.lastCheckIn?.childId ?? '')?.name ?? (_checkEventController.lastCheckIn?.childId ?? '-'),
+                                      _childController.getChildById(_attendanceController.lastCheckIn?.childId ?? '')?.name ?? (_attendanceController.lastCheckIn?.childId ?? '-'),
                                     ),
                                     const SizedBox(width: 8),
                                     TextBodyMedium(
-                                      formatTime(_checkEventController.lastCheckIn?.checkinTime ?? _checkEventController.lastCheckIn?.checkoutTime ?? DateTime.now()),
+                                      formatTime(_attendanceController.lastCheckIn?.checkinTime ?? _attendanceController.lastCheckIn?.checkoutTime ?? DateTime.now()),
                                     ),
                                   ],
                                 )
@@ -370,15 +367,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(left: 32.0, top: 2.0),
-                          child: _checkEventController.lastCheckOut != null
+                          child: _attendanceController.lastCheckOut != null
                               ? Row(
                                   children: [
                                     TextBodyMedium(
-                                                                     _childController.getChildById(_checkEventController.lastCheckOut?.childId ?? '')?.name ?? (_checkEventController.lastCheckOut?.childId ?? '-'),
+                                                                     _childController.getChildById(_attendanceController.lastCheckOut?.childId ?? '')?.name ?? (_attendanceController.lastCheckOut?.childId ?? '-'),
                                     ),
                                     const SizedBox(width: 8),
                                     TextBodyMedium(
-                                      formatTime(_checkEventController.lastCheckOut?.checkoutTime ?? _checkEventController.lastCheckOut?.checkinTime ?? DateTime.now()),
+                                      formatTime(_attendanceController.lastCheckOut?.checkoutTime ?? _attendanceController.lastCheckOut?.checkinTime ?? DateTime.now()),
                                     ),
                                   ],
                                 )

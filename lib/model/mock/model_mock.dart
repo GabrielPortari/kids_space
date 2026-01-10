@@ -4,7 +4,7 @@ import '../company.dart';
 import '../user.dart';
 import '../collaborator.dart';
 import '../child.dart';
-import '../check_event.dart';
+import '../attendance.dart';
 
 // Mocks completos alinhados aos modelos em lib/model
 
@@ -209,70 +209,8 @@ final List<Child> mockChildren = [
 	),
 ];
 
-final List<CheckEvent> mockCheckEvents = [
-	CheckEvent(
-		id: 'ev1',
-		companyId: 'comp1',
-		childId: 'ch_a',
-		collaboratorId: 'c1',
-		checkinTime: DateTime.now().subtract(Duration(hours: 6)),
-		checkType: CheckType.checkIn,
-		createdAt: DateTime.now().subtract(Duration(hours: 6)),
-		updatedAt: DateTime.now().subtract(Duration(hours: 6)),
-	),
-	CheckEvent(
-		id: 'ev2',
-		companyId: 'comp1',
-		childId: 'ch_a',
-		collaboratorId: 'c1',
-		checkoutTime: DateTime.now().subtract(Duration(hours: 2)),
-		checkType: CheckType.checkOut,
-		createdAt: DateTime.now().subtract(Duration(hours: 2)),
-		updatedAt: DateTime.now().subtract(Duration(hours: 2)),
-	),
-	CheckEvent(
-		id: 'ev3',
-		companyId: 'comp1',
-		childId: 'ch_c',
-		collaboratorId: 'c2',
-		checkinTime: DateTime.now().subtract(Duration(hours: 3)),
-		checkType: CheckType.checkIn,
-		createdAt: DateTime.now().subtract(Duration(hours: 3)),
-		updatedAt: DateTime.now().subtract(Duration(hours: 3)),
-	),
-];
-
-final List<ActivityLog> mockActivityLogs = [
-	ActivityLog(
-		id: 'log1',
-		action: ActivityAction.created,
-		entityType: ActivityEntityType.company,
-		entityId: 'comp1',
-		actorId: 'c_admin',
-		entityCreatedAt: DateTime.now().subtract(Duration(days: 500)),
-		createdAt: DateTime.now().subtract(Duration(days: 500)),
-		updatedAt: DateTime.now().subtract(Duration(days: 500)),
-	),
-	ActivityLog(
-		id: 'log2',
-		action: ActivityAction.created,
-		entityType: ActivityEntityType.collaborator,
-		entityId: 'c1',
-		actorId: 'c_admin',
-		entityCreatedAt: mockCollaborators[1].createdAt,
-		createdAt: DateTime.now().subtract(Duration(days: 200)),
-		updatedAt: DateTime.now().subtract(Duration(days: 200)),
-	),
-	ActivityLog(
-		id: 'log3',
-		action: ActivityAction.created,
-		entityType: ActivityEntityType.user,
-		entityId: 'u_two',
-		actorId: 'c_admin',
-		entityCreatedAt: mockUsers[0].createdAt,
-		createdAt: DateTime.now().subtract(Duration(days: 90)),
-		updatedAt: DateTime.now().subtract(Duration(days: 90)),
-	),
+final List<Attendance> mockCheckEvents = [
+	
 ];
 
 final List<Company> mockCompanies = [

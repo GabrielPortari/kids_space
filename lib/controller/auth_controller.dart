@@ -2,32 +2,82 @@ import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/service/collaborator_service.dart';
 import '../service/auth_service.dart';
+import '../service/api_client.dart';
+import 'dart:developer' as developer;
 
 class AuthController {
-  final AuthService _authService = AuthService();
-  final CollaboratorService _collaboratorService = CollaboratorService();
+  AuthService? _authService;
+  final CollaboratorService _collaboratorService;
   final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
 
-  /// Apenas autentica. Se sucesso, delega ao CollaboratorController para armazenar o colaborador logado.
+  bool isLoading = false;
+  String? error;
+
+  AuthController({AuthService? authService, CollaboratorService? collaboratorService})
+      : _authService = authService,
+        _collaboratorService = collaboratorService ?? CollaboratorService();
+
+  AuthService get _auth => _authService ??= AuthService(ApiClient().dio);
+
+  /// Tenta autenticar e, em caso de sucesso, armazena o colaborador logado.
   Future<bool> login(String email, String password) async {
-    final success = await _authService.login(email, password);
-    if (success) {
+    developer.log('AuthController.login start', name: 'AuthController');
+    isLoading = true;
+    error = null;
+    try {
+      final success = await _auth.login(email, password);
+      if (!success) {
+        await _collaboratorController.clearLoggedCollaborator();
+        error = 'Credenciais inválidas';
+        developer.log('AuthController.login failed: $error', name: 'AuthController');
+        return false;
+      }
+
+      // carrega dados do colaborador e salva no controller apropriado
       final collaborator = await _collaboratorService.getCollaboratorByEmail(email);
       await _collaboratorController.setLoggedCollaborator(collaborator);
+      developer.log('AuthController.login success for email=$email', name: 'AuthController');
       return collaborator != null;
-    } else {
+    } catch (e) {
+      error = e.toString();
+      developer.log('AuthController.login error: $error', name: 'AuthController', error: e);
       await _collaboratorController.clearLoggedCollaborator();
       return false;
+    } finally {
+      isLoading = false;
     }
   }
 
-  /// Faz logout e limpa colaborador logado
+  /// Faz logout: limpa tokens e colaborador salvo
   Future<void> logout() async {
+    developer.log('AuthController.logout', name: 'AuthController');
+    await _auth.logout();
     await _collaboratorController.clearLoggedCollaborator();
   }
 
-  /// Carrega colaborador salvo localmente (se existir)
+  /// Verifica se existe usuário logado e, se necessário, tenta refresh do token.
+  /// Retorna true se houver sessão válida carregada.
   Future<bool> checkLoggedUser() async {
-    return await _collaboratorController.loadLoggedCollaboratorFromPrefs();
+    developer.log('AuthController.checkLoggedUser', name: 'AuthController');
+    try {
+      final idToken = await _auth.getIdToken();
+      if (idToken == null) return false;
+
+      // If AuthService does not expose an expiresAt, attempt a refresh and
+      // require it to succeed to consider the session valid.
+      final newToken = await _auth.refreshToken();
+      if (newToken == null) {
+        await logout();
+        return false;
+      }
+
+      // carrega colaborador salvo localmente
+      final loaded = await _collaboratorController.loadLoggedCollaboratorFromPrefs();
+      developer.log('AuthController.checkLoggedUser loaded=$loaded', name: 'AuthController');
+      return loaded;
+    } catch (e) {
+      developer.log('AuthController.checkLoggedUser error: $e', name: 'AuthController', error: e);
+      return false;
+    }
   }
 }

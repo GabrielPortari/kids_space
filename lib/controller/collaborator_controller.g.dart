@@ -109,6 +109,18 @@ mixin _$CollaboratorController on _CollaboratorController, Store {
     );
   }
 
+  late final _$updateCollaboratorAsyncAction = AsyncAction(
+    '_CollaboratorController.updateCollaborator',
+    context: context,
+  );
+
+  @override
+  Future<bool> updateCollaborator(Collaborator collaborator) {
+    return _$updateCollaboratorAsyncAction.run(
+      () => super.updateCollaborator(collaborator),
+    );
+  }
+
   @override
   String toString() {
     return '''

@@ -4,9 +4,9 @@ import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/activity_log_controller.dart';
 import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/model/activity_log.dart';
-import 'package:kids_space/controller/check_event_controller.dart';
+import 'package:kids_space/controller/attendance_controller.dart';
 import 'package:kids_space/controller/company_controller.dart';
-import 'package:kids_space/model/check_event.dart';
+import 'package:kids_space/model/attendance.dart';
 import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 
@@ -19,7 +19,7 @@ class ReportsScreen extends StatefulWidget {
 
 class _ReportsScreenState extends State<ReportsScreen> {
   final ActivityLogController _controller = GetIt.I<ActivityLogController>();
-  final CheckEventController _checkController = GetIt.I<CheckEventController>();
+  final AttendanceController _checkController = GetIt.I<AttendanceController>();
   final CompanyController _companyController = GetIt.I<CompanyController>();
   final UserController _userController = GetIt.I<UserController>();
   final CollaboratorController _collabController = GetIt.I<CollaboratorController>();
@@ -42,7 +42,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
       await _controller.loadLogs(from: _from, to: _to);
     // determine companyId (use selected if available)
     String companyId = _companyController.companySelected?.id ?? 'comp1';
-    await _checkController.loadLog(companyId);
     // Build display items by resolving names to avoid many FutureBuilders in list
     _items.clear();
     final activity = _controller.logs.where((l) {
@@ -53,13 +52,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
       return true;
     }).toList();
 
-    final checks = _checkController.logEvents.where((e) {
-      final ts = e.createdAt;
-      if (ts == null) return false;
-      if (_from != null && ts.isBefore(_from!)) return false;
-      if (_to != null && ts.isAfter(_to!)) return false;
-      return true;
-    }).toList();
 
     // Resolve activity items
     for (final l in activity) {
@@ -72,22 +64,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
         secondary: actorName,
         date: l.createdAt ?? DateTime.now(),
         details: l.entityCreatedAt != null ? 'Entidade criada: ${_fmt.format(l.entityCreatedAt!)}' : null,
-      ));
-    }
-
-    // Resolve check items
-    for (final e in checks) {
-      final childName = _resolveChildNameSync(e.childId) ?? e.childId;
-      final actorName = await _resolveActorNameAsync(e.collaboratorId);
-      final when = e.checkinTime ?? e.checkoutTime ?? e.createdAt ?? DateTime.now();
-      _items.add(_ReportItem(
-        kind: _ReportKind.check,
-        title: 'CHECK-${e.checkType == CheckType.checkIn ? 'IN' : 'OUT'} — ${childName ?? '-'}',
-        primary: e.childId,
-        secondary: actorName,
-        date: when,
-        details: null,
-        checkType: e.checkType,
       ));
     }
 
@@ -150,7 +126,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   Widget _buildItemCard(_ReportItem it) {
     final color = it.kind == _ReportKind.activity ? Colors.blue.shade50 : Colors.green.shade50;
-    final icon = it.kind == _ReportKind.activity ? Icons.event_note : (it.checkType == CheckType.checkIn ? Icons.login : Icons.logout);
+    final icon = it.kind == _ReportKind.activity ? Icons.event_note : (it.checkType == AttendanceType.checkin ? Icons.login : Icons.logout);
 
     return Card(
       color: color,
@@ -240,7 +216,7 @@ class _ReportItem {
   final String? secondary;
   final DateTime date;
   final String? details;
-  final CheckType? checkType;
+  final AttendanceType? checkType;
 
   _ReportItem({required this.kind, required this.title, this.primary, this.secondary, required this.date, this.details, this.checkType});
 }

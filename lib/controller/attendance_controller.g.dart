@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'check_event_controller.dart';
+part of 'attendance_controller.dart';
 
 // **************************************************************************
 // StoreGenerator
@@ -8,17 +8,17 @@ part of 'check_event_controller.dart';
 
 // ignore_for_file: non_constant_identifier_names, unnecessary_brace_in_string_interps, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic, no_leading_underscores_for_local_identifiers
 
-mixin _$CheckEventController on _CheckEventController, Store {
+mixin _$AttendanceController on _AttendanceController, Store {
   Computed<bool>? _$allLoadedComputed;
 
   @override
   bool get allLoaded => (_$allLoadedComputed ??= Computed<bool>(
     () => super.allLoaded,
-    name: '_CheckEventController.allLoaded',
+    name: '_AttendanceController.allLoaded',
   )).value;
 
   late final _$isLoadingEventsAtom = Atom(
-    name: '_CheckEventController.isLoadingEvents',
+    name: '_AttendanceController.isLoadingEvents',
     context: context,
   );
 
@@ -36,7 +36,7 @@ mixin _$CheckEventController on _CheckEventController, Store {
   }
 
   late final _$isLoadingActiveCheckinsAtom = Atom(
-    name: '_CheckEventController.isLoadingActiveCheckins',
+    name: '_AttendanceController.isLoadingActiveCheckins',
     context: context,
   );
 
@@ -58,7 +58,7 @@ mixin _$CheckEventController on _CheckEventController, Store {
   }
 
   late final _$isLoadingLastCheckAtom = Atom(
-    name: '_CheckEventController.isLoadingLastCheck',
+    name: '_AttendanceController.isLoadingLastCheck',
     context: context,
   );
 
@@ -76,7 +76,7 @@ mixin _$CheckEventController on _CheckEventController, Store {
   }
 
   late final _$isLoadingLogAtom = Atom(
-    name: '_CheckEventController.isLoadingLog',
+    name: '_AttendanceController.isLoadingLog',
     context: context,
   );
 
@@ -94,139 +94,93 @@ mixin _$CheckEventController on _CheckEventController, Store {
   }
 
   late final _$eventsAtom = Atom(
-    name: '_CheckEventController.events',
+    name: '_AttendanceController.events',
     context: context,
   );
 
   @override
-  List<CheckEvent>? get events {
+  List<Attendance>? get events {
     _$eventsAtom.reportRead();
     return super.events;
   }
 
   @override
-  set events(List<CheckEvent>? value) {
+  set events(List<Attendance>? value) {
     _$eventsAtom.reportWrite(value, super.events, () {
       super.events = value;
     });
   }
 
   late final _$activeCheckinsAtom = Atom(
-    name: '_CheckEventController.activeCheckins',
+    name: '_AttendanceController.activeCheckins',
     context: context,
   );
 
   @override
-  List<CheckEvent>? get activeCheckins {
+  List<Attendance>? get activeCheckins {
     _$activeCheckinsAtom.reportRead();
     return super.activeCheckins;
   }
 
   @override
-  set activeCheckins(List<CheckEvent>? value) {
+  set activeCheckins(List<Attendance>? value) {
     _$activeCheckinsAtom.reportWrite(value, super.activeCheckins, () {
       super.activeCheckins = value;
     });
   }
 
   late final _$lastCheckInAtom = Atom(
-    name: '_CheckEventController.lastCheckIn',
+    name: '_AttendanceController.lastCheckIn',
     context: context,
   );
 
   @override
-  CheckEvent? get lastCheckIn {
+  Attendance? get lastCheckIn {
     _$lastCheckInAtom.reportRead();
     return super.lastCheckIn;
   }
 
   @override
-  set lastCheckIn(CheckEvent? value) {
+  set lastCheckIn(Attendance? value) {
     _$lastCheckInAtom.reportWrite(value, super.lastCheckIn, () {
       super.lastCheckIn = value;
     });
   }
 
   late final _$lastCheckOutAtom = Atom(
-    name: '_CheckEventController.lastCheckOut',
+    name: '_AttendanceController.lastCheckOut',
     context: context,
   );
 
   @override
-  CheckEvent? get lastCheckOut {
+  Attendance? get lastCheckOut {
     _$lastCheckOutAtom.reportRead();
     return super.lastCheckOut;
   }
 
   @override
-  set lastCheckOut(CheckEvent? value) {
+  set lastCheckOut(Attendance? value) {
     _$lastCheckOutAtom.reportWrite(value, super.lastCheckOut, () {
       super.lastCheckOut = value;
     });
   }
 
   late final _$logEventsAtom = Atom(
-    name: '_CheckEventController.logEvents',
+    name: '_AttendanceController.logEvents',
     context: context,
   );
 
   @override
-  List<CheckEvent> get logEvents {
+  List<Attendance> get logEvents {
     _$logEventsAtom.reportRead();
     return super.logEvents;
   }
 
   @override
-  set logEvents(List<CheckEvent> value) {
+  set logEvents(List<Attendance> value) {
     _$logEventsAtom.reportWrite(value, super.logEvents, () {
       super.logEvents = value;
     });
-  }
-
-  late final _$loadEventsAsyncAction = AsyncAction(
-    '_CheckEventController.loadEvents',
-    context: context,
-  );
-
-  @override
-  Future<void> loadEvents(String companyId) {
-    return _$loadEventsAsyncAction.run(() => super.loadEvents(companyId));
-  }
-
-  late final _$loadLastCheckinAndOutAsyncAction = AsyncAction(
-    '_CheckEventController.loadLastCheckinAndOut',
-    context: context,
-  );
-
-  @override
-  Future<void> loadLastCheckinAndOut(String companyId) {
-    return _$loadLastCheckinAndOutAsyncAction.run(
-      () => super.loadLastCheckinAndOut(companyId),
-    );
-  }
-
-  late final _$loadActiveCheckinsAsyncAction = AsyncAction(
-    '_CheckEventController.loadActiveCheckins',
-    context: context,
-  );
-
-  @override
-  Future<void> loadActiveCheckins(String companyId) {
-    return _$loadActiveCheckinsAsyncAction.run(
-      () => super.loadActiveCheckins(companyId),
-    );
-  }
-
-  late final _$loadLogAsyncAction = AsyncAction(
-    '_CheckEventController.loadLog',
-    context: context,
-  );
-
-  @override
-  Future<void> loadLog(String companyId, {int limit = 30}) {
-    return _$loadLogAsyncAction.run(
-      () => super.loadLog(companyId, limit: limit),
-    );
   }
 
   @override
