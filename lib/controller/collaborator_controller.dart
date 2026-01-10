@@ -1,6 +1,6 @@
 import 'dart:convert';
-
 import 'package:kids_space/service/collaborator_service.dart';
+import 'package:get_it/get_it.dart';
 import 'package:mobx/mobx.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,7 +11,7 @@ class CollaboratorController = _CollaboratorController with _$CollaboratorContro
 
 abstract class _CollaboratorController with Store {
   
-  final CollaboratorService _collaboratorService = CollaboratorService();
+  final CollaboratorService _collaboratorService = GetIt.I<CollaboratorService>();
   
   @observable
   Collaborator? loggedCollaborator;

@@ -207,51 +207,48 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _infoCompanyCard() {
     return Observer(
-      builder: (_) => Skeletonizer(
-        enabled: _attendanceController.isLoadingEvents,
-        child: Builder(
-          builder: (context) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: AppCard(
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => 
-                    ProfileScreen(selectedCollaborator: _collaboratorController.loggedCollaborator))
-                  );
-                  debugPrint('DebuggerLog: HomeScreen.navigate -> /profile, arguments: ${_collaboratorController.loggedCollaborator}');
-                },
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CircleAvatar(
-                      radius: 32,
-                      backgroundImage: AssetImage(
-                        _companyController.companySelected?.logoUrl ?? 'assets/images/company_logo_placeholder.png',
-                      ),
+      builder: (_) => Builder(
+        builder: (context) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: AppCard(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => 
+                  ProfileScreen(selectedCollaborator: _collaboratorController.loggedCollaborator))
+                );
+                debugPrint('DebuggerLog: HomeScreen.navigate -> /profile, arguments: ${_collaboratorController.loggedCollaborator}');
+              },
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CircleAvatar(
+                    radius: 32,
+                    backgroundImage: AssetImage(
+                      _companyController.companySelected?.logoUrl ?? 'assets/images/company_logo_placeholder.png',
                     ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          TextHeaderMedium(
-                            _companyController.companySelected?.fantasyName ?? translate('home.company_name'),
-                          ),
-                          const SizedBox(height: 2),
-                          TextBodyMedium(translate('home.collaborator_name', namedArgs: {
-                              'name_placeholder': _collaboratorController.loggedCollaborator?.name ?? '-',
-                            })),
-                        ],
-                      ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextHeaderMedium(
+                          _companyController.companySelected?.fantasyName ?? translate('home.company_name'),
+                        ),
+                        const SizedBox(height: 2),
+                        TextBodyMedium(translate('home.collaborator_name', namedArgs: {
+                            'name_placeholder': _collaboratorController.loggedCollaborator?.name ?? '-',
+                          })),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }

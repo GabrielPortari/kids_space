@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
+import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/service/collaborator_service.dart';
 import '../service/auth_service.dart';
 import '../service/api_client.dart';
@@ -7,15 +8,13 @@ import 'dart:developer' as developer;
 
 class AuthController {
   AuthService? _authService;
-  final CollaboratorService _collaboratorService;
+  final CollaboratorService _collaboratorService = GetIt.I<CollaboratorService>();
   final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
 
   bool isLoading = false;
   String? error;
 
-  AuthController({AuthService? authService, CollaboratorService? collaboratorService})
-      : _authService = authService,
-        _collaboratorService = collaboratorService ?? CollaboratorService();
+  AuthController({AuthService? authService}) : _authService = authService;
 
   AuthService get _auth => _authService ??= AuthService(ApiClient().dio);
 
@@ -33,8 +32,17 @@ class AuthController {
         return false;
       }
 
-      // carrega dados do colaborador e salva no controller apropriado
-      final collaborator = await _collaboratorService.getCollaboratorByEmail(email);
+      // Ensure FirebaseAuth session exists before reading Firestore.
+      // Try signing in via Firebase (preferred) and fall back to simple query.
+      Collaborator? collaborator;
+      try {
+        collaborator = await _collaboratorService.loginCollaborator(email, password);
+      } catch (_) {
+        collaborator = null;
+      }
+      if (collaborator == null) {
+        collaborator = await _collaboratorService.getCollaboratorById(collaborator);
+      }
       await _collaboratorController.setLoggedCollaborator(collaborator);
       developer.log('AuthController.login success for email=$email', name: 'AuthController');
       return collaborator != null;

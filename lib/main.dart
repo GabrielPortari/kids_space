@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -23,7 +22,7 @@ import 'package:kids_space/view/screens/collaborators_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  ApiClient().init( 
+  ApiClient().init(
     baseUrl: 'http://10.0.2.2:3000',
     tokenProvider: () async {
       final authService = AuthService(ApiClient().dio);
@@ -35,6 +34,17 @@ Future<void> main() async {
     },
   );
   await EasyLocalization.ensureInitialized();
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey: "AIzaSyA4RtVJ-NiwG2kfLsBjX1rrZQ70FBEzEao",
+      authDomain: "kids-space-c6f80.firebaseapp.com",
+      projectId: "kids-space-c6f80",
+      storageBucket: "kids-space-c6f80.firebasestorage.app",
+      messagingSenderId: "1047788973580",
+      appId: "1:1047788973580:web:de3a74c693e8a07ba84829",
+      measurementId: "G-RL3V0TXE45"
+    )
+  );
   setup(GetIt.I);
   runApp(
     EasyLocalization(

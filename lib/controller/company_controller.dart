@@ -2,7 +2,6 @@ import '../model/company.dart';
 import '../service/company_service.dart';
 import 'dart:developer' as developer;
 import '../util/network_exceptions.dart';
-import '../model/mock/model_mock.dart';
 
 class CompanyController {
   final CompanyService _companyService;
