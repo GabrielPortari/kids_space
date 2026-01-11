@@ -1,91 +1,143 @@
+import 'dart:convert';
+
+import 'dart:developer' as dev;
+import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/model/collaborator.dart';
-import 'package:kids_space/service/collaborator_service.dart';
+import 'package:kids_space/service/api_client.dart';
 import '../service/auth_service.dart';
-import '../service/api_client.dart';
-import 'dart:developer' as developer;
+import 'base_controller.dart';
 
-class AuthController {
-  AuthService? _authService;
-  final CollaboratorService _collaboratorService = GetIt.I<CollaboratorService>();
+/// AuthController — parte do padrão MVC.
+/// - Controller: expõe métodos que a View chama.
+/// - Usa `AuthService` para lógica de autenticação (Model/Service).
+class AuthController extends BaseController {
   final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
+  final AuthService _authService = GetIt.I<AuthService>();
 
-  bool isLoading = false;
-  String? error;
+  final _kIdTokenKey = 'idToken';
+  final _kRefreshTokenKey = 'refreshToken';
+  final _kLoggedCollaboratorKey = 'loggedCollaborator';
 
-  AuthController({AuthService? authService}) : _authService = authService;
-
-  AuthService get _auth => _authService ??= AuthService(ApiClient().dio);
-
-  /// Tenta autenticar e, em caso de sucesso, armazena o colaborador logado.
+  /// Tenta logar; retorna `true` se sucesso.
   Future<bool> login(String email, String password) async {
-    developer.log('AuthController.login start', name: 'AuthController');
-    isLoading = true;
-    error = null;
-    try {
-      final success = await _auth.login(email, password);
-      if (!success) {
-        await _collaboratorController.clearLoggedCollaborator();
-        error = 'Credenciais inválidas';
-        developer.log('AuthController.login failed: $error', name: 'AuthController');
-        return false;
+    final result = await _authService.login(email, password);
+
+    dev.log('AuthController.login -> authService result', name: 'AuthController', error: result.values);
+
+    final idToken = result[_kIdTokenKey] as String?;
+    final refreshToken = result[_kRefreshTokenKey] as String?;
+    
+    String? userId = result['userId'] as String?;
+    // If backend didn't return userId, try to decode from JWT idToken
+    if ((userId == null || userId.isEmpty) && idToken != null) {
+      try {
+        final extracted = _extractUserIdFromJwt(idToken);
+        dev.log('AuthController.login -> extracted userId from token', name: 'AuthController', error: {'extracted': extracted});
+        userId = extracted;
+      } catch (e) {
+        dev.log('AuthController.login -> failed to extract userId from token: $e', name: 'AuthController');
+      }
+    }
+    
+    if (idToken == null || refreshToken == null) return false;
+
+    await secureStorage.write(key: _kIdTokenKey, value: idToken);
+    await secureStorage.write(key: _kRefreshTokenKey, value: refreshToken);
+
+    if (userId != null) {
+      dev.log('AuthController.login -> fetching collaborator for userId', name: 'AuthController', error: {'userId': userId});
+      final collaborator = await _collaboratorController.getCollaboratorById(userId);
+      dev.log('AuthController.login -> collaborator fetch result', name: 'AuthController', error: {'collaborator': collaborator?.toJson()});
+      if (collaborator != null) {
+        await secureStorage.write(key: _kLoggedCollaboratorKey, value: jsonEncode(collaborator.toJson()));
+        _collaboratorController.setLoggedCollaborator(collaborator);
+      }
+    } else {
+      dev.log('AuthController.login -> userId null in auth result', name: 'AuthController');
+    }
+    ApiClient().tokenProvider = () async => await secureStorage.read(key: _kIdTokenKey);
+    ApiClient().refreshToken = () async => refreshToken;
+
+    return true;
+  }
+
+  /// Faz logout local e remoto via `AuthService`.
+  Future<void> logout() async {
+    final token = await secureStorage.read(key: _kIdTokenKey);
+    if (token != null) {
+      try { await ApiClient().dio.post('/auth/logout', 
+      options: Options(
+        headers: {'Authorization': 'Bearer $token'}
+        )); 
+      } catch (_) {}
+    }
+    
+    await secureStorage.delete(key: _kIdTokenKey);
+    await secureStorage.delete(key: _kRefreshTokenKey);
+    await secureStorage.delete(key: _kLoggedCollaboratorKey);
+    _collaboratorController.loggedCollaborator = null;
+    ApiClient().tokenProvider = null;
+    ApiClient().refreshToken = null;
+  }
+
+  /// Chamada na inicialização da View/App para restaurar estado.
+  Future<void> checkLoggedUser() async {
+    final token = await secureStorage.read(key: 'idToken');
+    final collaboratorJson = await secureStorage.read(key: _kLoggedCollaboratorKey);
+
+    if (token != null) {
+      ApiClient().tokenProvider = () async => token;
+      ApiClient().refreshToken = () async => await refreshToken();
+
+      if(collaboratorJson != null){
+        final collaborator = Collaborator.fromJson(jsonDecode(collaboratorJson));
+        _collaboratorController.setLoggedCollaborator(collaborator);
+        return;
       }
 
-      // Ensure FirebaseAuth session exists before reading Firestore.
-      // Try signing in via Firebase (preferred) and fall back to simple query.
-      Collaborator? collaborator;
-      try {
-        collaborator = await _collaboratorService.loginCollaborator(email, password);
-      } catch (_) {
-        collaborator = null;
+      final userId = await secureStorage.read(key: 'userId');
+      if (userId != null) {
+        final collaborator = await _collaboratorController.getCollaboratorById(userId);
+        if(collaborator != null){
+          _collaboratorController.setLoggedCollaborator(collaborator);
+          await secureStorage.write(key: _kLoggedCollaboratorKey, value: jsonEncode(collaborator.toJson()));
+        }
       }
-      if (collaborator == null) {
-        collaborator = await _collaboratorService.getCollaboratorById(collaborator);
-      }
-      await _collaboratorController.setLoggedCollaborator(collaborator);
-      developer.log('AuthController.login success for email=$email', name: 'AuthController');
-      return collaborator != null;
-    } catch (e) {
-      error = e.toString();
-      developer.log('AuthController.login error: $error', name: 'AuthController', error: e);
-      await _collaboratorController.clearLoggedCollaborator();
-      return false;
-    } finally {
-      isLoading = false;
     }
   }
 
-  /// Faz logout: limpa tokens e colaborador salvo
-  Future<void> logout() async {
-    developer.log('AuthController.logout', name: 'AuthController');
-    await _auth.logout();
-    await _collaboratorController.clearLoggedCollaborator();
+  Future<String?> refreshToken() async {
+    final stored = await secureStorage.read(key: _kRefreshTokenKey);
+    if (stored == null) return null;
+    final response = await apiClient.dio.post('/auth/refresh', data: {
+      'refreshToken': stored,
+    });
+    final newId = response.data['idToken'] as String?;
+    final newRefreshToken = response.data['refreshToken'] as String?;
+    if (newId != null && newRefreshToken != null) {
+      await secureStorage.write(key: _kIdTokenKey, value: newId);
+      await secureStorage.write(key: _kRefreshTokenKey, value: newRefreshToken);
+      return newId;
+    }
+    return null;
   }
-
-  /// Verifica se existe usuário logado e, se necessário, tenta refresh do token.
-  /// Retorna true se houver sessão válida carregada.
-  Future<bool> checkLoggedUser() async {
-    developer.log('AuthController.checkLoggedUser', name: 'AuthController');
+  
+  String? _extractUserIdFromJwt(String jwt) {
     try {
-      final idToken = await _auth.getIdToken();
-      if (idToken == null) return false;
-
-      // If AuthService does not expose an expiresAt, attempt a refresh and
-      // require it to succeed to consider the session valid.
-      final newToken = await _auth.refreshToken();
-      if (newToken == null) {
-        await logout();
-        return false;
-      }
-
-      // carrega colaborador salvo localmente
-      final loaded = await _collaboratorController.loadLoggedCollaboratorFromPrefs();
-      developer.log('AuthController.checkLoggedUser loaded=$loaded', name: 'AuthController');
-      return loaded;
+      final parts = jwt.split('.');
+      if (parts.length != 3) return null;
+      String payload = parts[1];
+      // Normalize base64 (URL-safe)
+      payload = base64Url.normalize(payload);
+      final decoded = utf8.decode(base64Url.decode(payload));
+      final map = jsonDecode(decoded) as Map<String, dynamic>;
+      // common claim names: user_id (firebase), sub, uid, userId
+      return map['user_id'] as String? ?? map['sub'] as String? ?? map['uid'] as String? ?? map['userId'] as String?;
     } catch (e) {
-      developer.log('AuthController.checkLoggedUser error: $e', name: 'AuthController', error: e);
-      return false;
+      dev.log('AuthController._extractUserIdFromJwt failed: $e', name: 'AuthController');
+      return null;
     }
   }
 }

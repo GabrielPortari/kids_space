@@ -1,12 +1,13 @@
 import 'package:kids_space/model/attendance.dart';
 import 'package:kids_space/service/attendance_service.dart';
 import 'package:mobx/mobx.dart';
+import 'base_controller.dart';
 
 part 'attendance_controller.g.dart';
 
 class AttendanceController = _AttendanceController with _$AttendanceController;
 
-abstract class _AttendanceController with Store {
+abstract class _AttendanceController extends BaseController with Store {
   final AttendanceService _service = AttendanceService();
 
   // Loading states

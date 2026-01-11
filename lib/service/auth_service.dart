@@ -1,51 +1,50 @@
 // Serviço de autenticação
+import 'dart:developer' as dev;
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:kids_space/service/base_service.dart';
 
-class AuthService {
-
-  final Dio _dio;
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
-
-  AuthService(this._dio);
+class AuthService extends BaseService {
   
-  Future<void> persistTokens(String idToken, String refreshToken, int expiresIn) async {
-    final expireAt = DateTime.now().add(Duration(seconds: expiresIn));
-    await _secureStorage.write(key: 'id_token', value: idToken);
-    await _secureStorage.write(key: 'refresh_token', value: refreshToken);
-    await _secureStorage.write(key: 'token_expire_at', value: expireAt.toIso8601String());
-  }
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  final _kIdTokenKey = 'idToken';
+  final _kRefreshTokenKey = 'refreshToken';
 
-  Future<bool> login(String email, String password) async {
-    final resp = await _dio.post('/auth/login', data: {'email': email, 'password': password});
-    if (resp.statusCode == 200) {
-      final data = resp.data;
-      await persistTokens(data['idToken'], data['refreshToken'], int.parse(data['expiresIn'].toString()));
-      return true;
+  Future<Map<String,dynamic>> login(String email, String password) async {
+    try{
+      final response = await dio.post('/auth/login', data: {
+        'email': email,
+        'password': password,
+      });
+
+      return {
+        'idToken': response.data['idToken'],
+        'refreshToken': response.data['refreshToken'],
+        'userId': response.data['userId'] ?? response.data['localId'],
+        'success': true,
+      };
+
+    } on DioException catch (e){
+      dev.log('Login failed: ${e.response?.data ?? e.message}');
+      return {'success': false, 'message': e.response?.data ?? e.message};
+    } catch (e, stackTrace){
+      dev.log('Login failed: $e - $stackTrace');
+      return {'success': false, 'message': e.toString()};
     }
-    return false;
-  }
-
-  Future<String?> getIdToken() async => await _secureStorage.read(key: 'id_token');
-  Future<String?> getRefreshToken() async => await _secureStorage.read(key: 'refresh_token');
-  Future<DateTime?> getTokenExpireAt() async {
-    final expireAt = await _secureStorage.read(key: 'token_expire_at');
-    return expireAt == null ? null : DateTime.parse(expireAt);
   }
 
   Future<String?> refreshToken() async{
-    final refresh = await getRefreshToken();
-    if (refresh == null) return null;
-    final response = await _dio.post('/auth/refresh', data: {'refreshToken': refresh});
-    if (response.statusCode == 200) {
-      final data = response.data;
-      await persistTokens(data['idToken'], data['refreshToken'], int.parse(data['expiresIn'].toString()));
-      return data['idToken'];
-    }
-    return null;
+  final stored = await _secureStorage.read(key: _kRefreshTokenKey);
+  if (stored == null) return null;
+  final resp = await dio.post('/auth/refresh', data: {'refreshToken': stored});
+  final newId = resp.data['idToken'] as String?;
+  final newRefresh = resp.data['refreshToken'] as String?;
+  if (newId != null && newRefresh != null) {
+    await _secureStorage.write(key: _kIdTokenKey, value: newId);
+    await _secureStorage.write(key: _kRefreshTokenKey, value: newRefresh);
+    return newId;
+  }
+  return null;
   }
 
-  Future<void> logout() async{
-    await _secureStorage.deleteAll();
-  }
 }

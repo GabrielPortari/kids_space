@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:kids_space/controller/auth_controller.dart';
 import 'package:kids_space/service/api_client.dart';
 import 'package:kids_space/service/auth_service.dart';
 import 'package:kids_space/util/getit_factory.dart';
@@ -22,17 +23,6 @@ import 'package:kids_space/view/screens/collaborators_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  ApiClient().init(
-    baseUrl: 'http://10.0.2.2:3000',
-    tokenProvider: () async {
-      final authService = AuthService(ApiClient().dio);
-      return await authService.getIdToken();
-    },
-    refreshToken: () async {
-      final authService = AuthService(ApiClient().dio);
-      return await authService.refreshToken();
-    },
-  );
   await EasyLocalization.ensureInitialized();
   await Firebase.initializeApp(
     options: const FirebaseOptions(
@@ -46,6 +36,17 @@ Future<void> main() async {
     )
   );
   setup(GetIt.I);
+  ApiClient().init(
+    baseUrl: 'http://10.0.2.2:3000',
+    tokenProvider: () async {
+      final authController = GetIt.I<AuthController>();
+      return await authController.getIdToken();
+    },
+    refreshToken: () async {
+      final authController = GetIt.I<AuthController>();
+      return await authController.refreshToken();
+    },
+  );
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('pt', 'BR'), Locale('en', 'US')],

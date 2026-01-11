@@ -49,18 +49,6 @@ mixin _$CollaboratorController on _CollaboratorController, Store {
     );
   }
 
-  late final _$setLoggedCollaboratorAsyncAction = AsyncAction(
-    '_CollaboratorController.setLoggedCollaborator',
-    context: context,
-  );
-
-  @override
-  Future<void> setLoggedCollaborator(Collaborator? collaborator) {
-    return _$setLoggedCollaboratorAsyncAction.run(
-      () => super.setLoggedCollaborator(collaborator),
-    );
-  }
-
   late final _$setSelectedCollaboratorAsyncAction = AsyncAction(
     '_CollaboratorController.setSelectedCollaborator',
     context: context,
@@ -119,6 +107,23 @@ mixin _$CollaboratorController on _CollaboratorController, Store {
     return _$updateCollaboratorAsyncAction.run(
       () => super.updateCollaborator(collaborator),
     );
+  }
+
+  late final _$_CollaboratorControllerActionController = ActionController(
+    name: '_CollaboratorController',
+    context: context,
+  );
+
+  @override
+  dynamic setLoggedCollaborator(Collaborator? collaborator) {
+    final _$actionInfo = _$_CollaboratorControllerActionController.startAction(
+      name: '_CollaboratorController.setLoggedCollaborator',
+    );
+    try {
+      return super.setLoggedCollaborator(collaborator);
+    } finally {
+      _$_CollaboratorControllerActionController.endAction(_$actionInfo);
+    }
   }
 
   @override

@@ -2,12 +2,13 @@ import 'package:mobx/mobx.dart';
 import '../model/user.dart';
 import '../service/user_service.dart';
 import '../controller/child_controller.dart';
+import 'base_controller.dart';
 
 part 'user_controller.g.dart';
 
 class UserController = _UserController with _$UserController;
 
-abstract class _UserController with Store {
+abstract class _UserController extends BaseController with Store {
 	final UserService _userService = UserService();
   final ChildController _childController = ChildController();
 

@@ -1,39 +1,30 @@
+import 'package:get_it/get_it.dart';
+
 import '../model/company.dart';
 import '../service/company_service.dart';
 import 'dart:developer' as developer;
 import '../util/network_exceptions.dart';
+import 'base_controller.dart';
 
-class CompanyController {
-  final CompanyService _companyService;
+class CompanyController extends BaseController {
+  final CompanyService _companyService = GetIt.I<CompanyService>();
 
   List<Company> _companies = [];
   bool isLoading = false;
   String? error;
   Company? _companySelected;
 
-  CompanyController({CompanyService? service}) : _companyService = service ?? CompanyService();
-
   List<Company> get companies => _companies;
   Company? get companySelected => _companySelected;
 
-  /// Carrega empresas e notifica através de callbacks opcionais.
-  ///
-  /// - `onLoading(isLoading)` é chamado no início e no final.
-  /// - `onSuccess(companies)` é chamado quando a lista foi carregada com sucesso.
-  /// - `onError(message)` é chamado em caso de erro.
   Future<void> loadCompanies({
     void Function(bool isLoading)? onLoading,
     void Function(List<Company> companies)? onSuccess,
     void Function(String message)? onError,
   }) async {
-    developer.log('loadCompanies start', name: 'CompanyController');
-    isLoading = true;
-    onLoading?.call(true);
-    error = null;
     try {
       final result = await _companyService.getAllCompanies();
       _companies = result;
-      developer.log('loadCompanies success count=${_companies.length}', name: 'CompanyController');
       onSuccess?.call(_companies);
     } catch (e) {
       if (e is NetworkException) {
@@ -41,7 +32,6 @@ class CompanyController {
       } else {
         error = e.toString();
       }
-      developer.log('loadCompanies error: $error', name: 'CompanyController');
       onError?.call(error!);
     } finally {
       isLoading = false;
@@ -60,7 +50,7 @@ class CompanyController {
     _companySelected = company;
   }
 
-  Company getCompanyById(String id) {
+  Company? getCompanyById(String id) {
     return _companies.firstWhere((company) => company.id == id);
   }
 }

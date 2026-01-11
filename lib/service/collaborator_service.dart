@@ -3,8 +3,9 @@ import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kids_space/model/collaborator.dart';
+import 'package:kids_space/service/base_service.dart';
 
-class CollaboratorService {
+class CollaboratorService extends BaseService {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
@@ -47,37 +48,16 @@ class CollaboratorService {
     }
   }
 
-  Future<Collaborator?> getCollaboratorByEmail(String email) async {
-    developer.log('getCollaboratorByEmail called: email=$email', name: 'CollaboratorService');
-    try {
-      final query = await _firestore.collection('collaborators').where('email', isEqualTo: email).limit(1).get();
-      if (query.docs.isEmpty) {
-        developer.log('getCollaboratorByEmail not found: email=$email', name: 'CollaboratorService');
-        return null;
-      }
-      final doc = query.docs.first;
-      final data = Map<String, dynamic>.from(doc.data());
-      data['id'] = doc.id;
-      developer.log('getCollaboratorByEmail found id=${doc.id}', name: 'CollaboratorService');
-      return Collaborator.fromJson(data);
-    } catch (e, st) {
-      developer.log('getCollaboratorByEmail error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
-      return null;
-    }
-  }
-
   Future<Collaborator?> getCollaboratorById(String id) async {
-    developer.log('getCollaboratorById called: id=$id', name: 'CollaboratorService');
     try {
-      final doc = await _firestore.collection('collaborators').doc(id).get();
-      if (!doc.exists || doc.data() == null) {
-        developer.log('getCollaboratorById not found: id=$id', name: 'CollaboratorService');
+      developer.log('getCollaboratorById -> request', name: 'CollaboratorService', error: {'path': '/collaborator/$id'});
+      final response = await dio.get('/collaborator/$id');
+      developer.log('getCollaboratorById -> response', name: 'CollaboratorService', error: {'status': response.statusCode, 'data': response.data});
+      if (response.statusCode == 200 && response.data != null) {
+        return Collaborator.fromJson(response.data as Map<String, dynamic>);
+      } else {
         return null;
       }
-      final data = Map<String, dynamic>.from(doc.data()!);
-      data['id'] = doc.id;
-      developer.log('getCollaboratorById found id=${doc.id}', name: 'CollaboratorService');
-      return Collaborator.fromJson(data);
     } catch (e, st) {
       developer.log('getCollaboratorById error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
       return null;
@@ -85,48 +65,15 @@ class CollaboratorService {
   }
 
   Future<List<Collaborator>> getCollaboratorsByCompanyId(String companyId) async {
-    developer.log('getCollaboratorsByCompanyId called: companyId=$companyId', name: 'CollaboratorService');
-    try {
-      final query = await _firestore.collection('collaborators').where('companyId', isEqualTo: companyId).get();
-      final result = query.docs.map((d) {
-        final data = Map<String, dynamic>.from(d.data());
-        data['id'] = d.id;
-        return Collaborator.fromJson(data);
-      }).toList();
-      developer.log('getCollaboratorsByCompanyId returning ${result.length} collaborators for companyId=$companyId', name: 'CollaboratorService');
-      return result;
-    } catch (e, st) {
-      developer.log('getCollaboratorsByCompanyId error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
-      return <Collaborator>[];
-    }
+    return [];
   }
 
   Future<bool> deleteCollaborator(String id) async {
-    developer.log('deleteCollaborator called: id=$id', name: 'CollaboratorService');
-    try {
-      await _firestore.collection('collaborators').doc(id).delete();
-      developer.log('deleteCollaborator success for id=$id', name: 'CollaboratorService');
-      return true;
-    } catch (e, st) {
-      developer.log('deleteCollaborator error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
-      return false;
-    }
+    return false;
   }
 
-  /// Atualiza um colaborador no Firestore (remove senha antes de salvar)
   Future<bool> updateCollaborator(Collaborator collaborator) async {
-    developer.log('updateCollaborator called: id=${collaborator.id}', name: 'CollaboratorService');
-    try {
-      final id = collaborator.id;
-      if (id == null || id.isEmpty) return false;
-      final json = collaborator.toJson();
-      json.remove('password');
-      await _firestore.collection('collaborators').doc(id).set(json, SetOptions(merge: true));
-      developer.log('updateCollaborator success for id=$id', name: 'CollaboratorService');
-      return true;
-    } catch (e, st) {
-      developer.log('updateCollaborator error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
-      return false;
-    }
+    return false;
   }
 }
+

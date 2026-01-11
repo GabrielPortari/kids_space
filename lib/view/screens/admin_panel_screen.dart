@@ -31,7 +31,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   final CompanyController _companyController = GetIt.I.get<CompanyController>();
   final CollaboratorController _collaboratorController = GetIt.I.get<CollaboratorController>();
 
-  Company get company => _companyController.getCompanyById(_collaboratorController.loggedCollaborator?.companyId ?? '');
+  Company? get company => _companyController.getCompanyById(_collaboratorController.loggedCollaborator?.companyId ?? '');
 
   @override
   void dispose() {

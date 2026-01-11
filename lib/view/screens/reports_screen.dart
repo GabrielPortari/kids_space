@@ -173,7 +173,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
       case ActivityEntityType.company:
         try {
           final comp = _companyController.getCompanyById(id);
-          return comp.fantasyName ?? comp.corporateName;
+          return comp?.fantasyName ?? comp?.corporateName;
         } catch (_) {
           return null;
         }

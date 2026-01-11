@@ -117,77 +117,74 @@ class _HomeScreenState extends State<HomeScreen> {
         final events = _attendanceController.logEvents;
         final limited = events.take(30).toList();
 
-        return Skeletonizer(
-          enabled: _attendanceController.isLoadingLog,
-          child: AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 4.0,
-                    horizontal: 4.0,
-                  ),
-                  child: TextHeaderSmall(
-                    translate('home.30_last_presence_log'),
-                  ),
+        return AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 4.0,
+                  horizontal: 4.0,
                 ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: listHeight,
-                  child: limited.isEmpty
-                        ? Center(
-                                child: TextBodyMedium(
-                                  translate('home.no_presence_records'),
-                                ),
-                          )
-                        : Scrollbar(
+                child: TextHeaderSmall(
+                  translate('home.30_last_presence_log'),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: listHeight,
+                child: limited.isEmpty
+                      ? Center(
+                              child: TextBodyMedium(
+                                translate('home.no_presence_records'),
+                              ),
+                        )
+                      : Scrollbar(
+                          controller: _logListController,
+                          thumbVisibility: true,
+                          child: ListView.separated(
                             controller: _logListController,
-                            thumbVisibility: true,
-                            child: ListView.separated(
-                              controller: _logListController,
-                              primary: false,
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              itemCount: limited.length,
-                              separatorBuilder: (_, __) => const Divider(height: 1),
-                              itemBuilder: (context, idx) {
-                                final event = limited[idx];
-                                final isCheckin = event.attendanceType == AttendanceType.checkin;
-                                return ListTile(
-                                  contentPadding: const EdgeInsets.fromLTRB(4.0, 0.0, 8.0, 0.0),
-                                  leading: CircleAvatar(
-                                    radius: 20,
-                                    backgroundColor: isCheckin ? successBg : dangerBg,
-                                    child: Icon(
-                                      isCheckin ? Icons.login : Icons.logout,
-                                      color: isCheckin ? success : danger,
-                                      size: 18,
+                            primary: false,
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: limited.length,
+                            separatorBuilder: (_, __) => const Divider(height: 1),
+                            itemBuilder: (context, idx) {
+                              final event = limited[idx];
+                              final isCheckin = event.attendanceType == AttendanceType.checkin;
+                              return ListTile(
+                                contentPadding: const EdgeInsets.fromLTRB(4.0, 0.0, 8.0, 0.0),
+                                leading: CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: isCheckin ? successBg : dangerBg,
+                                  child: Icon(
+                                    isCheckin ? Icons.login : Icons.logout,
+                                    color: isCheckin ? success : danger,
+                                    size: 18,
+                                  ),
+                                ),
+                                title: TextBodyMedium(
+                                  _childController.getChildById(event.childId ?? '')?.name ?? '',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                subtitle: TextBodySmall(
+                                  '${formatDate(event.checkinTime ?? event.checkoutTime ?? DateTime.now())} • ${formatTime(event.checkinTime ?? event.checkoutTime ?? DateTime.now())}',
+                                ),
+                                trailing: Chip(
+                                  label: TextBodySmall(
+                                    isCheckin ? translate('home.check_in') : translate('home.check_out'),
+                                    style: TextStyle(
+                                      color: isCheckin ? successBg : dangerBg,
                                     ),
                                   ),
-                                  title: TextBodyMedium(
-                                    _childController.getChildById(event.childId ?? '')?.name ?? '',
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  subtitle: TextBodySmall(
-                                    '${formatDate(event.checkinTime ?? event.checkoutTime ?? DateTime.now())} • ${formatTime(event.checkinTime ?? event.checkoutTime ?? DateTime.now())}',
-                                  ),
-                                  trailing: Chip(
-                                    label: TextBodySmall(
-                                      isCheckin ? translate('home.check_in') : translate('home.check_out'),
-                                      style: TextStyle(
-                                        color: isCheckin ? successBg : dangerBg,
-                                      ),
-                                    ),
-                                    backgroundColor: isCheckin ? success : danger,
-                                  ),
-                                  onTap: () => debugPrint('DebuggerLog: HomeScreen.log tapped index=$idx childId=${event.childId}'),
-                                );
-                              },
-                            ),
+                                  backgroundColor: isCheckin ? success : danger,
+                                ),
+                                onTap: () => debugPrint('DebuggerLog: HomeScreen.log tapped index=$idx childId=${event.childId}'),
+                              );
+                            },
                           ),
-                ),
-              ],
-            ),
+                        ),
+              ),
+            ],
           ),
         );
       },
@@ -206,50 +203,48 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _infoCompanyCard() {
-    return Observer(
-      builder: (_) => Builder(
-        builder: (context) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: AppCard(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => 
-                  ProfileScreen(selectedCollaborator: _collaboratorController.loggedCollaborator))
-                );
-                debugPrint('DebuggerLog: HomeScreen.navigate -> /profile, arguments: ${_collaboratorController.loggedCollaborator}');
-              },
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 32,
-                    backgroundImage: AssetImage(
-                      _companyController.companySelected?.logoUrl ?? 'assets/images/company_logo_placeholder.png',
-                    ),
+    return Builder(
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: AppCard(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => 
+                ProfileScreen(selectedCollaborator: _collaboratorController.loggedCollaborator))
+              );
+              debugPrint('DebuggerLog: HomeScreen.navigate -> /profile, arguments: ${_collaboratorController.loggedCollaborator}');
+            },
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 32,
+                  backgroundImage: AssetImage(
+                    _companyController.companySelected?.logoUrl ?? 'assets/images/company_logo_placeholder.png',
                   ),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextHeaderMedium(
-                          _companyController.companySelected?.fantasyName ?? translate('home.company_name'),
-                        ),
-                        const SizedBox(height: 2),
-                        TextBodyMedium(translate('home.collaborator_name', namedArgs: {
-                            'name_placeholder': _collaboratorController.loggedCollaborator?.name ?? '-',
-                          })),
-                      ],
-                    ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextHeaderMedium(
+                        _companyController.companySelected?.fantasyName ?? translate('home.company_name'),
+                      ),
+                      const SizedBox(height: 2),
+                      TextBodyMedium(translate('home.collaborator_name', namedArgs: {
+                          'name_placeholder': _collaboratorController.loggedCollaborator?.name ?? '-',
+                        })),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 

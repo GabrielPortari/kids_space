@@ -22,16 +22,12 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    //_authController.logout();
-    debugPrint('SplashScreen: initState -> starting splash flow');
     _startSplashFlow();
   }
 
   Future<void> _startSplashFlow() async {
-    debugPrint('SplashScreen: _startSplashFlow -> begin');
     await _loadCompanies();
     await _checkLoggedUser();
-    debugPrint('SplashScreen: _startSplashFlow -> end');
   }
 
   @override
@@ -55,51 +51,24 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _loadCompanies() async {
-    debugPrint('SplashScreen: _loadCompanies -> loading companies');
     await _companyController.loadCompanies();
-    try {
-      final count = _companyController.companies.length;
-      debugPrint('SplashScreen: _loadCompanies -> loaded $count companies');
-    } catch (e) {
-      debugPrint('SplashScreen: _loadCompanies -> error reading companies: $e');
-    }
   }
 
   Future<void> _checkLoggedUser() async {
-    debugPrint('SplashScreen: _checkLoggedUser -> checking persisted login');
     await _authController.checkLoggedUser();
-    final loggedUser = _collaboratorController.loggedCollaborator;
-    debugPrint('SplashScreen: _checkLoggedUser -> loggedUser present: ${loggedUser != null}');
-
-    Company? company = _companyController.companySelected;
-
-    if (loggedUser != null) {
-      debugPrint('SplashScreen: _checkLoggedUser -> found logged user id=${loggedUser.id} email=${loggedUser.email} userType=${loggedUser.userType} companyId=${loggedUser.companyId}');
-      try {
-        company = _companyController.companies.firstWhere(
-          (c) => c.id == loggedUser.companyId,
-        );
-        _companyController.selectCompany(company);
-        debugPrint('SplashScreen: _checkLoggedUser -> selected company ${company.fantasyName} (id=${company.id})');
-      } catch (e) {
-        debugPrint('SplashScreen: _checkLoggedUser -> no matching company for user: $e');
-        company = null;
+    final loggedCollaborator = _collaboratorController.loggedCollaborator;
+    if (loggedCollaborator != null) {
+      final companyId = loggedCollaborator.companyId;
+      if (companyId != null) {
+        final company = _companyController.getCompanyById(companyId);
+        if (company != null) {
+          _companyController.selectCompany(company);
+          Navigator.pushReplacementNamed(context, '/app_bottom_nav');
+          return;
+        }
       }
-    }
-
-    debugPrint('SplashScreen: _checkLoggedUser -> delaying for UX');
-    await Future.delayed(const Duration(seconds: 3));
-
-    if (loggedUser != null && company != null) {
-      if (loggedUser.userType == UserType.admin) {
-        debugPrint('SplashScreen: _checkLoggedUser -> navigating to /admin_panel for admin user');
-        Navigator.pushNamedAndRemoveUntil(context, '/admin_panel', (route) => false);
-      } else {
-        debugPrint('SplashScreen: _checkLoggedUser -> navigating to /app_bottom_nav for collaborator user');
-        Navigator.pushNamedAndRemoveUntil(context, '/app_bottom_nav', (route) => false);
-      }
+      Navigator.pushReplacementNamed(context, '/company_selection');
     } else {
-      debugPrint('SplashScreen: _checkLoggedUser -> no logged user or no company; navigating to /company_selection');
       Navigator.pushReplacementNamed(context, '/company_selection');
     }
   }

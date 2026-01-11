@@ -1,15 +1,17 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:kids_space/service/collaborator_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mobx/mobx.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'base_controller.dart';
 
 part 'collaborator_controller.g.dart';
 
 class CollaboratorController = _CollaboratorController with _$CollaboratorController;
 
-abstract class _CollaboratorController with Store {
+abstract class _CollaboratorController extends BaseController with Store {
   
   final CollaboratorService _collaboratorService = GetIt.I<CollaboratorService>();
   
@@ -21,23 +23,18 @@ abstract class _CollaboratorController with Store {
 
   /// Define o colaborador logado e persiste localmente
   @action
-  Future<void> setLoggedCollaborator(Collaborator? collaborator) async {
+  setLoggedCollaborator(Collaborator? collaborator)  {
     loggedCollaborator = collaborator;
-    final prefs = await SharedPreferences.getInstance();
-    if (collaborator != null) {
-      // Cria uma cópia sem a senha antes de salvar
-      final sanitized = Collaborator(
-        id: collaborator.id,
-        name: collaborator.name,
-        email: collaborator.email,
-        companyId: collaborator.companyId,
-        phone: collaborator.phone, 
-        userType: collaborator.userType,
-        // adicione outros campos se houver
-      );
-      await prefs.setString('logged_user', jsonEncode(sanitized.toJson()));
-    } else {
-      await prefs.remove('logged_user');
+    try {
+      if (collaborator != null) {
+        secureStorage.write(key: 'loggedCollaborator', value: jsonEncode(collaborator.toJson()));
+        developer.log('CollaboratorController.setLoggedCollaborator persisted', name: 'CollaboratorController', error: {'id': collaborator.id});
+      } else {
+        secureStorage.delete(key: 'loggedCollaborator');
+        developer.log('CollaboratorController.setLoggedCollaborator cleared', name: 'CollaboratorController');
+      }
+    } catch (e) {
+      developer.log('CollaboratorController.setLoggedCollaborator persist failed', name: 'CollaboratorController', error: e);
     }
   }
 
