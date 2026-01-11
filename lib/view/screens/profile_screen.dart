@@ -271,8 +271,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final u = widget.selectedUser!;
       return {
         'Endereço': u.address ?? '-',
-        'Número': u.adressNumber ?? '-',
-        'Complemento': u.adressComplement ?? '-',
+        'Número': u.addressNumber ?? '-',
+        'Complemento': u.addressComplement ?? '-',
         'Bairro': u.neighborhood ?? '-',
         'Cidade': u.city ?? '-',
         'Estado': u.state ?? '-',
@@ -282,8 +282,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final c = widget.selectedCollaborator!;
       return {
         'Endereço': c.address ?? '-',
-        'Número': c.adressNumber ?? '-',
-        'Complemento': c.adressComplement ?? '-',
+        'Número': c.addressNumber ?? '-',
+        'Complemento': c.addressComplement ?? '-',
         'Bairro': c.neighborhood ?? '-',
         'Cidade': c.city ?? '-',
         'Estado': c.state ?? '-',
@@ -293,8 +293,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final co = widget.selectedCompany!;
       return {
         'Endereço': co.address ?? '-',
-        'Número': co.adressNumber ?? '-',
-        'Complemento': co.adressComplement ?? '-',
+        'Número': co.addressNumber ?? '-',
+        'Complemento': co.addressComplement ?? '-',
         'Bairro': co.neighborhood ?? '-',
         'Cidade': co.city ?? '-',
         'Estado': co.state ?? '-',

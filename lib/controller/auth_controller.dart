@@ -129,10 +129,49 @@ class AuthController extends BaseController {
     }
   }
 
+  /// Returns the currently stored id token (if any).
+  Future<String?> getIdToken() async {
+    return await secureStorage.read(key: _kIdTokenKey);
+  }
+
+  int? _extractExpFromJwt(String jwt) {
+    try {
+      final parts = jwt.split('.');
+      if (parts.length != 3) return null;
+      String payload = parts[1];
+      payload = base64Url.normalize(payload);
+      final decoded = utf8.decode(base64Url.decode(payload));
+      final map = jsonDecode(decoded) as Map<String, dynamic>;
+      final exp = map['exp'];
+      if (exp is int) return exp;
+      if (exp is String) return int.tryParse(exp);
+      return null;
+    } catch (e) {
+      dev.log('AuthController._extractExpFromJwt failed: $e', name: 'AuthController');
+      return null;
+    }
+  }
+
+  bool _isTokenExpired(String jwt, {Duration buffer = const Duration(seconds: 60)}) {
+    final exp = _extractExpFromJwt(jwt);
+    if (exp == null) return true;
+    final expiry = DateTime.fromMillisecondsSinceEpoch(exp * 1000);
+    return DateTime.now().isAfter(expiry.subtract(buffer));
+  }
+
+  /// Ensures token is valid: returns true if valid or refreshed, false otherwise.
+  Future<bool> ensureSessionValid() async {
+    final token = await secureStorage.read(key: _kIdTokenKey);
+    if (token == null) return false;
+    if (!_isTokenExpired(token)) return true;
+    final newId = await refreshToken();
+    return newId != null;
+  }
+
   Future<String?> refreshToken() async {
     final stored = await secureStorage.read(key: _kRefreshTokenKey);
     if (stored == null) return null;
-    final response = await apiClient.dio.post('/auth/refresh', data: {
+    final response = await apiClient.dio.post('/auth/refresh-auth', data: {
       'refreshToken': stored,
     });
     final newId = response.data['idToken'] as String?;

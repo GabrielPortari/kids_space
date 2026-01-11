@@ -53,7 +53,7 @@ class ApiClient {
         if (err.response?.statusCode == 401 && refreshToken != null) {
           developer.log('ApiClient received 401, attempting refresh', name: 'ApiClient');
           try {
-            final newToken = await refreshToken!();
+            final newToken = await refreshToken();
             if (newToken != null) {
               final requestOptions = err.requestOptions;
               requestOptions.headers['Authorization'] = 'Bearer $newToken';

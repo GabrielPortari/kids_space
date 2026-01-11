@@ -1,3 +1,4 @@
+import 'package:get_it/get_it.dart';
 import 'package:mobx/mobx.dart';
 import '../model/user.dart';
 import '../service/user_service.dart';
@@ -9,8 +10,8 @@ part 'user_controller.g.dart';
 class UserController = _UserController with _$UserController;
 
 abstract class _UserController extends BaseController with Store {
-	final UserService _userService = UserService();
-  final ChildController _childController = ChildController();
+	final UserService _userService = GetIt.I<UserService>();
+  final ChildController _childController = GetIt.I<ChildController>();
 
   @observable
   String userFilter = '';
@@ -60,7 +61,8 @@ abstract class _UserController extends BaseController with Store {
 			refreshLoading = false;
 			return;
 		}
-		final list = await _userService.getUsersByCompanyId(companyId);
+		final token = await getIdToken();
+		final list = await _userService.getUsersByCompanyId(companyId, token: token);
 		users
 			..clear()
 			..addAll(list);
@@ -81,7 +83,10 @@ abstract class _UserController extends BaseController with Store {
 	}
 
 	@action
-	void addUser(User user) => users.add(user);
+  Future<bool> createUser(User user) async {
+    final success = await _userService.createUser(user);
+    return success;
+  }
 
 	@action
 	Future<bool> deleteUser(String? id) async {

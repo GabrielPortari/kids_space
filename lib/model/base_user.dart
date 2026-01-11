@@ -17,8 +17,8 @@ class BaseUser extends BaseModel{
   final String? phone;
   
   final String? address;
-  final String? adressNumber;
-  final String? adressComplement;
+  final String? addressNumber;
+  final String? addressComplement;
   final String? neighborhood;
   final String? city;
   final String? state;
@@ -34,8 +34,8 @@ class BaseUser extends BaseModel{
     this.document, 
     this.phone, 
     this.address, 
-    this.adressNumber, 
-    this.adressComplement, 
+    this.addressNumber, 
+    this.addressComplement, 
     this.neighborhood, 
     this.city, 
     this.state, 
@@ -57,8 +57,8 @@ class BaseUser extends BaseModel{
         base['document'] = document;
         base['phone'] = phone;
         base['address'] = address;
-        base['adressNumber'] = adressNumber;
-        base['adressComplement'] = adressComplement;
+        base['addressNumber'] = addressNumber;
+        base['addressComplement'] = addressComplement;
         base['neighborhood'] = neighborhood;
         base['city'] = city;
         base['state'] = state;
@@ -94,8 +94,8 @@ class BaseUser extends BaseModel{
       document: json['document'] as String?,
       phone: json['phone'] as String?,
       address: json['address'] as String?,
-      adressNumber: json['adressNumber'] as String?,
-      adressComplement: json['adressComplement'] as String?,
+      addressNumber: json['addressNumber'] as String?,
+      addressComplement: json['addressComplement'] as String?,
       neighborhood: json['neighborhood'] as String?,
       city: json['city'] as String?,
       state: json['state'] as String?,

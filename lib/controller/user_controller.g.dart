@@ -109,6 +109,16 @@ mixin _$UserController on _UserController, Store {
     );
   }
 
+  late final _$createUserAsyncAction = AsyncAction(
+    '_UserController.createUser',
+    context: context,
+  );
+
+  @override
+  Future<bool> createUser(User user) {
+    return _$createUserAsyncAction.run(() => super.createUser(user));
+  }
+
   late final _$deleteUserAsyncAction = AsyncAction(
     '_UserController.deleteUser',
     context: context,
@@ -127,23 +137,6 @@ mixin _$UserController on _UserController, Store {
   @override
   Future<bool> updateUser(User updated) {
     return _$updateUserAsyncAction.run(() => super.updateUser(updated));
-  }
-
-  late final _$_UserControllerActionController = ActionController(
-    name: '_UserController',
-    context: context,
-  );
-
-  @override
-  void addUser(User user) {
-    final _$actionInfo = _$_UserControllerActionController.startAction(
-      name: '_UserController.addUser',
-    );
-    try {
-      return super.addUser(user);
-    } finally {
-      _$_UserControllerActionController.endAction(_$actionInfo);
-    }
   }
 
   @override

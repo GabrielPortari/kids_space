@@ -14,8 +14,8 @@ class User extends BaseUser{
     super.document,
     super.phone,
     super.address,
-    super.adressNumber,
-    super.adressComplement,
+    super.addressNumber,
+    super.addressComplement,
     super.neighborhood,
     super.city,
     super.state,
@@ -34,9 +34,15 @@ class User extends BaseUser{
   }
 
   factory User.fromJson(Map<String, dynamic> json) {
-    final base = BaseUser.fromJson(json);
+    final map = Map<String, dynamic>.from(json);
+    final base = BaseUser.fromJson(map);
+    final children = map['childrenIds'];
+    List<String>? childrenIds;
+    if (children is List) {
+      childrenIds = children.map((e) => e?.toString() ?? '').where((s) => s.isNotEmpty).toList();
+    }
     return User(
-      childrenIds: (json['childrenIds'] as List<dynamic>?)?.cast<String>(),
+      childrenIds: childrenIds,
       userType: base.userType,
       name: base.name,
       email: base.email,
@@ -44,8 +50,8 @@ class User extends BaseUser{
       document: base.document,
       phone: base.phone,
       address: base.address,
-      adressNumber: base.adressNumber,
-      adressComplement: base.adressComplement,
+      addressNumber: base.addressNumber,
+      addressComplement: base.addressComplement,
       neighborhood: base.neighborhood,
       city: base.city,
       state: base.state,

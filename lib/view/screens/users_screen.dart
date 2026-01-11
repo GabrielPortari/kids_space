@@ -6,6 +6,7 @@ import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/user.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:kids_space/util/date_hour_util.dart';
 import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
@@ -69,8 +70,8 @@ class _UsersScreenState extends State<UsersScreen> {
     // Step 2: address data
     final addressFields = [
       FieldDefinition(key: 'address', label: 'Endereço'),
-      FieldDefinition(key: 'adressNumber', label: 'Número'),
-      FieldDefinition(key: 'adressComplement', label: 'Complemento'),
+      FieldDefinition(key: 'addressNumber', label: 'Número'),
+      FieldDefinition(key: 'addressComplement', label: 'Complemento'),
       FieldDefinition(key: 'neighborhood', label: 'Bairro'),
       FieldDefinition(key: 'city', label: 'Cidade'),
       FieldDefinition(key: 'state', label: 'Estado'),
@@ -80,29 +81,22 @@ class _UsersScreenState extends State<UsersScreen> {
     final address = await showEditEntityBottomSheet(context: context, title: 'Endereço', fields: addressFields);
     if (address == null) return; // cancelled
 
-    final now = DateTime.now();
     final newUser = User(
-      childrenIds: const [],
-      userType: null,
       name: personal['name']?.toString(),
       email: personal['email']?.toString(),
-      birthDate: (personal['birthDate'] is DateTime) ? (personal['birthDate'] as DateTime).toIso8601String() : personal['birthDate']?.toString(),
+      birthDate: personal['birthDate']?.toString(),
       document: personal['document']?.toString(),
       phone: personal['phone']?.toString(),
-      address: address['address']?.toString(),
-      adressNumber: address['adressNumber']?.toString(),
-      adressComplement: address['adressComplement']?.toString(),
+      address: formatDateToIsoString(personal['address']?.toString() ?? ''),
+      addressNumber: address['addressNumber']?.toString(),
+      addressComplement: address['addressComplement']?.toString(),
       neighborhood: address['neighborhood']?.toString(),
       city: address['city']?.toString(),
       state: address['state']?.toString(),
       zipCode: address['zipCode']?.toString(),
-      companyId: _companyController.companySelected?.id,
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      createdAt: now,
-      updatedAt: now,
     );
 
-    _userController.addUser(newUser);
+    _userController.createUser(newUser);
   }
 
   @override
@@ -217,9 +211,11 @@ class _UsersScreenState extends State<UsersScreen> {
 
   Widget _userTile(User user) {
     String document = user.document ?? '';
-    document.length == 11 ?
-      document = document.replaceRange(3, document.length, '.***.***-**') :
+    if (document.length >= 11) {
+      document = document.replaceRange(3, document.length, '.***.***-**');
+    } else if (document.length >= 2) {
       document = document.replaceRange(2, document.length, '.***.***-*');
+    }
     return Card(
       key: ValueKey(user.id),
       margin: const EdgeInsets.symmetric(vertical: 4),

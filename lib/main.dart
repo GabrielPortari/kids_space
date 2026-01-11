@@ -4,7 +4,6 @@ import 'package:get_it/get_it.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:kids_space/controller/auth_controller.dart';
 import 'package:kids_space/service/api_client.dart';
-import 'package:kids_space/service/auth_service.dart';
 import 'package:kids_space/util/getit_factory.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
@@ -57,8 +56,63 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  final _authController = GetIt.I.get<AuthController>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkSessionOnResume();
+    }
+  }
+
+  void _checkSessionOnResume() async {
+    final valid = await _authController.ensureSessionValid();
+    if (!valid) {
+      try { await _authController.logout(); } catch (_) {}
+      final ctx = navigatorKey.currentContext;
+      if (ctx != null) {
+        showDialog<void>(
+          context: ctx,
+          barrierDismissible: false,
+          builder: (c) => AlertDialog(
+            title: const Text('Sessão expirada'),
+            content: const Text('Sua sessão expirou. Faça login novamente.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(c).pop();
+                  Navigator.of(ctx).pushNamedAndRemoveUntil('/company_selection', (route) => false);
+                },
+                child: const Text('OK'),
+              )
+            ],
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -71,6 +125,7 @@ class MyApp extends StatelessWidget {
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       title: 'Kids Space',
+      navigatorKey: navigatorKey,
       theme: AppTheme.lightTheme(),
       darkTheme: AppTheme.darkTheme(),
       themeMode: ThemeMode.system,

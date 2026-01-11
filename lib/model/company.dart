@@ -11,8 +11,8 @@ class Company extends BaseModel{
   final String? cnpj;
   final String? website;
   final String? address;
-  final String? adressNumber;
-  final String? adressComplement;
+  final String? addressNumber;
+  final String? addressComplement;
   final String? neighborhood;
   final String? city;
   final String? state;
@@ -31,8 +31,8 @@ class Company extends BaseModel{
     this.corporateName, 
     this.cnpj, 
     this.website, 
-    this.address, this.adressNumber, 
-    this.adressComplement, 
+    this.address, this.addressNumber, 
+    this.addressComplement, 
     this.neighborhood,
      this.city, 
     this.state, 
@@ -52,8 +52,8 @@ class Company extends BaseModel{
     base['cnpj'] = cnpj;
     base['website'] = website;
     base['address'] = address;
-    base['adressNumber'] = adressNumber;
-    base['adressComplement'] = adressComplement;
+    base['addressNumber'] = addressNumber;
+    base['addressComplement'] = addressComplement;
     base['neighborhood'] = neighborhood;
     base['city'] = city;
     base['state'] = state;
@@ -76,8 +76,8 @@ class Company extends BaseModel{
       cnpj: json['cnpj'] as String?,
       website: json['website'] as String?,
       address: json['address'] as String?,
-      adressNumber: json['adressNumber'] as String?,
-      adressComplement: json['adressComplement'] as String?,
+      addressNumber: json['addressNumber'] as String?,
+      addressComplement: json['addressComplement'] as String?,
       neighborhood: json['neighborhood'] as String?,
       city: json['city'] as String?,
       state: json['state'] as String?,
