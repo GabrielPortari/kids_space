@@ -36,7 +36,7 @@ class AuthService extends BaseService {
   Future<String?> refreshToken() async{
   final stored = await _secureStorage.read(key: _kRefreshTokenKey);
   if (stored == null) return null;
-  final resp = await dio.post('/auth/refresh', data: {'refreshToken': stored});
+  final resp = await dio.post('/auth/refresh-auth', data: {'refreshToken': stored});
   final newId = resp.data['idToken'] as String?;
   final newRefresh = resp.data['refreshToken'] as String?;
   if (newId != null && newRefresh != null) {
