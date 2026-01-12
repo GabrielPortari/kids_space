@@ -10,6 +10,8 @@ class Company extends BaseModel{
   final String? corporateName;
   final String? cnpj;
   final String? website;
+  final String? email;
+  final String? phone;
   final String? address;
   final String? addressNumber;
   final String? addressComplement;
@@ -41,7 +43,7 @@ class Company extends BaseModel{
     this.logoUrl, 
     this.collaborators, 
     this.users, 
-    this.children
+    this.children, this.email, this.phone
   });
 
   @override
@@ -51,6 +53,8 @@ class Company extends BaseModel{
     base['corporateName'] = corporateName;
     base['cnpj'] = cnpj;
     base['website'] = website;
+    base['email'] = email;
+    base['phone'] = phone;
     base['address'] = address;
     base['addressNumber'] = addressNumber;
     base['addressComplement'] = addressComplement;
@@ -75,6 +79,8 @@ class Company extends BaseModel{
       corporateName: json['corporateName'] as String?,
       cnpj: json['cnpj'] as String?,
       website: json['website'] as String?,
+      email: json['email'] as String?,
+      phone: json['phone'] as String?,
       address: json['address'] as String?,
       addressNumber: json['addressNumber'] as String?,
       addressComplement: json['addressComplement'] as String?,

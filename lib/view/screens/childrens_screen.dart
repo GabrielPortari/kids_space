@@ -26,17 +26,11 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
 
-  List<Child> _allChildren = [];
-  List<Child> _filteredChildren = [];
-  late Map<String, List<User>> _childrenResponsibles = {};
-  bool _refreshLoading = false;
-
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
-    // initial load
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadChildren());
+    _onRefresh();
   }
 
   @override
@@ -50,50 +44,14 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   void _onSearchChanged() {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
-      final query = _searchController.text.trim().toLowerCase();
-      setState(() {
-        _filteredChildren = _allChildren.where((c) {
-          final childName = (c.name ?? '').toLowerCase();
-          final responsibles = _childrenResponsibles[c.id] ?? [];
-          final responsibleName = responsibles.isNotEmpty ? (responsibles.first.name ?? '').toLowerCase() : '';
-          return childName.contains(query) || responsibleName.contains(query);
-        }).toList();
-        _filteredChildren.sort((a, b) {
-          if ((a.isActive ?? false) && !(b.isActive ?? false)) return -1;
-          if ((!(a.isActive ?? false)) && (b.isActive ?? false)) return 1;
-          return (a.name ?? '').compareTo(b.name ?? '');
-        });
-      });
-    });
-  }
-
-  Future<void> _loadChildren() async {
-    final companyId = _companyController.companySelected?.id;
-    if (companyId == null) {
-      setState(() {
-        _allChildren = [];
-        _filteredChildren = [];
-        _childrenResponsibles = {};
-      });
-      return;
-    }
-    setState(() => _refreshLoading = true);
-    final list = await _childController.getChildrenByCompanyId(companyId);
-    list.sort((a, b) {
-      if ((a.isActive ?? false) && !(b.isActive ?? false)) return -1;
-      if ((!(a.isActive ?? false)) && (b.isActive ?? false)) return 1;
-      return (a.name ?? '').compareTo(b.name ?? '');
-    });
-    setState(() {
-      _allChildren = list;
-      _filteredChildren = List.from(_allChildren);
-      _childrenResponsibles = _childController.getChildrenWithResponsibles(_allChildren);
-      _refreshLoading = false;
+      _childController.childFilter = _searchController.text.trim();
+      if (mounted) setState(() {});
     });
   }
 
   Future<void> _onRefresh() async {
-    await _loadChildren();
+    final companyId = _companyController.companySelected?.id;
+    await _childController.refreshChildrenForCompany(companyId);
   }
 
   @override
@@ -142,7 +100,7 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
                 onPressed: () {
                   _searchController.clear();
                   setState(() {
-                    _filteredChildren = List.from(_allChildren);
+                    _childController.childFilter = '';
                   });
                 },
               ),
@@ -154,16 +112,16 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
     return Expanded(
       child: RefreshIndicator(
         onRefresh: () async => await _onRefresh(),
-        child: _refreshLoading
+        child: _childController.refreshLoading
             ? _buildSkeletonList()
-            : _allChildren.isEmpty
+            : _childController.children.isEmpty
                 ? ListView(
                     padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
                     children: const [
                       Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 24.0), child: Text('Nenhuma criança cadastrada', style: TextStyle(color: Colors.grey, fontSize: 16))))
                     ],
                   )
-                : _filteredChildren.isEmpty
+                : _childController.filteredChildren.isEmpty
                     ? ListView(
                         padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
                         children: const [
@@ -172,8 +130,8 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-                        itemCount: _filteredChildren.length,
-                        itemBuilder: (context, index) => _childTile(_filteredChildren[index]),
+                        itemCount: _childController.filteredChildren.length,
+                        itemBuilder: (context, index) => _childTile(_childController.filteredChildren[index]),
                       ),
       ),
     );
@@ -202,7 +160,7 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   }
 
   Widget _childTile(Child child) {
-    final responsibles = _childrenResponsibles[child.id] ?? [];
+    final responsibles = _childController.activeChildrenWithResponsibles[child.id] ?? [];
     final responsible = responsibles.isNotEmpty ? responsibles.first : null;
     return Card(
       key: ValueKey(child.id),
