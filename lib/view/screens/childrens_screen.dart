@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/child_controller.dart';
+import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/child.dart';
-import 'package:kids_space/model/user.dart';
 import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
@@ -22,6 +22,7 @@ class ChildrensScreen extends StatefulWidget {
 class _ChildrensScreenState extends State<ChildrensScreen> {
   final CompanyController _companyController = GetIt.I.get<CompanyController>();
   final ChildController _childController = GetIt.I.get<ChildController>();
+  final UserController _userController = GetIt.I.get<UserController>();
 
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
@@ -160,8 +161,10 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   }
 
   Widget _childTile(Child child) {
-    final responsibles = _childController.activeChildrenWithResponsibles[child.id] ?? [];
-    final responsible = responsibles.isNotEmpty ? responsibles.first : null;
+    final firstResponsible = child.responsibleUserIds != null && child.responsibleUserIds!.isNotEmpty
+        ? _userController.getUserById(child.responsibleUserIds!.first)
+        : null;
+
     return Card(
       key: ValueKey(child.id),
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -169,10 +172,10 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          if (responsible != null) {
+          if (firstResponsible != null) {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => 
-              ProfileScreen(selectedUser: responsible))
+              ProfileScreen(selectedUser: firstResponsible))
             );
           }
         },
@@ -216,8 +219,8 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text('Responsável: ${responsible?.name ?? ''}', style: const TextStyle(fontSize: 15)),
-                    Text('Telefone: ${responsible?.phone ?? ''}', style: const TextStyle(fontSize: 15, color: Colors.grey)),
+                    Text('Responsável: ${firstResponsible?.name ?? '-'}', style: const TextStyle(fontSize: 15)),
+                    Text('Telefone: ${firstResponsible?.phone ?? '-'}', style: const TextStyle(fontSize: 15, color: Colors.grey)),
                   ],
                 ),
               ),

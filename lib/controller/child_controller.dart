@@ -1,3 +1,5 @@
+import 'package:get_it/get_it.dart';
+import 'package:kids_space/controller/user_controller.dart';
 import 'package:mobx/mobx.dart';
 
 import '../model/child.dart';
@@ -5,8 +7,9 @@ import '../service/child_service.dart';
 import '../model/user.dart';
 import 'base_controller.dart';
 
-class ChildController extends BaseController {
-  final ChildService _childService = ChildService();
+class ChildController extends BaseController with Store {
+  final ChildService _childService = GetIt.I.get<ChildService>();
+  final UserController _userController = GetIt.I.get<UserController>();
 
   @observable
   String childFilter = '';
@@ -57,12 +60,24 @@ class ChildController extends BaseController {
 
   // Retorna um mapa de childId para lista de responsáveis (User)
   Map<String, List<User>> getChildrenWithResponsibles(List<Child> children) {
-    return {};
+    Map<String, List<User>> result = {};
+    for (final child in children) {
+      List<String>? responsibleIds = child.responsibleUserIds;
+      if(responsibleIds != null){
+        for(final id in responsibleIds) {
+          for(final user in _userController.users) {
+            // lógica para associar usuários às crianças
+            user.id == id;
+            result.putIfAbsent(child.id!, () => []).add(user);
+          }
+        }
+      }
+    }
+    return result;
   }
-
-  // Getter para obter o mapa de responsáveis das crianças ativas da empresa selecionada
-  // Retorna mapa por childId
+  
   Map<String, List<User>> get activeChildrenWithResponsibles {
+    
     return {};
   }
 
