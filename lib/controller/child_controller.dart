@@ -7,10 +7,15 @@ import '../service/child_service.dart';
 import '../model/user.dart';
 import 'base_controller.dart';
 
-class ChildController extends BaseController with Store {
-  final ChildService _childService = GetIt.I.get<ChildService>();
-  final UserController _userController = GetIt.I.get<UserController>();
+part 'child_controller.g.dart';
+class ChildController = _ChildController with _$ChildController;
 
+abstract class _ChildController extends BaseController with Store {
+  final ChildService _childService;
+  UserController get _userController => GetIt.I.get<UserController>();
+
+  _ChildController(this._childService);
+  
   @observable
   String childFilter = '';
 
@@ -88,7 +93,8 @@ class ChildController extends BaseController with Store {
 
   // Expõe busca de criança por id delegando ao serviço
   Child? getChildById(String? id) {
-    return null;
+    if(id == null || id.isEmpty) return null;
+    return children.firstWhere((c) => c.id == id, orElse: () => _childService.getChildById(id)!);
   }
 
   // Expõe exclusão de criança delegando ao serviço

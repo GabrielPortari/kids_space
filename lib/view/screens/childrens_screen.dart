@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/child_controller.dart';
@@ -113,27 +114,29 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
     return Expanded(
       child: RefreshIndicator(
         onRefresh: () async => await _onRefresh(),
-        child: _childController.refreshLoading
-            ? _buildSkeletonList()
-            : _childController.children.isEmpty
-                ? ListView(
-                    padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-                    children: const [
-                      Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 24.0), child: Text('Nenhuma criança cadastrada', style: TextStyle(color: Colors.grey, fontSize: 16))))
-                    ],
-                  )
-                : _childController.filteredChildren.isEmpty
-                    ? ListView(
-                        padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-                        children: const [
-                          Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 24.0), child: Text('Nenhuma criança encontrada', style: TextStyle(color: Colors.grey, fontSize: 16))))
-                        ],
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-                        itemCount: _childController.filteredChildren.length,
-                        itemBuilder: (context, index) => _childTile(_childController.filteredChildren[index]),
-                      ),
+        child: Observer(builder: (_) {
+          final filtered = _childController.filteredChildren;
+
+          if (_childController.refreshLoading) {
+            return _buildSkeletonList();
+          }
+
+          if (filtered.isEmpty) {
+            return ListView(padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0), children: [
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24.0),
+                  child: Text(_searchController.text.isEmpty ? 'Nenhuma criança cadastrada' : 'Nenhuma criança encontrada', style: const TextStyle(color: Colors.grey, fontSize: 16)),
+                ),
+              )
+            ]);
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+            itemCount: _childController.filteredChildren.length,
+            itemBuilder: (context, index) => _childTile(_childController.filteredChildren[index]),
+          );
+        }),
       ),
     );
   }

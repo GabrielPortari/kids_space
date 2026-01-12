@@ -40,9 +40,8 @@ class _ProfileChildrenCardSectionState extends State<ProfileChildrenCardSection>
 
   void _loadChildren() {
     _children.clear();
-    final service = ChildService();
-    for (final cid in widget.user?.childrenIds ?? []) {
-      final child = service.getChildById(cid);
+    for (final cId in widget.user?.childrenIds ?? []) {
+      final child = _childController.getChildById(cId);
       if (child != null) _children.add(child);
     }
     setState(() {});

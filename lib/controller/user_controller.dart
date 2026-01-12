@@ -10,8 +10,10 @@ part 'user_controller.g.dart';
 class UserController = _UserController with _$UserController;
 
 abstract class _UserController extends BaseController with Store {
-	final UserService _userService = GetIt.I<UserService>();
-  final ChildController _childController = GetIt.I<ChildController>();
+	final UserService _userService;
+	ChildController get _childController => GetIt.I.get<ChildController>();
+
+	_UserController(this._userService);
 
   @observable
   String userFilter = '';

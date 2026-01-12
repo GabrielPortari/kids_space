@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/attendance_controller.dart';
+import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/attendance.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/util/date_hour_util.dart';
@@ -16,10 +17,9 @@ import 'package:kids_space/view/design_system/app_text.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
 
 final CompanyController _companyController = GetIt.I<CompanyController>();
-final CollaboratorController _collaboratorController =
-    GetIt.I<CollaboratorController>();
-final AttendanceController _attendanceController =
-    GetIt.I<AttendanceController>();
+final UserController _userController = GetIt.I<UserController>();
+final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
+final AttendanceController _attendanceController = GetIt.I<AttendanceController>();
 final ChildController _childController = GetIt.I<ChildController>();
 
 class HomeScreen extends StatefulWidget {
@@ -195,9 +195,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final companyId = _companyController.companySelected?.id;
     if (companyId != null) {
       debugPrint('DebuggerLog: HomeScreen._loadData START for $companyId');
-      await Future.wait([
-
-      ]);
+      await _userController.refreshUsersForCompany(companyId);
+      await _childController.refreshChildrenForCompany(companyId);
       debugPrint('DebuggerLog: HomeScreen._loadData DONE');
     }
   }
