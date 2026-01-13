@@ -23,9 +23,12 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
       return StatefulBuilder(builder: (innerCtx, setState) {
         final filter = childController.childFilter.toLowerCase();
         final companyId = companyController.companySelected?.id;
+        // Use computed active checked-in children from controller when available
+        final List<Child> activeChildren = companyId != null ? childController.activeCheckedInChildrenComputed(companyId) : [];
         final List<Child> source = type == AttendanceType.checkout
-            ? (companyId != null ? childController.activeCheckedInChildren(companyId) : [])
-            : childController.filteredChildren;
+          ? activeChildren
+          : // For checkin, exclude children that are already active (checked-in)
+          childController.filteredChildren.where((ch) => !(ch.id != null && activeChildren.map((c) => c.id).contains(ch.id))).toList();
         final children = source.where((ch) {
           if (filter.isEmpty) return true;
           final name = ch.name?.toLowerCase() ?? '';
@@ -89,12 +92,23 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
 
                       final child = source.firstWhere((c) => c.id == selectedChildId);
 
-                      // For checkin: if child has multiple responsibles, or even one, ask for responsible + notes.
+                      // Ask for responsible and notes for both checkin and checkout flows.
                       String? selectedResponsibleId;
                       String? notes;
-                      if (type == AttendanceType.checkin) {
-                        final userController = GetIt.I<UserController>();
-                        final responsibles = child?.responsibleUserIds ?? [];
+                      final userController = GetIt.I<UserController>();
+                      if (type == AttendanceType.checkin || type == AttendanceType.checkout) {
+                        // For checkout, prefer responsibleIds from active checkins for this child
+                        List<String> responsibles = [];
+                        if (type == AttendanceType.checkin) {
+                          responsibles = child.responsibleUserIds ?? [];
+                        } else {
+                          final active = attendanceController.activeCheckins ?? [];
+                          responsibles = active.where((a) => a.childId == child.id).map((a) => a.responsibleId).whereType<String>().toSet().toList();
+                          if (responsibles.isEmpty) {
+                            responsibles = child.responsibleUserIds ?? [];
+                          }
+                        }
+
                         // show dialog to select responsible and input notes (preselect when single)
                         final result = await showDialog<Map<String, String?>>(context: innerCtx, builder: (rc) {
                           String? chosen = responsibles.length == 1 ? responsibles.first : null;
@@ -168,7 +182,7 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
                               const SizedBox(height: 8),
                               Text('Tipo: ${type == AttendanceType.checkin ? 'Check-in' : 'Check-out'}'),
                               const SizedBox(height: 8),
-                              if (type == AttendanceType.checkin) Text('Responsável: $responsibleName'),
+                              Text('Responsável: $responsibleName'),
                               const SizedBox(height: 8),
                               Text('Colaborador: ${collaboratorController.loggedCollaborator?.name ?? '-'}'),
                               const SizedBox(height: 8),
@@ -184,13 +198,36 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
 
                       bool ok = false;
                       if (confirm == true) {
+                        // Build notes string: append identifiers and concat with existing checkin notes on checkout
+                        String? notesPayload;
+                        final entered = notes?.trim();
+                        if (type == AttendanceType.checkin) {
+                          notesPayload = (entered != null && entered.isNotEmpty) ? '$entered (checkin)' : null;
+                        } else {
+                          // checkout: try to find existing active checkin note for this child
+                          final active = attendanceController.activeCheckins ?? [];
+                          final existing = active.firstWhere((a) => a.childId == selectedChildId);
+                          final existingNotes = existing.notes?.trim();
+                          if (existingNotes != null && existingNotes.isNotEmpty && entered != null && entered.isNotEmpty) {
+                            // if existing already contains identifier, avoid duplicating
+                            final left = existingNotes.contains('(checkin)') ? existingNotes : '$existingNotes (checkin)';
+                            notesPayload = '$left - $entered (checkout)';
+                          } else if (existingNotes != null && existingNotes.isNotEmpty) {
+                            notesPayload = existingNotes.contains('(checkin)') ? existingNotes : '$existingNotes (checkin)';
+                          } else if (entered != null && entered.isNotEmpty) {
+                            notesPayload = '$entered (checkout)';
+                          } else {
+                            notesPayload = null;
+                          }
+                        }
+
                         final attendance = Attendance(
                           companyId: collaboratorController.loggedCollaborator?.companyId,
                           collaboratorCheckedInId: type == AttendanceType.checkin ? collaboratorController.loggedCollaborator?.id : null,
                           collaboratorCheckedOutId: type == AttendanceType.checkout ? collaboratorController.loggedCollaborator?.id : null,
                           childId: selectedChildId,
-                          responsibleId: type == AttendanceType.checkin ? selectedResponsibleId : null,
-                          notes: notes,
+                          responsibleId: selectedResponsibleId,
+                          notes: notesPayload,
                         );
 
                         try {

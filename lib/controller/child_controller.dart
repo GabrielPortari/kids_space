@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:kids_space/controller/attendance_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
 import 'package:mobx/mobx.dart';
 
@@ -57,6 +58,18 @@ abstract class _ChildController extends BaseController with Store {
 	}
 
   List<Child> activeCheckedInChildren(String companyId) => _childService.getActiveCheckedInChildren(companyId);
+
+  // Compute active checked-in children using AttendanceController's activeCheckins
+  List<Child> activeCheckedInChildrenComputed(String companyId) {
+    try {
+      final attendanceController = GetIt.I.get<AttendanceController>();
+      final active = (attendanceController.activeCheckins ?? []).map((a) => a.childId).whereType<String>().toSet();
+      return children.where((c) => c.id != null && active.contains(c.id)).toList();
+    } catch (_) {
+      // fallback to service if attendanceController not available
+      return _childService.getActiveCheckedInChildren(companyId);
+    }
+  }
 
   // Atualiza os responsáveis de uma criança pelo id
   bool updateResponsibleUsers(String childId, List<String> newResponsibleUserIds) {

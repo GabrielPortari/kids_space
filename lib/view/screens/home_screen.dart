@@ -117,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (_) {
         final events = _attendanceController.logEvents;
         // Take the most recent 30 events (logEvents is newest-first) and display oldest->newest
-        final limited = events.take(30).toList().reversed.toList();
+        final limited = events.take(30).toList();
 
         return AppCard(
           child: Column(

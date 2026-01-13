@@ -61,11 +61,11 @@ class AttendanceService extends BaseService{
             try {
               final decoded = convert.json.decode(trimmed);
               if (decoded is Map) dataMap = Map<String, dynamic>.from(decoded as Map);
-            } catch (e) {
-              dev.log('AttendanceService.getLastCheckin: failed to json-decode string response', name: 'AttendanceService', error: e);
-            }
+              } catch (e) {
+                // ignore decode errors for non-JSON string bodies
+              }
           } else {
-            dev.log('AttendanceService.getLastCheckin: empty string response, skipping decode', name: 'AttendanceService');
+            // empty string response - nothing to decode
           }
         }
 
@@ -100,10 +100,10 @@ class AttendanceService extends BaseService{
               final decoded = convert.json.decode(trimmed);
               if (decoded is Map) dataMap = Map<String, dynamic>.from(decoded as Map);
             } catch (e) {
-              dev.log('AttendanceService.getLastCheckout: failed to json-decode string response', name: 'AttendanceService', error: e);
+              // ignore decode errors for non-JSON string bodies
             }
           } else {
-            dev.log('AttendanceService.getLastCheckout: empty string response, skipping decode', name: 'AttendanceService');
+            // empty string response - nothing to decode
           }
         }
 
@@ -176,16 +176,7 @@ class AttendanceService extends BaseService{
         }
 
         // Debug: log raw timestamp values and their runtime types for investigation
-        try {
-          dev.log('AttendanceService.getAttendancesByCompany: raw response type=${raw.runtimeType}', name: 'AttendanceService');
-          // Log full first 3 items so we can inspect field names and nested structures
-          for (var i = 0; i < items.length && i < 3; i++) {
-            final it = items[i];
-            dev.log('AttendanceService.getAttendancesByCompany: item[$i] raw=${convert.json.encode(it)}', name: 'AttendanceService');
-          }
-        } catch (e, st) {
-          dev.log('AttendanceService.getAttendancesByCompany: debug log failed: $e', name: 'AttendanceService', error: st);
-        }
+        // Keep only call/response logs above; debug item logging removed.
 
         return items.map((m) => Attendance.fromJson(m)).toList();
       }

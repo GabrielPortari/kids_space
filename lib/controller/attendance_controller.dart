@@ -1,7 +1,6 @@
 import 'package:kids_space/model/attendance.dart';
 import 'package:kids_space/service/attendance_service.dart';
-import 'dart:developer' as dev;
-import 'dart:convert' as convert;
+// developer logs removed; keep controller imports minimal
 import 'package:mobx/mobx.dart';
 import 'base_controller.dart';
 
@@ -115,16 +114,7 @@ abstract class _AttendanceController extends BaseController with Store {
         logEvents = slice.reversed.toList();
       }
 
-      // Debug logs: print activeCheckins and logEvents content
-      try {
-        dev.log('AttendanceController.refreshAttendancesForCompany activeCheckins=${activeCheckins?.length ?? 0} logEvents=${logEvents.length}', name: 'AttendanceController');
-        final activeJson = activeCheckins?.map((e) => e.toJson()).toList();
-        final logJson = logEvents.map((e) => e.toJson()).toList();
-        dev.log('AttendanceController.refreshAttendancesForCompany activeCheckins_data=${convert.json.encode(activeJson)}', name: 'AttendanceController');
-        dev.log('AttendanceController.refreshAttendancesForCompany logEvents_data=${convert.json.encode(logJson)}', name: 'AttendanceController');
-      } catch (e, st) {
-        dev.log('AttendanceController.refreshAttendancesForCompany: failed to log details: $e', name: 'AttendanceController', error: st);
-      }
+      // No debug logs here; only service call/response logs are kept in services.
     } finally {
       isLoadingEvents = false;
     }
