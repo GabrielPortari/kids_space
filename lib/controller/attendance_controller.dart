@@ -1,5 +1,7 @@
 import 'package:kids_space/model/attendance.dart';
 import 'package:kids_space/service/attendance_service.dart';
+import 'dart:developer' as dev;
+import 'dart:convert' as convert;
 import 'package:mobx/mobx.dart';
 import 'base_controller.dart';
 
@@ -49,4 +51,95 @@ abstract class _AttendanceController extends BaseController with Store {
     return await _service.doCheckout(attendance);
   }
 
+  /// Refresh all attendances for a company and populate `events` and `activeCheckins`.
+  Future<void> refreshAttendancesForCompany(String companyId) async {
+    isLoadingEvents = true;
+    try {
+      final list = await _service.getAttendancesByCompany(companyId);
+      events = list;
+      // Active checkins are checkin records without a checkout time.
+      activeCheckins = list.where((a) => a.checkoutTime == null).toList();
+      // Build log events: for each attendance with checkout produce two events (checkin and checkout),
+      // otherwise produce only checkin event. Then sort chronologically and keep the last 30.
+      final built = <Attendance>[];
+      for (final a in list) {
+        if (a.checkinTime != null) {
+          built.add(Attendance(
+            id: a.id,
+            createdAt: a.createdAt,
+            updatedAt: a.updatedAt,
+            attendanceType: AttendanceType.checkin,
+            notes: a.notes,
+            companyId: a.companyId,
+            collaboratorCheckedInId: a.collaboratorCheckedInId,
+            collaboratorCheckedOutId: a.collaboratorCheckedOutId,
+            responsibleId: a.responsibleId,
+            childId: a.childId,
+            checkinTime: a.checkinTime,
+            checkoutTime: null,
+          ));
+        }
+        if (a.checkoutTime != null) {
+          built.add(Attendance(
+            id: a.id,
+            createdAt: a.createdAt,
+            updatedAt: a.updatedAt,
+            attendanceType: AttendanceType.checkout,
+            notes: a.notes,
+            companyId: a.companyId,
+            collaboratorCheckedInId: a.collaboratorCheckedInId,
+            collaboratorCheckedOutId: a.collaboratorCheckedOutId,
+            responsibleId: a.responsibleId,
+            childId: a.childId,
+            checkinTime: null,
+            checkoutTime: a.checkoutTime,
+          ));
+        }
+      }
+
+      // Sort by event time (checkinTime or checkoutTime)
+      built.sort((x, y) {
+        final tx = x.checkinTime ?? x.checkoutTime;
+        final ty = y.checkinTime ?? y.checkoutTime;
+        if (tx == null && ty == null) return 0;
+        if (tx == null) return -1;
+        if (ty == null) return 1;
+        return tx.compareTo(ty);
+      });
+
+      // Keep only the last 30 events (most recent)
+      if (built.length <= 30) {
+        logEvents = built.reversed.toList();
+      } else {
+        final slice = built.sublist(built.length - 30);
+        logEvents = slice.reversed.toList();
+      }
+
+      // Debug logs: print activeCheckins and logEvents content
+      try {
+        dev.log('AttendanceController.refreshAttendancesForCompany activeCheckins=${activeCheckins?.length ?? 0} logEvents=${logEvents.length}', name: 'AttendanceController');
+        final activeJson = activeCheckins?.map((e) => e.toJson()).toList();
+        final logJson = logEvents.map((e) => e.toJson()).toList();
+        dev.log('AttendanceController.refreshAttendancesForCompany activeCheckins_data=${convert.json.encode(activeJson)}', name: 'AttendanceController');
+        dev.log('AttendanceController.refreshAttendancesForCompany logEvents_data=${convert.json.encode(logJson)}', name: 'AttendanceController');
+      } catch (e, st) {
+        dev.log('AttendanceController.refreshAttendancesForCompany: failed to log details: $e', name: 'AttendanceController', error: st);
+      }
+    } finally {
+      isLoadingEvents = false;
+    }
+  }
+
+  /// Load last checkin and checkout for given companyId
+  Future<void> loadLastChecksForCompany(String companyId) async {
+    isLoadingLastCheck = true;
+    try {
+      final lastIn = await _service.getLastCheckin(companyId);
+      final lastOut = await _service.getLastCheckout(companyId);
+      lastCheckIn = lastIn;
+      lastCheckOut = lastOut;
+    } finally {
+      isLoadingLastCheck = false;
+    }
+  }
 }

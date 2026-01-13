@@ -185,7 +185,7 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
                       bool ok = false;
                       if (confirm == true) {
                         final attendance = Attendance(
-                          companyId: companyController.companySelected?.id,
+                          companyId: collaboratorController.loggedCollaborator?.companyId,
                           collaboratorCheckedInId: type == AttendanceType.checkin ? collaboratorController.loggedCollaborator?.id : null,
                           collaboratorCheckedOutId: type == AttendanceType.checkout ? collaboratorController.loggedCollaborator?.id : null,
                           childId: selectedChildId,

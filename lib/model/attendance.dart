@@ -51,8 +51,9 @@ class Attendance extends BaseModel{
   factory Attendance.fromJson(Map<String, dynamic> json) {
     final created = BaseModel.tryParseTimestamp(json['createdAt']);
     final updated = BaseModel.tryParseTimestamp(json['updatedAt']) ?? created;
-    DateTime? checkinTime = BaseModel.tryParseTimestamp(json['checkinTime']);
-    DateTime? checkoutTime = BaseModel.tryParseTimestamp(json['checkoutTime']);
+    // Accept different casing/key variants from backend (e.g. checkInTime)
+    DateTime? checkinTime = BaseModel.tryParseTimestamp(json['checkinTime'] ?? json['checkInTime'] ?? json['checkIn']);
+    DateTime? checkoutTime = BaseModel.tryParseTimestamp(json['checkoutTime'] ?? json['checkOutTime'] ?? json['checkout'] ?? json['checkOut']);
     AttendanceType? type;
     final t = json['attendanceType'];
     if (t is String) {
