@@ -17,9 +17,9 @@ class Attendance extends BaseModel{
     final DateTime? checkoutTime;
 
   Attendance({
-    required super.id, 
-    required super.createdAt, 
-    required super.updatedAt, 
+    super.id, 
+    super.createdAt, 
+    super.updatedAt, 
     this.attendanceType, 
     this.notes, 
     this.companyId, 

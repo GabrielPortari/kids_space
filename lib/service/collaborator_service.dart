@@ -54,6 +54,7 @@ class CollaboratorService extends BaseService {
       final response = await dio.get('/collaborator/$id');
       developer.log('getCollaboratorById -> response', name: 'CollaboratorService', error: {'status': response.statusCode, 'data': response.data});
       if (response.statusCode == 200 && response.data != null) {
+        developer.log(response.toString(), name: 'CollaboratorService');
         return Collaborator.fromJson(response.data as Map<String, dynamic>);
       } else {
         return null;

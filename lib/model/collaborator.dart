@@ -1,10 +1,8 @@
 import 'package:kids_space/model/base_user.dart';
 
 class Collaborator extends BaseUser {
-  final String? password;
 
   Collaborator({
-    this.password,
     super.userType,
     super.name,
     super.email,
@@ -28,14 +26,12 @@ class Collaborator extends BaseUser {
   @override
   Map<String, dynamic> toJson() {
     final base = super.toJson();
-    base['password'] = password;
     return base;
   }
 
   factory Collaborator.fromJson(Map<String, dynamic> json) {
     final base = BaseUser.fromJson(json);
     return Collaborator(
-      password: json['password'] as String?,
       userType: base.userType,
       name: base.name,
       email: base.email,

@@ -71,6 +71,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Removed post-frame session check since splash now performs startup session validation.
   }
 
   @override

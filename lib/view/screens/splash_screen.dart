@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
-import 'package:kids_space/model/base_user.dart';
-import 'package:kids_space/model/company.dart';
 import '../../controller/auth_controller.dart';
 import '../../controller/company_controller.dart';
 
@@ -27,6 +24,31 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _startSplashFlow() async {
     await _loadCompanies();
+    // Verifica sessão ao iniciar: se inválida, desloga e direciona para seleção de company
+    final valid = await _authController.ensureSessionValid();
+    if (!valid) {
+      try { await _authController.logout(); } catch (_) {}
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (c) => AlertDialog(
+          title: const Text('Sessão expirada'),
+          content: const Text('Sua sessão expirou. Faça login novamente.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(c).pop();
+                Navigator.of(context).pushNamedAndRemoveUntil('/company_selection', (route) => false);
+              },
+              child: const Text('OK'),
+            )
+          ],
+        ),
+      );
+      return;
+    }
+
     await _checkLoggedUser();
   }
 

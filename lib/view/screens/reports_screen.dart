@@ -19,7 +19,7 @@ class ReportsScreen extends StatefulWidget {
 
 class _ReportsScreenState extends State<ReportsScreen> {
   final ActivityLogController _controller = GetIt.I<ActivityLogController>();
-  final AttendanceController _checkController = GetIt.I<AttendanceController>();
+  final AttendanceController _attendanceController = GetIt.I<AttendanceController>();
   final CompanyController _companyController = GetIt.I<CompanyController>();
   final UserController _userController = GetIt.I<UserController>();
   final CollaboratorController _collabController = GetIt.I<CollaboratorController>();

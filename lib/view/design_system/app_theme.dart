@@ -9,7 +9,7 @@ Color dangerBg = Colors.red.shade100;
 Color successBg = Colors.green.shade100;
 
 const Color? themeColor = null;
-const Color? seedColor = themeColor ?? Colors.brown;
+const Color? seedColor = themeColor ?? Colors.white;
 
 class AppTheme {
   static ThemeData lightTheme() {

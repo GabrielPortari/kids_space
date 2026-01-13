@@ -148,7 +148,6 @@ Future<void> _editPersonal(
       if (confirmed != true) return;
 
       final updated = Collaborator(
-        password: c.password,
         userType: c.userType,
         name: res['name']?.toString() ?? c.name,
         email: res['email']?.toString() ?? c.email,
@@ -238,7 +237,6 @@ Future<void> _editAddress(
       if (confirmed != true) return;
 
       final updated = Collaborator(
-        password: c.password,
         userType: c.userType,
         name: c.name,
         email: c.email,

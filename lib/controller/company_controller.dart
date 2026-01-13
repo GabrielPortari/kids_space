@@ -2,7 +2,6 @@ import 'package:get_it/get_it.dart';
 
 import '../model/company.dart';
 import '../service/company_service.dart';
-import 'dart:developer' as developer;
 import '../util/network_exceptions.dart';
 import 'base_controller.dart';
 

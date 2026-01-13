@@ -56,19 +56,12 @@ class _UsersScreenState extends State<UsersScreen> {
 
   Future<void> _onAddUser() async {
     // Step 1: personal data
-    final personalFields = [
-      FieldDefinition(key: 'name', label: 'Nome', required: true),
+    final dataFields = [
+      FieldDefinition(key: 'name', label: 'Nome*', required: true),
       FieldDefinition(key: 'birthDate', label: 'Data de Nascimento', type: FieldType.date),
-      FieldDefinition(key: 'email', label: 'Email', type: FieldType.email, required: true),
-      FieldDefinition(key: 'phone', label: 'Telefone', type: FieldType.phone),
-      FieldDefinition(key: 'document', label: 'Documento'),
-    ];
-
-    final personal = await showEditEntityBottomSheet(context: context, title: 'Dados pessoais', fields: personalFields);
-    if (personal == null) return; // cancelled
-
-    // Step 2: address data
-    final addressFields = [
+      FieldDefinition(key: 'email', label: 'Email', type: FieldType.email),
+      FieldDefinition(key: 'phone', label: 'Telefone*', type: FieldType.phone, required: true),
+      FieldDefinition(key: 'document', label: 'Documento*', type: FieldType.number, required: true),
       FieldDefinition(key: 'address', label: 'Endereço'),
       FieldDefinition(key: 'addressNumber', label: 'Número'),
       FieldDefinition(key: 'addressComplement', label: 'Complemento'),
@@ -78,22 +71,22 @@ class _UsersScreenState extends State<UsersScreen> {
       FieldDefinition(key: 'zipCode', label: 'CEP'),
     ];
 
-    final address = await showEditEntityBottomSheet(context: context, title: 'Endereço', fields: addressFields);
-    if (address == null) return; // cancelled
+    final personalData = await showEditEntityBottomSheet(context: context, title: 'Dados pessoais', fields: dataFields);
+    if (personalData == null) return; // cancelled
 
     final newUser = User(
-      name: personal['name']?.toString(),
-      email: personal['email']?.toString(),
-      birthDate: personal['birthDate']?.toString(),
-      document: personal['document']?.toString(),
-      phone: personal['phone']?.toString(),
-      address: formatDateToIsoString(personal['address']?.toString() ?? ''),
-      addressNumber: address['addressNumber']?.toString(),
-      addressComplement: address['addressComplement']?.toString(),
-      neighborhood: address['neighborhood']?.toString(),
-      city: address['city']?.toString(),
-      state: address['state']?.toString(),
-      zipCode: address['zipCode']?.toString(),
+      name: personalData['name']?.toString(),
+      email: personalData['email']?.toString(),
+      birthDate: personalData['birthDate']?.toString(),
+      document: personalData['document']?.toString(),
+      phone: personalData['phone']?.toString(),
+      address: formatDateToIsoString(personalData['address']?.toString() ?? ''),
+      addressNumber: personalData['addressNumber']?.toString(),
+      addressComplement: personalData['addressComplement']?.toString(),
+      neighborhood: personalData['neighborhood']?.toString(),
+      city: personalData['city']?.toString(),
+      state: personalData['state']?.toString(),
+      zipCode: personalData['zipCode']?.toString(),
     );
 
     _userController.createUser(newUser);

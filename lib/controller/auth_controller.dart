@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'dart:developer' as dev;
@@ -13,12 +14,20 @@ import 'base_controller.dart';
 /// - Controller: expõe métodos que a View chama.
 /// - Usa `AuthService` para lógica de autenticação (Model/Service).
 class AuthController extends BaseController {
+  Timer? _tokenMonitorTimer;
+  bool _isRefreshing = false;
+  final Duration _monitorInterval = const Duration(seconds: 60);
+
   final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
   final AuthService _authService = GetIt.I<AuthService>();
 
   final _kIdTokenKey = 'idToken';
   final _kRefreshTokenKey = 'refreshToken';
   final _kLoggedCollaboratorKey = 'loggedCollaborator';
+
+  AuthController() {
+    _startTokenMonitor();
+  }
 
   /// Tenta logar; retorna `true` se sucesso.
   Future<bool> login(String email, String password) async {
@@ -64,13 +73,14 @@ class AuthController extends BaseController {
   Future<void> logout() async {
     final token = await secureStorage.read(key: _kIdTokenKey);
     if (token != null) {
-      try { await ApiClient().dio.post('/auth/logout', 
-      options: Options(
-        headers: {'Authorization': 'Bearer $token'}
-        )); 
-      } catch (_) {}
+      final t = token.trim();
+      if (t.isNotEmpty && t.toLowerCase() != 'null') {
+        try {
+          await _authService.logout(t);
+        } catch (_) {}
+      }
     }
-    
+
     await secureStorage.delete(key: _kIdTokenKey);
     await secureStorage.delete(key: _kRefreshTokenKey);
     await secureStorage.delete(key: _kLoggedCollaboratorKey);
@@ -126,6 +136,44 @@ class AuthController extends BaseController {
       }
     } else {
       dev.log('AuthController.checkLoggedUser -> no userId available to fetch collaborator', name: 'AuthController');
+    }
+  }
+
+  void _startTokenMonitor() {
+    // Avoid multiple timers
+    _tokenMonitorTimer?.cancel();
+    _tokenMonitorTimer = Timer.periodic(_monitorInterval, (_) async {
+      try {
+        await _checkAndRefreshIfNeeded();
+      } catch (e, st) {
+        dev.log('AuthController._startTokenMonitor error: $e', name: 'AuthController', error: st);
+      }
+    });
+  }
+
+  Future<void> stopTokenMonitor() async {
+    _tokenMonitorTimer?.cancel();
+    _tokenMonitorTimer = null;
+  }
+
+  Future<void> _checkAndRefreshIfNeeded() async {
+    if (_isRefreshing) return;
+    try {
+      final token = await secureStorage.read(key: _kIdTokenKey);
+      if (token == null) return;
+      if (!_isTokenExpired(token)) return;
+      _isRefreshing = true;
+      dev.log('AuthController._checkAndRefreshIfNeeded -> token expired, attempting refresh', name: 'AuthController');
+      final newId = await refreshToken();
+      if (newId != null) {
+        // refreshToken already writes tokens to storage; update ApiClient provider
+        ApiClient().tokenProvider = () async => await secureStorage.read(key: _kIdTokenKey);
+        dev.log('AuthController._checkAndRefreshIfNeeded -> refresh successful', name: 'AuthController');
+      } else {
+        dev.log('AuthController._checkAndRefreshIfNeeded -> refresh failed', name: 'AuthController');
+      }
+    } finally {
+      _isRefreshing = false;
     }
   }
 

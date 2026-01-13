@@ -28,8 +28,6 @@ class ApiClient {
 
     dio.options = BaseOptions(
       baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 5),
-      receiveTimeout: const Duration(seconds: 5),
     );
 
     dio.interceptors.clear();

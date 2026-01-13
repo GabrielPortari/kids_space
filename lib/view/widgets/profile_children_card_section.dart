@@ -4,7 +4,6 @@ import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/model/base_user.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/model/user.dart';
-import 'package:kids_space/service/child_service.dart';
 import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/view/widgets/profile_edit_helper.dart';
 

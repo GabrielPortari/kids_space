@@ -47,4 +47,24 @@ class AuthService extends BaseService {
   return null;
   }
 
+  /// Calls backend to invalidate a token (logout). Returns true if request succeeded (2xx).
+  Future<bool> logout(String token) async {
+    try {
+      final t = token.trim();
+      if (t.isEmpty || t.toLowerCase() == 'null') return false;
+      dev.log('AuthService.logout sending Authorization header', name: 'AuthService');
+      final resp = await dio.post('/auth/logout',
+        data: {},
+        options: Options(headers: {'Authorization': 'Bearer $t'}),
+      );
+      return resp.statusCode != null && resp.statusCode! >= 200 && resp.statusCode! < 300;
+    } on DioException catch (e) {
+      dev.log('AuthService.logout DioException: ${e.response?.statusCode} ${e.response?.data ?? e.message}');
+      return false;
+    } catch (e, st) {
+      dev.log('AuthService.logout error: $e', stackTrace: st);
+      return false;
+    }
+  }
+
 }

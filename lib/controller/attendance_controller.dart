@@ -10,7 +10,6 @@ class AttendanceController = _AttendanceController with _$AttendanceController;
 abstract class _AttendanceController extends BaseController with Store {
   final AttendanceService _service = AttendanceService();
 
-  // Loading states
   @observable
   bool isLoadingEvents = false;
 
@@ -26,7 +25,6 @@ abstract class _AttendanceController extends BaseController with Store {
   @computed
   bool get allLoaded => !isLoadingEvents && !isLoadingActiveCheckins && !isLoadingLastCheck && !isLoadingLog;
   
-  // Data
   @observable
   List<Attendance>? events = [];
 
@@ -41,5 +39,14 @@ abstract class _AttendanceController extends BaseController with Store {
 
   @observable
   List<Attendance> logEvents = [];
+
+
+  Future<bool> doCheckin(Attendance attendance) async {
+    return await _service.doCheckin(attendance);
+  }
+
+  Future<bool> doCheckout(Attendance attendance) async {
+    return await _service.doCheckout(attendance);
+  }
 
 }
