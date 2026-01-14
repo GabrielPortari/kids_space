@@ -251,33 +251,29 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _checkInAndOutButtons() {
-    return Observer(
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              AppButton(
-                text: translate('home.check_in'),
-                icon: Icon(Icons.login_rounded, color: Colors.white),
-                onPressed: () {
-                  debugPrint('DebuggerLog: HomeScreen.checkIn button pressed');
-                  showAttendanceModal(context, AttendanceType.checkin);
-                },
-                ),
-              AppButton(
-                text: translate('home.check_out'),
-                icon: Icon(Icons.logout_rounded, color: Colors.white),
-                onPressed: () {
-                  debugPrint('DebuggerLog: HomeScreen.checkOut button pressed');
-                  showAttendanceModal(context, AttendanceType.checkout);
-                },
-              ),
-            ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          AppButton(
+            text: translate('home.check_in'),
+            icon: Icon(Icons.login_rounded, color: Colors.white),
+            onPressed: () {
+              debugPrint('DebuggerLog: HomeScreen.checkIn button pressed');
+              showAttendanceModal(context, AttendanceType.checkin);
+            },
+            ),
+          AppButton(
+            text: translate('home.check_out'),
+            icon: Icon(Icons.logout_rounded, color: Colors.white),
+            onPressed: () {
+              debugPrint('DebuggerLog: HomeScreen.checkOut button pressed');
+              showAttendanceModal(context, AttendanceType.checkout);
+            },
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 

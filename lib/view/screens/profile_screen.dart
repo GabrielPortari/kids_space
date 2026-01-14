@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/auth_controller.dart';
+import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/base_model.dart';
@@ -58,6 +59,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
   final UserController _userController = GetIt.I<UserController>();
+  final ChildController _childController = GetIt.I<ChildController>();
   final AuthController _authController = GetIt.I<AuthController>();
 
   SelectedProfileType? get selectedProfileType {
@@ -133,7 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _showEditChoice();
         },
         onAddChild: () {
-          debugPrint('DebuggerLog: Perfil - cadastrar criança selecionado');
+          // implementar ação de adicionar criança
         },
         onDelete: () async {
           await _confirmAndDelete();
@@ -346,6 +348,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context,
       user: widget.selectedUser,
       collaborator: widget.selectedCollaborator,
+      child: widget.selectedChild,
+      childController: _childController,
       userController: _userController,
       collaboratorController: _collaboratorController,
     );

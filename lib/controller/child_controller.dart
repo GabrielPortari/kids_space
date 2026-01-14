@@ -101,7 +101,7 @@ abstract class _ChildController extends BaseController with Store {
 
   // Atualiza uma criança (delegando ao serviço)
   Future<bool> updateChild(Child child) async{
-    return true;
+    return await _childService.updateChild(child);
   }
 
   // Expõe busca de criança por id delegando ao serviço

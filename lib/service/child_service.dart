@@ -19,7 +19,31 @@ class ChildService extends BaseService {
   }
 
   Future<bool> updateChild(Child child) async {
-    return true;
+    try {
+      final id = child.id;
+      if (id == null || id.isEmpty) return false;
+
+      final payload = Map<String, dynamic>.from(child.toJson());
+      // remove nulls
+      payload.removeWhere((k, v) => v == null);
+      // backend rejects certain properties on update - ensure they're not sent
+      payload.remove('id');
+      payload.remove('userType');
+      payload.remove('companyId');
+      payload.remove('createdAt');
+      payload.remove('updatedAt');
+      payload.remove('isActive');
+      payload.remove('responsibleUserIds');
+
+      final response = await dio.put('/child/$id', data: payload);
+      return response.statusCode == 200 || response.statusCode == 201;
+    } on DioException catch (e) {
+      dev.log('UserService.updateUser DioException: ${e.response?.data ?? e.message}');
+      return false;
+    } catch (e, st) {
+      dev.log('UserService.updateUser error: $e', stackTrace: st);
+      return false;
+    }
   }
 
   Future<bool> deleteChild(String childId) async {

@@ -15,6 +15,8 @@ Future<void> showProfileEditDialogs(
   BuildContext context, {
   User? user,
   Collaborator? collaborator,
+  Child? child,
+  ChildController? childController,
   required UserController userController,
   required CollaboratorController collaboratorController,
 }) async {
@@ -52,9 +54,17 @@ Future<void> showProfileEditDialogs(
   );
 
   if (choice == 'personal') {
-    await _editPersonal(context, user: user, collaborator: collaborator, userController: userController, collaboratorController: collaboratorController);
+    if (user != null || collaborator != null) {
+      await _editPersonal(context, user: user, collaborator: collaborator, userController: userController, collaboratorController: collaboratorController);
+    } else if (child != null && childController != null) {
+      await _editChildPersonal(context, child: child, childController: childController);
+    }
   } else if (choice == 'address') {
-    await _editAddress(context, user: user, collaborator: collaborator, userController: userController, collaboratorController: collaboratorController);
+    if (user != null || collaborator != null) {
+      await _editAddress(context, user: user, collaborator: collaborator, userController: userController, collaboratorController: collaboratorController);
+    } else if (child != null && childController != null) {
+      await _editChildAddress(context, child: child, childController: childController);
+    }
   }
 }
 
