@@ -161,7 +161,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ProfilePictureSection(
                         name: widget.selectedUser?.name ?? 
                         widget.selectedCollaborator?.name ?? 
-                        widget.selectedCompany?.fantasyName ?? '?',
+                        widget.selectedCompany?.fantasyName ??
+                        widget.selectedChild?.name ?? '?',
                         onAddPhoto: () {
                           debugPrint('DebuggerLog: UserProfileScreen.addPhoto tapped');
                           // TODO: Implementar ação para adicionar foto
@@ -227,8 +228,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     bool success = false;
     if (type == SelectedProfileType.user && widget.selectedUser != null) {
       success = await _userController.deleteUser(widget.selectedUser?.id ?? '');
-    } else if (type == SelectedProfileType.collaborator && widget.selectedCollaborator != null) {
+    }
+    if (type == SelectedProfileType.collaborator && widget.selectedCollaborator != null) {
       success = await _collaboratorController.deleteCollaborator(widget.selectedCollaborator?.id ?? '');
+    }
+    if (type == SelectedProfileType.child && widget.selectedChild != null) {
+      success = await _childController.deleteChild(widget.selectedChild?.id ?? '');
     }
 
     await showDialog<void>(

@@ -72,7 +72,18 @@ class UserService extends BaseService {
   }
 
   Future<bool> deleteUser(String id) async {
-    return true;
+    try {
+      if (id.isEmpty) return false;
+      final response = await dio.delete('/user/$id');
+      dev.log('UserService.deleteUser status=${response.statusCode} data=${response.data}');
+      return response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204;
+    } on DioException catch (e) {
+      dev.log('UserService.deleteUser DioException: ${e.response?.data ?? e.message}');
+      return false;
+    } catch (e, st) {
+      dev.log('UserService.deleteUser error: $e', stackTrace: st);
+      return false;
+    }
   }
 
   Future<bool> updateUser(User user) async {

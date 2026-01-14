@@ -47,7 +47,18 @@ class ChildService extends BaseService {
   }
 
   Future<bool> deleteChild(String childId) async {
-    return true;
+    try {
+      if (childId.isEmpty) return false;
+      final response = await dio.delete('/child/$childId');
+      dev.log('ChildService.deleteChild status=${response.statusCode} data=${response.data}');
+      return response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204;
+    } on DioException catch (e) {
+      dev.log('ChildService.deleteChild DioException: ${e.response?.data ?? e.message}');
+      return false;
+    } catch (e, st) {
+      dev.log('ChildService.deleteChild error: $e', stackTrace: st);
+      return false;
+    }
   }
 
   Future<List<Child>> getChildrenByCompanyId(String companyId, {String? token}) async {

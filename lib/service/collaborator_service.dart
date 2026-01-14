@@ -1,5 +1,6 @@
 // Serviço de colaboradores usando Firebase Auth e Firestore
 import 'dart:developer' as developer;
+import 'package:dio/dio.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kids_space/model/collaborator.dart';
@@ -70,7 +71,18 @@ class CollaboratorService extends BaseService {
   }
 
   Future<bool> deleteCollaborator(String id) async {
-    return false;
+    try {
+      if (id.isEmpty) return false;
+      final response = await dio.delete('/collaborator/$id');
+      developer.log('deleteCollaborator status=${response.statusCode} data=${response.data}', name: 'CollaboratorService');
+      return response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204;
+    } on DioException catch (e) {
+      developer.log('deleteCollaborator DioException: ${e.response?.data ?? e.message}', name: 'CollaboratorService');
+      return false;
+    } catch (e, st) {
+      developer.log('deleteCollaborator error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
+      return false;
+    }
   }
 
   Future<bool> updateCollaborator(Collaborator collaborator) async {
