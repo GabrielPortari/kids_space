@@ -8,7 +8,13 @@ class UserService extends BaseService {
   Future<bool> createUser(User user) async {
     try {
       final payload = Map<String, dynamic>.from(user.toJson());
+      // remove nulls
       payload.removeWhere((k, v) => v == null);
+      // backend rejects certain properties on update - ensure they're not sent
+      payload.remove('id');
+      payload.remove('createdAt');
+      payload.remove('updatedAt');
+      payload.remove('childrenIds');
 
       final response = await dio.post('/user/register', data: payload);
       return response.statusCode == 200 || response.statusCode == 201;
@@ -70,6 +76,27 @@ class UserService extends BaseService {
   }
 
   Future<bool> updateUser(User user) async {
-    return true;
+    try {
+      final id = user.id;
+      if (id == null || id.isEmpty) return false;
+
+      final payload = Map<String, dynamic>.from(user.toJson());
+      // remove nulls
+      payload.removeWhere((k, v) => v == null);
+      // backend rejects certain properties on update - ensure they're not sent
+      payload.remove('id');
+      payload.remove('createdAt');
+      payload.remove('updatedAt');
+      payload.remove('childrenIds');
+
+      final response = await dio.put('/user/$id', data: payload);
+      return response.statusCode == 200 || response.statusCode == 201;
+    } on DioException catch (e) {
+      dev.log('UserService.updateUser DioException: ${e.response?.data ?? e.message}');
+      return false;
+    } catch (e, st) {
+      dev.log('UserService.updateUser error: $e', stackTrace: st);
+      return false;
+    }
   }
 }

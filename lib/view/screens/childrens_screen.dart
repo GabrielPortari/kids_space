@@ -175,12 +175,10 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          if (firstResponsible != null) {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => 
-              ProfileScreen(selectedUser: firstResponsible))
-            );
-          }
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => 
+            ProfileScreen(selectedChild: child))
+          );
         },
         child: Padding(
           padding: const EdgeInsets.all(12.0),

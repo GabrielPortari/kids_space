@@ -49,18 +49,17 @@ class AttendanceService extends BaseService{
   Future<Attendance?> getLastCheckin(String companyId) async {
     try {
       final response = await dio.get('/attendance/company/$companyId/last-checkin');
-      dev.log('AttendanceService.getLastCheckin status=${response.statusCode} data=${response.data}', name: 'AttendanceService');
       if (response.statusCode == 200 && response.data != null) {
         dynamic raw = response.data;
         Map<String, dynamic>? dataMap;
         if (raw is Map) {
-          dataMap = Map<String, dynamic>.from(raw as Map);
+          dataMap = Map<String, dynamic>.from(raw);
         } else if (raw is String) {
           final trimmed = raw.trim();
           if (trimmed.isNotEmpty) {
             try {
               final decoded = convert.json.decode(trimmed);
-              if (decoded is Map) dataMap = Map<String, dynamic>.from(decoded as Map);
+              if (decoded is Map) dataMap = Map<String, dynamic>.from(decoded);
               } catch (e) {
                 // ignore decode errors for non-JSON string bodies
               }
@@ -87,18 +86,17 @@ class AttendanceService extends BaseService{
   Future<Attendance?> getLastCheckout(String companyId) async {
     try {
       final response = await dio.get('/attendance/company/$companyId/last-checkout');
-      dev.log('AttendanceService.getLastCheckout status=${response.statusCode} data=${response.data}', name: 'AttendanceService');
       if (response.statusCode == 200 && response.data != null) {
         dynamic raw = response.data;
         Map<String, dynamic>? dataMap;
         if (raw is Map) {
-          dataMap = Map<String, dynamic>.from(raw as Map);
+          dataMap = Map<String, dynamic>.from(raw);
         } else if (raw is String) {
           final trimmed = raw.trim();
           if (trimmed.isNotEmpty) {
             try {
               final decoded = convert.json.decode(trimmed);
-              if (decoded is Map) dataMap = Map<String, dynamic>.from(decoded as Map);
+              if (decoded is Map) dataMap = Map<String, dynamic>.from(decoded);
             } catch (e) {
               // ignore decode errors for non-JSON string bodies
             }
@@ -125,7 +123,6 @@ class AttendanceService extends BaseService{
   Future<List<Attendance>> getAttendancesByCompany(String companyId) async {
     try {
       final response = await dio.get('/attendance/company/$companyId');
-      dev.log('AttendanceService.getAttendancesByCompany status=${response.statusCode} data=${response.data}', name: 'AttendanceService');
       if (response.statusCode == 200 && response.data != null) {
         final List<Map<String, dynamic>> items = [];
         final raw = response.data;
@@ -138,7 +135,7 @@ class AttendanceService extends BaseService{
               if (trimmed.isNotEmpty) {
                 try {
                   final decoded = convert.json.decode(trimmed);
-                  if (decoded is Map) items.add(Map<String, dynamic>.from(decoded as Map));
+                  if (decoded is Map) items.add(Map<String, dynamic>.from(decoded));
                 } catch (_) {}
               }
             }

@@ -10,7 +10,6 @@ import 'package:kids_space/util/localization_service.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/view/widgets/attendance_modal.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:kids_space/view/design_system/app_card.dart';
 import 'package:kids_space/view/design_system/app_button.dart';
@@ -254,32 +253,29 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _checkInAndOutButtons() {
     return Observer(
       builder: (_) {
-        return Skeletonizer(
-          enabled: !_attendanceController.allLoaded,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      AppButton(
-                        text: translate('home.check_in'),
-                        icon: Icon(Icons.login_rounded, color: Colors.white),
-                        onPressed: () {
-                          debugPrint('DebuggerLog: HomeScreen.checkIn button pressed');
-                          showAttendanceModal(context, AttendanceType.checkin);
-                        },
-                        ),
-                      AppButton(
-                        text: translate('home.check_out'),
-                        icon: Icon(Icons.logout_rounded, color: Colors.white),
-                        onPressed: () {
-                          debugPrint('DebuggerLog: HomeScreen.checkOut button pressed');
-                          showAttendanceModal(context, AttendanceType.checkout);
-                        },
-                      ),
-                    ],
-                  ),
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              AppButton(
+                text: translate('home.check_in'),
+                icon: Icon(Icons.login_rounded, color: Colors.white),
+                onPressed: () {
+                  debugPrint('DebuggerLog: HomeScreen.checkIn button pressed');
+                  showAttendanceModal(context, AttendanceType.checkin);
+                },
                 ),
+              AppButton(
+                text: translate('home.check_out'),
+                icon: Icon(Icons.logout_rounded, color: Colors.white),
+                onPressed: () {
+                  debugPrint('DebuggerLog: HomeScreen.checkOut button pressed');
+                  showAttendanceModal(context, AttendanceType.checkout);
+                },
+              ),
+            ],
+          ),
         );
       },
     );

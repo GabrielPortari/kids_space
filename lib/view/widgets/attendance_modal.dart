@@ -83,7 +83,10 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancelar')),
+            TextButton(onPressed: (){
+              childController.childFilter = '';
+              Navigator.of(ctx).pop();
+            }, child: const Text('Cancelar')),
             ElevatedButton(
               onPressed: (selectedChildId == null || loading)
                   ? null
@@ -170,8 +173,8 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
 
                       // Confirmation dialog
                       final confirm = await showDialog<bool>(context: innerCtx, builder: (cc) {
-                        final childName = child?.name ?? selectedChildId ?? '-';
-                        final responsibleName = selectedResponsibleId != null ? GetIt.I<UserController>().getUserById(selectedResponsibleId!)?.name ?? selectedResponsibleId : (collaboratorController.loggedCollaborator?.name ?? '-');
+                        final childName = child.name ?? selectedChildId ?? '-';
+                        final responsibleName = selectedResponsibleId != null ? GetIt.I<UserController>().getUserById(selectedResponsibleId)?.name ?? selectedResponsibleId : (collaboratorController.loggedCollaborator?.name ?? '-');
                         return AlertDialog(
                           title: const Text('Confirmar presença'),
                           content: Column(

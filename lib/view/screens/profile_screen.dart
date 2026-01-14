@@ -4,6 +4,7 @@ import 'package:kids_space/controller/auth_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/base_model.dart';
+import 'package:kids_space/model/child.dart';
 import 'package:kids_space/view/widgets/profile_edit_helper.dart';
 import 'package:kids_space/model/base_user.dart';
 import 'package:kids_space/model/collaborator.dart';
@@ -15,8 +16,10 @@ import 'package:kids_space/view/widgets/profile_info_card_section.dart';
 import 'package:kids_space/view/widgets/profile_children_card_section.dart';
 import 'package:kids_space/view/widgets/profile_app_bar.dart';
 import 'package:kids_space/util/date_hour_util.dart';
+import 'package:kids_space/view/widgets/profile_responsibles_card_section.dart';
 
 enum SelectedProfileType {
+  child,
   user,
   collaborator,
   admin,
@@ -44,8 +47,9 @@ class ProfileScreen extends StatefulWidget {
   final User? selectedUser;
   final Collaborator? selectedCollaborator;
   final Company? selectedCompany;
+  final Child? selectedChild;
 
-  const ProfileScreen({super.key, this.selectedUser, this.selectedCollaborator, this.selectedCompany});
+  const ProfileScreen({super.key, this.selectedUser, this.selectedCollaborator, this.selectedCompany, this.selectedChild});
   
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -64,6 +68,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       SelectedProfileType.admin : SelectedProfileType.collaborator;
     } else if (widget.selectedCompany != null) {
       return SelectedProfileType.company;
+    } else if (widget.selectedChild != null) {
+      return SelectedProfileType.child;
     }
     return null;
   }
@@ -77,6 +83,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title = 'Perfil de ${widget.selectedCollaborator?.name ?? 'collaborator_placeholder'}';
       } else if (selectedProfileType == SelectedProfileType.company) {
         title = 'Perfil de ${widget.selectedCompany?.fantasyName ?? widget.selectedCompany?.corporateName ?? 'company_placeholder'}';
+      } else if (selectedProfileType == SelectedProfileType.child) {
+        title = 'Perfil de ${widget.selectedChild?.name ?? 'child_placeholder'}';
       }
     }
 
@@ -84,7 +92,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final loggedUserType = loggedCollaborator?.userType;
 
     final bool canEdit = (loggedUserType == UserType.admin && selectedProfileType != null && selectedProfileType != SelectedProfileType.company) ||
-        (loggedUserType == UserType.collaborator && selectedProfileType == SelectedProfileType.user);
+        (loggedUserType == UserType.collaborator && (selectedProfileType == SelectedProfileType.user || selectedProfileType == SelectedProfileType.child));
 
     final bool canAddChild = (loggedUserType == UserType.admin || loggedUserType == UserType.collaborator) &&
         (selectedProfileType != null && selectedProfileType == SelectedProfileType.user);
@@ -160,15 +168,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 16),
                       // Header
                       ProfileHeaderSection(
-                        name: widget.selectedUser?.name ?? widget.selectedCollaborator?.name ?? widget.selectedCompany?.fantasyName ?? 'name_placeholder',
+                        name: widget.selectedChild?.name ?? 
+                        widget.selectedUser?.name ?? 
+                        widget.selectedCollaborator?.name ?? 
+                        widget.selectedCompany?.fantasyName ?? 'name_placeholder',
+
                         userTypeLabel: widget.selectedUser != null ? 'Usuário' : 
-                          widget.selectedCompany != null ? 'Empresa' : widget.selectedCollaborator != null ? 
-                          (widget.selectedCollaborator?.userType == UserType.admin ? 'Administrador' : 'Colaborador') : 'user_type_placeholder',
-                        id: selectedProfileType == SelectedProfileType.user
-                            ? widget.selectedUser?.id
-                            : (selectedProfileType == SelectedProfileType.collaborator || selectedProfileType == SelectedProfileType.admin)
-                                ? widget.selectedCollaborator?.id
-                                : widget.selectedCompany?.id,
+                          widget.selectedCompany != null ? 'Empresa' : 
+                          widget.selectedCollaborator != null ? (widget.selectedCollaborator?.userType == UserType.admin ? 'Administrador' : 'Colaborador') : 
+                          widget.selectedChild != null ? 'Criança' : 'user_type_placeholder',
+
+                        id: selectedProfileType == SelectedProfileType.user ? widget.selectedUser?.id : 
+                        (selectedProfileType == SelectedProfileType.collaborator || selectedProfileType == SelectedProfileType.admin) ? widget.selectedCollaborator?.id :
+                        (selectedProfileType == SelectedProfileType.child) ? widget.selectedChild?.id : 
+                        (selectedProfileType == SelectedProfileType.company) ? widget.selectedCompany?.id : 'user_id_placeholder',
+                      
                       ),
                       const SizedBox(height: 16),
                       ProfileInfoCardSection(title: 'Dados pessoais', entries: profileEntries),
@@ -176,6 +190,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ProfileInfoCardSection(title: 'Endereço', entries: addressEntries),
                       const SizedBox(height: 16),
                       if (selectedProfileType == SelectedProfileType.user) ProfileChildrenCardSection(user: widget.selectedUser),
+                      if (selectedProfileType == SelectedProfileType.child) ProfileResponsiblesCardSection(child: widget.selectedChild),
                     ],
                   ),
                 ),
@@ -262,6 +277,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'Usuários': (co.users?.length ?? 0).toString(),
         'Crianças': (co.children?.length ?? 0).toString(),
       };
+    } else if (selectedProfileType == SelectedProfileType.child && widget.selectedChild != null) {
+      final ch = widget.selectedChild!;
+      final dt = BaseModel.tryParseTimestamp(ch.birthDate);
+      return {
+        'Nome': ch.name ?? '-',
+        'Email': ch.email ?? '-',
+        'Data de Nascimento': dt == null ? '-' : formatDateFull(dt),
+        'Telefone': ch.phone ?? '-',
+        'Documento': ch.document ?? '-',
+        'Status': (ch.isActive ?? false) ? 'Ativa' : 'Inativa',
+      };
     }
     return {};
   }
@@ -299,6 +325,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'Cidade': co.city ?? '-',
         'Estado': co.state ?? '-',
         'CEP': co.zipCode ?? '-',
+      };
+    } else if (selectedProfileType == SelectedProfileType.child && widget.selectedChild != null) {
+      final ch = widget.selectedChild!;
+      return {
+        'Endereço': ch.address ?? '-',
+        'Número': ch.addressNumber ?? '-',
+        'Complemento': ch.addressComplement ?? '-',
+        'Bairro': ch.neighborhood ?? '-',
+        'Cidade': ch.city ?? '-',
+        'Estado': ch.state ?? '-',
+        'CEP': ch.zipCode ?? '-',
       };
     }
     return {};

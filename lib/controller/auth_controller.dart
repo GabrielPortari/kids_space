@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'dart:developer' as dev;
-import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/model/collaborator.dart';

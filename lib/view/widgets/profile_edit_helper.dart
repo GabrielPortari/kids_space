@@ -113,7 +113,12 @@ Future<void> _editPersonal(
         userType: u.userType,
         name: res['name']?.toString() ?? u.name,
         email: res['email']?.toString() ?? u.email,
-        birthDate: (res['birthDate'] is DateTime) ? (res['birthDate'] as DateTime).toIso8601String() : u.birthDate,
+        birthDate: (() {
+          final v = res['birthDate'];
+          if (v is DateTime) return v.toIso8601String();
+          if (v is String && v.isNotEmpty) return v.toString();
+          return u.birthDate;
+        })(),
         document: res['document']?.toString() ?? u.document,
         phone: res['phone']?.toString() ?? u.phone,
         address: u.address,
@@ -151,7 +156,12 @@ Future<void> _editPersonal(
         userType: c.userType,
         name: res['name']?.toString() ?? c.name,
         email: res['email']?.toString() ?? c.email,
-        birthDate: (res['birthDate'] is DateTime) ? (res['birthDate'] as DateTime).toIso8601String() : c.birthDate,
+        birthDate: (() {
+          final v = res['birthDate'];
+          if (v is DateTime) return v.toIso8601String();
+          if (v is String && v.isNotEmpty) return v.toString();
+          return c.birthDate;
+        })(),
         document: res['document']?.toString() ?? c.document,
         phone: res['phone']?.toString() ?? c.phone,
         address: c.address,
@@ -336,7 +346,12 @@ Future<bool?> _editChildPersonal(
     userType: c.userType,
     name: res['name']?.toString() ?? c.name,
     email: res['email']?.toString() ?? c.email,
-    birthDate: (res['birthDate'] is DateTime) ? (res['birthDate'] as DateTime).toIso8601String() : c.birthDate,
+    birthDate: (() {
+      final v = res['birthDate'];
+      if (v is DateTime) return v.toIso8601String();
+      if (v is String && v.isNotEmpty) return v.toString();
+      return c.birthDate;
+    })(),
     document: res['document']?.toString() ?? c.document,
     phone: res['phone']?.toString() ?? c.phone,
     address: c.address,
