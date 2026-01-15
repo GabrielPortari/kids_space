@@ -104,7 +104,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final bool canDelete = (loggedUserType == UserType.admin) &&
         (selectedProfileType != null && selectedProfileType != SelectedProfileType.company && selectedProfileType != SelectedProfileType.admin);
-
+        debugPrint('Can delete: $canDelete - $selectedProfileType - Logged type: $loggedUserType - Selected id: ${widget.selectedChild?.id} - Logged id: ${loggedCollaborator?.id}');
+    
     return _AppBarConfig(
       title: title,
       canEdit: canEdit,
@@ -207,15 +208,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _confirmAndDelete() async {
     final type = selectedProfileType;
-    if (type != SelectedProfileType.user && type != SelectedProfileType.collaborator) return;
+    if (type != SelectedProfileType.user && type != SelectedProfileType.collaborator && type != SelectedProfileType.child) return;
 
-    final targetName = type == SelectedProfileType.user ? 'usuário' : 'colaborador';
+    final targetName = type == SelectedProfileType.user ? 'este usuário' : 
+    type == SelectedProfileType.collaborator ? 'este colaborador' : 
+    type == SelectedProfileType.child ? 'esta criança' : 'profile_type_placeholder';
 
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Confirmar exclusão'),
-        content: Text('Deseja realmente excluir este $targetName?'),
+        content: Text('Deseja realmente excluir $targetName?'),
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancelar')),
           TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Excluir')),

@@ -78,7 +78,19 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkLoggedUser() async {
     await _authController.checkLoggedUser();
-    final loggedCollaborator = _collaboratorController.loggedCollaborator;
+      // refresh collaborator from API to ensure latest fields (roles/userType, companyId, etc.)
+      var loggedCollaborator = _collaboratorController.loggedCollaborator;
+      try {
+        if (loggedCollaborator != null && loggedCollaborator.id != null) {
+          final refreshed = await _collaboratorController.getCollaboratorById(loggedCollaborator.id!);
+          if (refreshed != null) {
+            await _collaboratorController.setLoggedCollaborator(refreshed);
+            loggedCollaborator = refreshed;
+          }
+        }
+      } catch (e) {
+        debugPrint('Failed to refresh logged collaborator: $e');
+      }
     if (loggedCollaborator != null) {
       final companyId = loggedCollaborator.companyId;
       if (companyId != null) {

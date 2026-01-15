@@ -68,19 +68,46 @@ class BaseUser extends BaseModel{
       }
 
   factory BaseUser.fromJson(Map<String, dynamic> json) {
-    final raw = json['userType'];
     UserType? parsedUserType;
 
+    // 1) Try explicit `userType` field
+    final dynamic raw = json['userType'];
     if (raw != null) {
       final rawStr = raw.toString();
       try {
-        if (rawStr.contains('.')) {
-          parsedUserType = UserType.values.firstWhere((e) => e.toString() == rawStr);
-        } else {
-          parsedUserType = UserType.values.firstWhere((e) => e.toString() == 'UserType.$rawStr');
+        // support formats like 'UserType.admin' or 'admin' or 'Admin'
+        final candidate = rawStr.contains('.') ? rawStr.split('.').last.toLowerCase() : rawStr.toLowerCase();
+        for (final e in UserType.values) {
+          if (e.toString().split('.').last.toLowerCase() == candidate) {
+            parsedUserType = e;
+            break;
+          }
         }
       } catch (_) {
         parsedUserType = null;
+      }
+    }
+
+    // 2) If not present, try `roles` array (common from auth systems)
+    if (parsedUserType == null) {
+      final dynamic rolesRaw = json['roles'] ?? json['authorities'] ?? json['rolesList'];
+      if (rolesRaw is List) {
+        for (final r in rolesRaw) {
+          try {
+            final rStr = r?.toString() ?? '';
+            var candidate = rStr.toLowerCase();
+            // strip common prefixes
+            candidate = candidate.replaceAll('role_', '').replaceAll('role-', '').replaceAll('roles_', '');
+            candidate = candidate.trim();
+            for (final e in UserType.values) {
+              if (e.toString().split('.').last.toLowerCase() == candidate) {
+                parsedUserType = e;
+                break;
+              }
+            }
+            if (parsedUserType != null) break;
+          } catch (_) {}
+        }
       }
     }
 

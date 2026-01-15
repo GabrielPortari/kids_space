@@ -21,6 +21,38 @@ abstract class _CollaboratorController extends BaseController with Store {
   @observable
   Collaborator? selectedCollaborator;
 
+  @observable
+  ObservableList<Collaborator> collaborators = ObservableList<Collaborator>();
+
+  @observable
+  String collaboratorFilter = '';
+
+  @computed
+  List<Collaborator> get filteredCollaborators {
+    final filter = collaboratorFilter.toLowerCase();
+    if (filter.isEmpty) return collaborators;
+    return collaborators.where((c) => (c.name?.toLowerCase().contains(filter) ?? false) || (c.email?.toLowerCase().contains(filter) ?? false)).toList();
+  }
+
+  @observable
+  bool refreshLoading = false;
+
+  @action
+  Future<void> refreshCollaboratorsForCompany(String? companyId) async {
+    refreshLoading = true;
+    if (companyId == null) {
+      collaborators.clear();
+      refreshLoading = false;
+      return;
+    }
+    final token = await getIdToken();
+    final list = await _collaboratorService.getCollaboratorsByCompanyId(companyId);
+    collaborators
+      ..clear()
+      ..addAll(list);
+    refreshLoading = false;
+  }
+
   /// Define o colaborador logado e persiste localmente
   @action
   setLoggedCollaborator(Collaborator? collaborator)  {

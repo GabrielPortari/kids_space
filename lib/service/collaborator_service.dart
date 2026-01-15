@@ -67,7 +67,36 @@ class CollaboratorService extends BaseService {
   }
 
   Future<List<Collaborator>> getCollaboratorsByCompanyId(String companyId) async {
-    return [];
+    try {
+      final response = await dio.get('/collaborator/company/$companyId');
+      if (response.statusCode != 200 && response.statusCode != 201) return [];
+      final data = response.data;
+      List<dynamic> items = [];
+      if (data is List) {
+        items = data;
+      } else if (data is Map<String, dynamic>) {
+        if (data['data'] is List) items = data['data'];
+        else if (data['collaborators'] is List) items = data['collaborators'];
+        else items = [data];
+      }
+
+      final List<Collaborator> list = items.map((e) {
+        if (e is Collaborator) return e;
+        if (e is Map<String, dynamic>) return Collaborator.fromJson(Map<String, dynamic>.from(e));
+        try {
+          return Collaborator.fromJson(Map<String, dynamic>.from(e));
+        } catch (_) {
+          return null;
+        }
+      }).whereType<Collaborator>().toList();
+      return list;
+    } on DioException catch (e) {
+      developer.log('CollaboratorService.getCollaboratorsByCompanyId DioException: ${e.response?.data ?? e.message}', name: 'CollaboratorService');
+      return [];
+    } catch (e, st) {
+      developer.log('CollaboratorService.getCollaboratorsByCompanyId error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
+      return [];
+    }
   }
 
   Future<bool> deleteCollaborator(String id) async {
@@ -86,7 +115,27 @@ class CollaboratorService extends BaseService {
   }
 
   Future<bool> updateCollaborator(Collaborator collaborator) async {
-    return false;
+    try {
+      final id = collaborator.id;
+      if (id == null || id.isEmpty) return false;
+
+      final payload = Map<String, dynamic>.from(collaborator.toJson());
+      payload.removeWhere((k, v) => v == null);
+      payload.remove('id');
+      payload.remove('createdAt');
+      payload.remove('updatedAt');
+      payload.remove('companyId');
+
+      final response = await dio.put('/collaborator/$id', data: payload);
+      developer.log('updateCollaborator status=${response.statusCode} data=${response.data}', name: 'CollaboratorService');
+      return response.statusCode == 200 || response.statusCode == 201;
+    } on DioException catch (e) {
+      developer.log('updateCollaborator DioException: ${e.response?.data ?? e.message}', name: 'CollaboratorService');
+      return false;
+    } catch (e, st) {
+      developer.log('updateCollaborator error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
+      return false;
+    }
   }
 }
 

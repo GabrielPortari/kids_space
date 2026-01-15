@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/model/collaborator.dart';
-import 'package:kids_space/service/collaborator_service.dart';
 import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
@@ -22,20 +22,16 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
   final CompanyController _companyController = GetIt.I.get<CompanyController>();
   final CollaboratorController _collaboratorController = GetIt.I.get<CollaboratorController>();
 
-  final CollaboratorService _service = CollaboratorService();
-
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
 
-  List<Collaborator> _all = [];
-  List<Collaborator> _filtered = [];
   bool _loading = false;
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
-    _load();
+    _onRefresh();
   }
 
   @override
@@ -49,44 +45,20 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
   void _onSearchChanged() {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
-      final q = _searchController.text.trim().toLowerCase();
-      setState(() {
-        _filtered = _all.where((c) {
-          return (c.name ?? '').toLowerCase().contains(q) || (c.email ?? '').toLowerCase().contains(q);
-        }).toList();
-        _filtered.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
-      });
+      _collaboratorController.collaboratorFilter = _searchController.text.trim();
+      if (mounted) setState(() {});
     });
   }
 
-  Future<void> _load() async {
+  Future<void> _onRefresh() async {
     final companyId = _companyController.companySelected?.id;
-    if (companyId == null) {
-      setState(() {
-        _all = [];
-        _filtered = [];
-      });
-      return;
-    }
-    setState(() => _loading = true);
-    final list = await _service.getCollaboratorsByCompanyId(companyId);
-    list.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
-    setState(() {
-      _all = list;
-      _filtered = List.from(_all);
-      _loading = false;
-    });
+    await _collaboratorController.refreshCollaboratorsForCompany(companyId);
   }
-
-  Future<void> _onRefresh() async => await _load();
 
   void _onTapCollaborator(Collaborator c) async {
     await _collaboratorController.setSelectedCollaborator(c);
     if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => 
-      ProfileScreen(selectedCollaborator: c))
-    );
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProfileScreen(selectedCollaborator: c)));
   }
 
   @override
@@ -95,7 +67,7 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
     final double topSpacing = showAppBar ? 8.0 : 8 + MediaQuery.of(context).padding.top;
 
     return Scaffold(
-      appBar: showAppBar ? AppBar(title: const Text('Usuários'), leading: Navigator.canPop(context) ? const BackButton() : null,) : null,
+      appBar: showAppBar ? AppBar(title: const Text('Colaboradores'), leading: Navigator.canPop(context) ? const BackButton() : null,) : null,
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -134,9 +106,7 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
                 icon: const Icon(Icons.clear),
                 onPressed: () {
                   _searchController.clear();
-                  setState(() {
-                    _filtered = List.from(_all);
-                  });
+                  _collaboratorController.collaboratorFilter = '';
                 },
               ),
       ),
@@ -149,20 +119,24 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
         onRefresh: () async => await _onRefresh(),
         child: _loading
             ? _buildSkeleton()
-            : _filtered.isEmpty
-                ? ListView(padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0), children: [
+            : Observer(builder: (_) {
+                final filtered = _collaboratorController.filteredCollaborators;
+                if (filtered.isEmpty) {
+                  return ListView(padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0), children: [
                     Center(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 24.0),
                         child: Text(_searchController.text.isEmpty ? 'Nenhum colaborador cadastrado' : 'Nenhum colaborador encontrado', style: const TextStyle(color: Colors.grey, fontSize: 16)),
                       ),
                     )
-                  ])
-                : ListView.builder(
-                    padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-                    itemCount: _filtered.length,
-                    itemBuilder: (context, index) => _tile(_filtered[index]),
-                  ),
+                  ]);
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) => _tile(filtered[index]),
+                );
+              }),
       ),
     );
   }
