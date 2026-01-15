@@ -36,7 +36,7 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
           ? activeChildren
           : // For checkin, exclude children that are already active (checked-in)
           childController.filteredChildren.where((ch) => !(ch.id != null && activeChildren.map((c) => c.id).contains(ch.id))).toList();
-        final children = source.where((ch) {
+        source.where((ch) {
           if (filter.isEmpty) return true;
           final name = ch.name?.toLowerCase() ?? '';
           final email = ch.email?.toLowerCase() ?? '';
@@ -288,8 +288,9 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
                       Navigator.of(ctx).pop();
                       if (!innerCtx.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(ok ? 'Presença registrada' : 'Operação cancelada/erro')),
+                        SnackBar(content: Text(ok ? 'Operação concluída' : 'Operação cancelada/erro')),
                       );
+                      childController.refreshChildrenForCompany(companyId!);
                     },
               child: loading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Confirmar'),
             ),

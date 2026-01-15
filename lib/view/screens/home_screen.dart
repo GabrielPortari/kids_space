@@ -47,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _onRefresh() async {
     final companyId = _companyController.companySelected?.id ?? '';
     _companyController.getCompanyById(companyId);
+    _childController.refreshChildrenForCompany(companyId);
     _attendanceController.loadActiveCheckinsForCompany(companyId);
     _attendanceController.loadLast10AttendancesForCompany(companyId);
     _attendanceController.loadLastCheckinAndCheckoutForCompany(companyId);
@@ -245,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
             text: translate('home.check_in'),
             icon: const Icon(Icons.login_rounded, color: Colors.white),
             onPressed: () =>
-                showAttendanceModal(context, AttendanceType.checkin),
+              showAttendanceModal(context, AttendanceType.checkin),
           ),
           AppButton(
             text: translate('home.check_out'),
