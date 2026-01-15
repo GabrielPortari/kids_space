@@ -1,5 +1,4 @@
 import 'package:get_it/get_it.dart';
-import 'package:kids_space/controller/attendance_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
 import 'package:mobx/mobx.dart';
 
@@ -14,12 +13,10 @@ class ChildController = _ChildController with _$ChildController;
 abstract class _ChildController extends BaseController with Store {
   final ChildService _childService;
   UserController get _userController => GetIt.I.get<UserController>();
-
   _ChildController(this._childService);
   
   @observable
   String childFilter = '';
-
   @computed
   List<Child> get filteredChildren {
     final filter = childFilter.toLowerCase();
@@ -34,47 +31,9 @@ abstract class _ChildController extends BaseController with Store {
           .toList();
     }
   }
-  
-	@observable
-	ObservableList<Child> children = ObservableList<Child>();
 
   @observable
   bool refreshLoading = false;
-
-  @action
-	Future<void> refreshChildrenForCompany(String? companyId) async {
-    refreshLoading = true;
-		if (companyId == null) {
-			children.clear();
-			refreshLoading = false;
-			return;
-		}
-		final token = await getIdToken();
-		final list = await _childService.getChildrenByCompanyId(companyId, token: token);
-		children
-			..clear()
-			..addAll(list);
-    refreshLoading = false;
-	}
-
-  List<Child> activeCheckedInChildren(String companyId) => _childService.getActiveCheckedInChildren(companyId);
-
-  // Compute active checked-in children using AttendanceController's activeCheckins
-  List<Child> activeCheckedInChildrenComputed(String companyId) {
-    try {
-      final attendanceController = GetIt.I.get<AttendanceController>();
-      final active = (attendanceController.activeCheckins ?? []).map((a) => a.childId).whereType<String>().toSet();
-      return children.where((c) => c.id != null && active.contains(c.id)).toList();
-    } catch (_) {
-      // fallback to service if attendanceController not available
-      return _childService.getActiveCheckedInChildren(companyId);
-    }
-  }
-
-  // Atualiza os responsáveis de uma criança pelo id
-  bool updateResponsibleUsers(String childId, List<String> newResponsibleUserIds) {
-    return true;
-  }
 
   // Retorna um mapa de childId para lista de responsáveis (User)
   Map<String, List<User>> getChildrenWithResponsibles(List<Child> children) {
@@ -94,29 +53,75 @@ abstract class _ChildController extends BaseController with Store {
     return result;
   }
   
-  Map<String, List<User>> get activeChildrenWithResponsibles {
-    
+  Map<String, List<User>> get activeChildrenWithResponsibles { 
     return {};
   }
 
   // Atualiza uma criança (delegando ao serviço)
-  Future<bool> updateChild(Child child) async{
+  Future<bool> updateChild(Child? child) async{
+    if(child == null) return false;
     return await _childService.updateChild(child);
   }
 
-  // Expõe busca de criança por id delegando ao serviço
+  /// Synchronous cache-first getter. Returns cached `Child` if present.
+  /// If not present, triggers a background fetch (`fetchChildById`) and returns null.
   Child? getChildById(String? id) {
-    if(id == null || id.isEmpty) return null;
-    return children.firstWhere((c) => c.id == id, orElse: () => _childService.getChildById(id)!);
+    if (id == null) return null;
+    final local = getChildFromCache(id);
+    if (local != null) return local;
+    // Fire-and-forget fetch to populate cache for subsequent calls
+    fetchChildById(id);
+    return null;
+  }
+
+  /// Async fetch that queries the service and updates local cache.
+  Future<Child?> fetchChildById(String? id) async {
+    if (id == null) return null;
+    final fetched = await _childService.getChildById(id);
+    if (fetched != null) {
+      final exists = children.any((c) => c.id == fetched.id);
+      if (!exists) {
+        children = [...children, fetched];
+      }
+    }
+    return fetched;
+  }
+
+  /// Synchronous cache-only lookup. Returns null if not present locally.
+  Child? getChildFromCache(String? id) {
+    if (id == null) return null;
+    try {
+      return children.firstWhere((c) => c.id == id);
+    } catch (_) {
+      return null;
+    }
   }
 
   // Expõe exclusão de criança delegando ao serviço
-  Future<bool> deleteChild(String childId) async {
+  Future<bool> deleteChild(String? childId) async {
+    if (childId == null) return false;
     return await _childService.deleteChild(childId);
   }
 
+	@observable
+	List<Child> children = [];
   // Busca crianças da empresa (delegando ao serviço)
-  Future<List<Child>> getChildrenByCompanyId(String companyId) async {
-    return await _childService.getChildrenByCompanyId(companyId);
+  Future<void> getChildrenByCompanyId(String? companyId) async {
+    if (companyId == null) return;
+    children = await _childService.getChildrenByCompanyId(companyId);
   }
+
+  /// Refresh children list for a company (keeps same behavior as getChildrenByCompanyId).
+  Future<void> refreshChildrenForCompany(String? companyId) async {
+    await getChildrenByCompanyId(companyId);
+  }
+
+  /// Returns the children currently marked as active for the given company.
+  List<Child> activeCheckedInChildren(String? companyId) {
+    if (companyId == null) return [];
+    return children.where((c) => c.companyId == companyId && (c.checkedIn ?? false)).toList();
+  }
+
+  /// Compatibility wrapper used in some places expecting a "computed" style method.
+  List<Child> activeCheckedInChildrenComputed(String? companyId) => activeCheckedInChildren(companyId);
 }

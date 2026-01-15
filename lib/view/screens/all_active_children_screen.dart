@@ -181,19 +181,29 @@ class _AllActiveChildrenScreenState extends State<AllActiveChildrenScreen> {
     );
   }
 
-  void _loadActiveChildrenWithResponsibles() {
+  Future<void> _loadActiveChildrenWithResponsibles() async {
     final companyId = _companyController.companySelected?.id;
-    if (companyId != null) {
-      _allChildren = _childController.activeCheckedInChildren(companyId);
-      _allChildren.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
-      _filteredChildren = List.from(_allChildren);
-      _childrenResponsibles = _childController.getChildrenWithResponsibles(
-        _allChildren,
-      );
-    } else {
-      _allChildren = [];
-      _filteredChildren = [];
-      _childrenResponsibles = {};
+    if (companyId == null) {
+      setState(() {
+        _allChildren = [];
+        _filteredChildren = [];
+        _childrenResponsibles = {};
+      });
+      return;
     }
+
+    // Ensure controller has latest children from service
+    await _childController.refreshChildrenForCompany(companyId);
+
+    final actives = _childController.activeCheckedInChildren(companyId);
+    actives.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
+
+    final respMap = _childController.getChildrenWithResponsibles(actives);
+
+    setState(() {
+      _allChildren = actives;
+      _filteredChildren = List.from(_allChildren);
+      _childrenResponsibles = respMap;
+    });
   }
 }

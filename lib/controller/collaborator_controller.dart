@@ -4,7 +4,7 @@ import 'package:kids_space/service/collaborator_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mobx/mobx.dart';
 import 'package:kids_space/model/collaborator.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// use secure storage via BaseController
 import 'base_controller.dart';
 
 part 'collaborator_controller.g.dart';
@@ -45,7 +45,6 @@ abstract class _CollaboratorController extends BaseController with Store {
       refreshLoading = false;
       return;
     }
-    final token = await getIdToken();
     final list = await _collaboratorService.getCollaboratorsByCompanyId(companyId);
     collaborators
       ..clear()
@@ -80,18 +79,22 @@ abstract class _CollaboratorController extends BaseController with Store {
   @action
   Future<void> clearLoggedCollaborator() async {
     loggedCollaborator = null;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('logged_user');
+    try {
+      await secureStorage.delete(key: 'loggedCollaborator');
+    } catch (_) {}
   }
 
   /// Carrega colaborador salvo localmente (se existir)
   @action
   Future<bool> loadLoggedCollaboratorFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonString = prefs.getString('logged_user');
-    if (jsonString != null) {
-      loggedCollaborator = Collaborator.fromJson(jsonDecode(jsonString));
-      return true;
+    try {
+      final jsonString = await secureStorage.read(key: 'loggedCollaborator');
+      if (jsonString != null && jsonString.isNotEmpty) {
+        loggedCollaborator = Collaborator.fromJson(jsonDecode(jsonString));
+        return true;
+      }
+    } catch (e) {
+      developer.log('CollaboratorController.loadLoggedCollaboratorFromPrefs failed', name: 'CollaboratorController', error: e);
     }
     loggedCollaborator = null;
     return false;
@@ -123,7 +126,12 @@ abstract class _CollaboratorController extends BaseController with Store {
   }
 
   /// Busca colaborador por id delegando ao serviço
-  Future<Collaborator?> getCollaboratorById(String id) {
-    return _collaboratorService.getCollaboratorById(id);
+  Future<Collaborator?> getCollaboratorById(String id) async {
+    try {
+      return await _collaboratorService.getCollaboratorById(id);
+    } catch (e) {
+      developer.log('CollaboratorController.getCollaboratorById failed', name: 'CollaboratorController', error: e);
+      return null;
+    }
   }
 }

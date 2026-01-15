@@ -3,7 +3,7 @@ import 'package:kids_space/model/base_user.dart';
 class Child extends BaseUser{
 
   final List<String>? responsibleUserIds;
-  final bool? isActive;
+  final bool? checkedIn;
 
   Child({
     super.userType,
@@ -25,14 +25,14 @@ class Child extends BaseUser{
     super.createdAt,
     super.updatedAt,
     required this.responsibleUserIds, 
-    required this.isActive
+    required this.checkedIn
     });
 
     @override
   Map<String, dynamic> toJson() {
     final base = super.toJson();
     base['responsibleUserIds'] = responsibleUserIds;
-    base['isActive'] = isActive;
+    base['checkedIn'] = checkedIn;
     return base;
   }
 
@@ -40,7 +40,7 @@ class Child extends BaseUser{
     final base = BaseUser.fromJson(json);
     return Child(
       responsibleUserIds: (json['responsibleUserIds'] as List<dynamic>?)?.cast<String>(),
-      isActive: json['isActive'] == true,
+      checkedIn: json['checkedIn'] == true,
       userType: base.userType,
       name: base.name,
       email: base.email,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/controller/attendance_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
@@ -13,6 +14,12 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
   final AttendanceController attendanceController = GetIt.I<AttendanceController>();
   final collaboratorController = GetIt.I<CollaboratorController>();
   final companyController = GetIt.I<CompanyController>();
+
+  final companyId = companyController.companySelected?.id;
+  if (companyId != null) {
+    // trigger load of active checkins so UI can react when data arrives
+    attendanceController.loadActiveCheckinsForCompany(companyId);
+  }
 
   String? selectedChildId;
   bool loading = false;
@@ -52,32 +59,47 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
                     hintText: 'Buscar criança',
                   ),
                   onChanged: (v) {
+                    // update observable filter; Observer will react
                     childController.childFilter = v;
-                    setState(() {});
+                    setState(() {}); // keep selection redraw
                   },
                 ),
                 const SizedBox(height: 12),
                 Flexible(
-                  child: children.isEmpty
-                      ? const Center(child: Text('Nenhuma criança encontrada'))
-                      : Scrollbar(
-                          child: ListView.separated(
-                            shrinkWrap: true,
-                            itemCount: children.length,
-                            separatorBuilder: (_, __) => const Divider(height: 1),
-                            itemBuilder: (_, i) {
-                              final Child ch = children[i];
-                              final id = ch.id ?? '';
-                              return RadioListTile<String>(
-                                value: id,
-                                groupValue: selectedChildId,
-                                onChanged: (v) => setState(() => selectedChildId = v),
-                                title: Text(ch.name ?? '-'),
-                                subtitle: Text(ch.document ?? ''),
-                              );
-                            },
-                          ),
-                        ),
+                  child: Observer(builder: (_) {
+                    // compute active children from attendanceController.activeCheckins
+                    final activeAttendances = attendanceController.activeCheckins ?? [];
+                    final activeIds = activeAttendances.map((a) => a.childId).whereType<String>().toSet();
+                    final List<Child> activeChildren = companyId != null
+                        ? childController.children.where((c) => c.id != null && activeIds.contains(c.id)).toList()
+                        : <Child>[];
+
+                    // compute source depending on type
+                    final List<Child> source = type == AttendanceType.checkout
+                        ? activeChildren
+                        : childController.filteredChildren.where((ch) => !(ch.id != null && activeIds.contains(ch.id))).toList();
+
+                    if (source.isEmpty) return const Center(child: Text('Nenhuma criança encontrada'));
+
+                    return Scrollbar(
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: source.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (_, i) {
+                          final Child ch = source[i];
+                          final id = ch.id ?? '';
+                          return RadioListTile<String>(
+                            value: id,
+                            groupValue: selectedChildId,
+                            onChanged: (v) => setState(() => selectedChildId = v),
+                            title: Text(ch.name ?? '-'),
+                            subtitle: Text(ch.document ?? ''),
+                          );
+                        },
+                      ),
+                    );
+                  }),
                 ),
               ],
             ),
@@ -93,7 +115,19 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
                   : () async {
                       setState(() => loading = true);
 
-                      final child = source.firstWhere((c) => c.id == selectedChildId);
+                      // Recompute the current source to match the list shown inside the Observer
+                      final activeAttendances = attendanceController.activeCheckins ?? [];
+                      final activeIds = activeAttendances.map((a) => a.childId).whereType<String>().toSet();
+                      final List<Child> currentSource = type == AttendanceType.checkout
+                          ? (companyId != null ? childController.children.where((c) => c.id != null && activeIds.contains(c.id)).toList() : <Child>[])
+                          : childController.filteredChildren.where((ch) => !(ch.id != null && activeIds.contains(ch.id))).toList();
+
+                      final idx = currentSource.indexWhere((c) => c.id == selectedChildId);
+                      if (idx == -1) {
+                        setState(() => loading = false);
+                        return;
+                      }
+                      final child = currentSource[idx];
 
                       // Ask for responsible and notes for both checkin and checkout flows.
                       String? selectedResponsibleId;
@@ -209,8 +243,13 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
                         } else {
                           // checkout: try to find existing active checkin note for this child
                           final active = attendanceController.activeCheckins ?? [];
-                          final existing = active.firstWhere((a) => a.childId == selectedChildId);
-                          final existingNotes = existing.notes?.trim();
+                          Attendance? existing;
+                          try {
+                            existing = active.firstWhere((a) => a.childId == selectedChildId);
+                          } catch (_) {
+                            existing = null;
+                          }
+                          final existingNotes = existing?.notes?.trim();
                           if (existingNotes != null && existingNotes.isNotEmpty && entered != null && entered.isNotEmpty) {
                             // if existing already contains identifier, avoid duplicating
                             final left = existingNotes.contains('(checkin)') ? existingNotes : '$existingNotes (checkin)';

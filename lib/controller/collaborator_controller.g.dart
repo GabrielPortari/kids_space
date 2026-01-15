@@ -9,6 +9,15 @@ part of 'collaborator_controller.dart';
 // ignore_for_file: non_constant_identifier_names, unnecessary_brace_in_string_interps, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic, no_leading_underscores_for_local_identifiers
 
 mixin _$CollaboratorController on _CollaboratorController, Store {
+  Computed<List<Collaborator>>? _$filteredCollaboratorsComputed;
+
+  @override
+  List<Collaborator> get filteredCollaborators =>
+      (_$filteredCollaboratorsComputed ??= Computed<List<Collaborator>>(
+        () => super.filteredCollaborators,
+        name: '_CollaboratorController.filteredCollaborators',
+      )).value;
+
   late final _$loggedCollaboratorAtom = Atom(
     name: '_CollaboratorController.loggedCollaborator',
     context: context,
@@ -46,6 +55,72 @@ mixin _$CollaboratorController on _CollaboratorController, Store {
       () {
         super.selectedCollaborator = value;
       },
+    );
+  }
+
+  late final _$collaboratorsAtom = Atom(
+    name: '_CollaboratorController.collaborators',
+    context: context,
+  );
+
+  @override
+  ObservableList<Collaborator> get collaborators {
+    _$collaboratorsAtom.reportRead();
+    return super.collaborators;
+  }
+
+  @override
+  set collaborators(ObservableList<Collaborator> value) {
+    _$collaboratorsAtom.reportWrite(value, super.collaborators, () {
+      super.collaborators = value;
+    });
+  }
+
+  late final _$collaboratorFilterAtom = Atom(
+    name: '_CollaboratorController.collaboratorFilter',
+    context: context,
+  );
+
+  @override
+  String get collaboratorFilter {
+    _$collaboratorFilterAtom.reportRead();
+    return super.collaboratorFilter;
+  }
+
+  @override
+  set collaboratorFilter(String value) {
+    _$collaboratorFilterAtom.reportWrite(value, super.collaboratorFilter, () {
+      super.collaboratorFilter = value;
+    });
+  }
+
+  late final _$refreshLoadingAtom = Atom(
+    name: '_CollaboratorController.refreshLoading',
+    context: context,
+  );
+
+  @override
+  bool get refreshLoading {
+    _$refreshLoadingAtom.reportRead();
+    return super.refreshLoading;
+  }
+
+  @override
+  set refreshLoading(bool value) {
+    _$refreshLoadingAtom.reportWrite(value, super.refreshLoading, () {
+      super.refreshLoading = value;
+    });
+  }
+
+  late final _$refreshCollaboratorsForCompanyAsyncAction = AsyncAction(
+    '_CollaboratorController.refreshCollaboratorsForCompany',
+    context: context,
+  );
+
+  @override
+  Future<void> refreshCollaboratorsForCompany(String? companyId) {
+    return _$refreshCollaboratorsForCompanyAsyncAction.run(
+      () => super.refreshCollaboratorsForCompany(companyId),
     );
   }
 
@@ -130,7 +205,11 @@ mixin _$CollaboratorController on _CollaboratorController, Store {
   String toString() {
     return '''
 loggedCollaborator: ${loggedCollaborator},
-selectedCollaborator: ${selectedCollaborator}
+selectedCollaborator: ${selectedCollaborator},
+collaborators: ${collaborators},
+collaboratorFilter: ${collaboratorFilter},
+refreshLoading: ${refreshLoading},
+filteredCollaborators: ${filteredCollaborators}
     ''';
   }
 }

@@ -4,6 +4,25 @@
     "users": "Users",
     "reports": "Reports"
   },
+  "home":{
+    "company": "Company",
+    "company_name": "Company Name",
+    "collaborator": "Collaborator",
+    "collaborator_name": "Collaborator: {name_placeholder}",
+    "user_name": "User Name",
+    "actives": "Actives",
+    "see_more": "See more",
+    "check_in": "Check in",
+    "check_out": "Check out",
+    "last_check_in": "Last check in",
+    "last_check_out": "Last check out",
+    "loading": "Loading...",
+    "child_removed": "Removed child",
+    "no_checkins_registered": "No check-ins registered",
+    "no_checkouts_registered": "No check-outs registered",
+    "30_last_presence_log": "Last 30 presence records",
+    "no_presence_records": "No presence records"
+  },
   "user_profile": {
     "title": "User Profile",
     "no_children": "You have no registered children",

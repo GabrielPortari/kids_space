@@ -1,26 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kids_space/controller/attendance_controller.dart';
+import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/company_controller.dart';
-import 'package:kids_space/controller/attendance_controller.dart';
-import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/attendance.dart';
-import 'package:get_it/get_it.dart';
 import 'package:kids_space/util/date_hour_util.dart';
 import 'package:kids_space/util/localization_service.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
-import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/view/widgets/attendance_modal.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:kids_space/view/design_system/app_card.dart';
 import 'package:kids_space/view/design_system/app_button.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
-
-final CompanyController _companyController = GetIt.I<CompanyController>();
-final UserController _userController = GetIt.I<UserController>();
-final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
-final AttendanceController _attendanceController = GetIt.I<AttendanceController>();
-final ChildController _childController = GetIt.I<ChildController>();
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,14 +24,17 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late final ScrollController _scrollController;
   late final ScrollController _logListController;
+  final _companyController = GetIt.I.get<CompanyController>();
+  final _collaboratorController = GetIt.I.get<CollaboratorController>();
+  final _attendanceController = GetIt.I.get<AttendanceController>();
+  final _childController = GetIt.I.get<ChildController>();
 
   @override
   void initState() {
     super.initState();
-    debugPrint('DebuggerLog: HomeScreen.initState');
     _scrollController = ScrollController();
     _logListController = ScrollController();
-    _loadData();
+    _onRefresh();
   }
 
   @override
@@ -49,8 +45,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _onRefresh() async {
-    debugPrint('DebuggerLog: HomeScreen._onRefresh called');
-    await _loadData();
+    final companyId = _companyController.companySelected?.id ?? '';
+    _companyController.getCompanyById(companyId);
+    _attendanceController.loadActiveCheckinsForCompany(companyId);
+    _attendanceController.loadLast10AttendancesForCompany(companyId);
+    _attendanceController.loadLastCheckinAndCheckoutForCompany(companyId);
   }
 
   @override
@@ -65,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Expanded(
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 720),
+              constraints: const BoxConstraints(maxWidth: 720),
               child: RefreshIndicator(
                 onRefresh: _onRefresh,
                 child: SingleChildScrollView(
@@ -112,141 +111,126 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _presenceLogCard(double listHeight) {
-    return Observer(
-      builder: (_) {
-        final events = _attendanceController.logEvents;
-        // Take the most recent 30 events (logEvents is newest-first) and display oldest->newest
-        final limited = events.take(30).toList();
+    return Observer(builder: (_) {
 
+      final events = _attendanceController.logEvents;
+      if (events.isEmpty) {
         return AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 4.0,
-                  horizontal: 4.0,
-                ),
-                child: TextHeaderSmall(
-                  translate('home.30_last_presence_log'),
-                ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: listHeight,
-                child: limited.isEmpty
-                      ? Center(
-                              child: TextBodyMedium(
-                                translate('home.no_presence_records'),
-                              ),
-                        )
-                      : Scrollbar(
-                          controller: _logListController,
-                          thumbVisibility: true,
-                          child: ListView.separated(
-                            controller: _logListController,
-                            primary: false,
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            itemCount: limited.length,
-                            separatorBuilder: (_, __) => const Divider(height: 1),
-                            itemBuilder: (context, idx) {
-                              final event = limited[idx];
-                              final isCheckin = event.attendanceType == AttendanceType.checkin;
-                              return ListTile(
-                                contentPadding: const EdgeInsets.fromLTRB(4.0, 0.0, 8.0, 0.0),
-                                leading: CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: isCheckin ? successBg : dangerBg,
-                                  child: Icon(
-                                    isCheckin ? Icons.login : Icons.logout,
-                                    color: isCheckin ? success : danger,
-                                    size: 18,
-                                  ),
-                                ),
-                                title: TextBodyMedium(
-                                  _childController.getChildById(event.childId ?? '')?.name ?? '',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                subtitle: TextBodySmall(
-                                  '${formatDate(event.checkinTime ?? event.checkoutTime ?? DateTime.now())} • ${formatTime(event.checkinTime ?? event.checkoutTime ?? DateTime.now())}',
-                                ),
-                                trailing: Chip(
-                                  label: TextBodySmall(
-                                    isCheckin ? translate('home.check_in') : translate('home.check_out'),
-                                    style: TextStyle(
-                                      color: isCheckin ? successBg : dangerBg,
-                                    ),
-                                  ),
-                                  backgroundColor: isCheckin ? success : danger,
-                                ),
-                                onTap: () => debugPrint('DebuggerLog: HomeScreen.log tapped index=$idx childId=${event.childId}'),
-                              );
-                            },
-                          ),
-                        ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _loadData() async {
-    final companyId = _companyController.companySelected?.id;
-    if (companyId != null) {
-      debugPrint('DebuggerLog: HomeScreen._loadData START for $companyId');
-      await _userController.refreshUsersForCompany(companyId);
-      await _childController.refreshChildrenForCompany(companyId);
-      await _attendanceController.loadLastChecksForCompany(companyId);
-      await _attendanceController.refreshAttendancesForCompany(companyId);
-      debugPrint('DebuggerLog: HomeScreen._loadData DONE');
-    }
-  }
-
-  Widget _infoCompanyCard() {
-    return Builder(
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: AppCard(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => 
-                ProfileScreen(selectedCollaborator: _collaboratorController.loggedCollaborator))
-              );
-              debugPrint('DebuggerLog: HomeScreen.navigate -> /profile, arguments: ${_collaboratorController.loggedCollaborator}');
-            },
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  radius: 32,
-                  backgroundImage: AssetImage(
-                    _companyController.companySelected?.logoUrl ?? 'assets/images/company_logo_placeholder.png',
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextHeaderMedium(
-                        _companyController.companySelected?.fantasyName ?? translate('home.company_name'),
-                      ),
-                      const SizedBox(height: 2),
-                      TextBodyMedium(translate('home.collaborator_name', namedArgs: {
-                          'name_placeholder': _collaboratorController.loggedCollaborator?.name ?? '-',
-                        })),
-                    ],
-                  ),
-                ),
-              ],
+          child: SizedBox(
+            height: listHeight,
+            child: Center(
+              child: TextBodyMedium(translate('home.no_presence_records')),
             ),
           ),
         );
-      },
+      }
+
+      return AppCard(
+        child: SizedBox(
+          height: listHeight,
+          child: Scrollbar(
+            thumbVisibility: true,
+            controller: _logListController,
+            child: ListView.separated(
+              controller: _logListController,
+              itemCount: events.length,
+              separatorBuilder: (_, __) => const Divider(height: 1),
+              itemBuilder: (context, idx) {
+
+                final event = events[idx];
+                final isCheckin = event.attendanceType == AttendanceType.checkin;
+                final child = _childController.getChildById(event.childId);
+                final childName = child?.name ?? '';
+
+                return ListTile(
+                  contentPadding: const EdgeInsets.fromLTRB(4.0, 0.0, 8.0, 0.0),
+                  leading: CircleAvatar(
+                    radius: 20,
+                    backgroundColor: isCheckin ? successBg : dangerBg,
+                    child: Icon(
+                      isCheckin ? Icons.login : Icons.logout,
+                      color: isCheckin ? success : danger,
+                      size: 18,
+                    ),
+                  ),
+                  title: TextBodyMedium(childName, overflow: TextOverflow.ellipsis),
+                  subtitle: TextBodySmall(formatDate_ddMM_HHmm(event.checkinTime ?? event.checkoutTime)),
+                  trailing: Chip(
+                    label: TextBodySmall(isCheckin ? translate('home.check_in') : translate('home.check_out'), style: TextStyle(color: isCheckin ? successBg : dangerBg)),
+                    backgroundColor: isCheckin ? success : danger,
+                  ),
+                  onTap: () => debugPrint('Tapped event idx=$idx id=${event.id}'),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _infoCompanyCard() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: AppCard(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => ProfileScreen(
+                selectedCollaborator:
+                    _collaboratorController.loggedCollaborator,
+              ),
+            ),
+          );
+        },
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Observer(
+              builder: (_) {
+                final urlPhoto = _companyController.companySelected?.logoUrl;
+                return CircleAvatar(
+                  radius: 32,
+                  backgroundImage: urlPhoto != null
+                      ? NetworkImage(urlPhoto)
+                      : const AssetImage(
+                              'assets/images/company_logo_placeholder.png',
+                            )
+                            as ImageProvider,
+                );
+              },
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Observer(
+                    builder: (_) {
+                      final companyName =
+                          _companyController.companySelected?.fantasyName ??
+                          '-';
+                      return TextHeaderMedium(companyName);
+                    },
+                  ),
+                  const SizedBox(height: 2),
+                  Observer(
+                    builder: (_) {
+                      final collaboratorName = _collaboratorController.loggedCollaborator?.name ?? '-';
+                      return TextBodyMedium(
+                        translate('home.collaborator_name',
+                          namedArgs: {'name_placeholder': collaboratorName},
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -257,20 +241,17 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           AppButton(
+            enabled: true,
             text: translate('home.check_in'),
-            icon: Icon(Icons.login_rounded, color: Colors.white),
-            onPressed: () {
-              debugPrint('DebuggerLog: HomeScreen.checkIn button pressed');
-              showAttendanceModal(context, AttendanceType.checkin);
-            },
-            ),
+            icon: const Icon(Icons.login_rounded, color: Colors.white),
+            onPressed: () =>
+                showAttendanceModal(context, AttendanceType.checkin),
+          ),
           AppButton(
             text: translate('home.check_out'),
-            icon: Icon(Icons.logout_rounded, color: Colors.white),
-            onPressed: () {
-              debugPrint('DebuggerLog: HomeScreen.checkOut button pressed');
-              showAttendanceModal(context, AttendanceType.checkout);
-            },
+            icon: const Icon(Icons.logout_rounded, color: Colors.white),
+            onPressed: () =>
+                showAttendanceModal(context, AttendanceType.checkout),
           ),
         ],
       ),
@@ -278,107 +259,89 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _activeChildrenInfoCard() {
-    final activeChildren = _attendanceController.activeCheckins?.length;
-    return Observer(
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: AppCard(
-            child: Row(
-              children: [
-                Builder(
-                  builder: (context) => GestureDetector(
-                    onTap: () {
-                      debugPrint('HomeScreen.navigate -> /all_active_children');
-                      Navigator.of(context).pushNamed('/all_active_children');
-                    },
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          TextTitle(
-                            translate('home.actives'),
-                          ),
-                          TextHeaderLarge(
-                            '${activeChildren ?? 0}',
-                          ),
-                          TextBodyMedium(
-                            translate('home.see_more'),
-                          ),
-                        ],
-                      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: AppCard(
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: () =>
+                  Navigator.of(context).pushNamed('/all_active_children'),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    TextTitle(translate('home.actives')),
+                    Observer(
+                      builder: (_) {
+                        final totalActives =
+                            _attendanceController.activeCheckins?.length ?? 0;
+                        return TextHeaderLarge('$totalActives');
+                      },
                     ),
-                  ),
+                    TextBodyMedium(translate('home.see_more')),
+                  ],
                 ),
-                const SizedBox(width: 32),
-                Expanded(
-                  child: Column(
+              ),
+            ),
+            const SizedBox(width: 32),
+            Expanded(
+              child: Observer(
+                builder: (_) {
+                  final lastCheckIn = _attendanceController.lastCheckIn;
+                  final lastCheckOut = _attendanceController.lastCheckOut;
+
+                  final lastChildCheckinName = _childController.getChildById(lastCheckIn?.childId,)?.name;
+                  final lastChildCheckinTime = formatDate_ddMM_HHmm(lastCheckIn?.checkinTime);
+                  final lastChildCheckoutName = _childController.getChildById(lastCheckOut?.childId)?.name;
+                  final lastChildCheckoutTime = formatDate_ddMM_HHmm(lastCheckOut?.checkoutTime);
+                  return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
                           Icon(Icons.login, color: success, size: 20),
                           const SizedBox(width: 6),
-                          TextHeaderSmall(
-                            translate('home.last_check_in'),
-                          ),
+                          TextHeaderSmall(translate('home.last_check_in')),
                         ],
                       ),
                       Padding(
                         padding: const EdgeInsets.only(left: 32.0, top: 2.0),
-                         child: _attendanceController.isLoadingLastCheck
-                             ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                             : (_attendanceController.lastCheckIn != null
-                                 ? Row(
-                                     children: [
-                                       TextBodyMedium(
-                                         _childController.getChildById(_attendanceController.lastCheckIn?.childId ?? '')?.name ?? (_attendanceController.lastCheckIn?.childId ?? '-'),
-                                       ),
-                                       const SizedBox(width: 8),
-                                       TextBodyMedium(
-                                         formatTime(_attendanceController.lastCheckIn?.checkinTime ?? _attendanceController.lastCheckIn?.checkoutTime ?? DateTime.now()),
-                                       ),
-                                     ],
-                                   )
-                                 : Text(translate('home.no_checkins_registered'))),
+                        child: lastChildCheckinName != null
+                            ? TextBodyMedium(
+                                '$lastChildCheckinName - $lastChildCheckinTime',
+                              )
+                            : TextBodyMedium(
+                                translate('home.no_checkins_registered'),
+                              ),
                       ),
                       const Divider(height: 20),
                       Row(
                         children: [
                           Icon(Icons.logout, color: danger, size: 20),
                           const SizedBox(width: 6),
-                          TextHeaderSmall(
-                            translate('home.last_check_out'),
-                          ),
+                          TextHeaderSmall(translate('home.last_check_out')),
                         ],
                       ),
                       Padding(
                         padding: const EdgeInsets.only(left: 32.0, top: 2.0),
-                         child: _attendanceController.isLoadingLastCheck
-                             ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                             : (_attendanceController.lastCheckOut != null
-                                 ? Row(
-                                     children: [
-                                       TextBodyMedium(
-                                         _childController.getChildById(_attendanceController.lastCheckOut?.childId ?? '')?.name ?? (_attendanceController.lastCheckOut?.childId ?? '-'),
-                                       ),
-                                       const SizedBox(width: 8),
-                                       TextBodyMedium(
-                                         formatTime(_attendanceController.lastCheckOut?.checkoutTime ?? _attendanceController.lastCheckOut?.checkinTime ?? DateTime.now()),
-                                       ),
-                                     ],
-                                   )
-                                 : Text(translate('home.no_checkouts_registered'))),
+                        child: lastChildCheckoutName != null
+                            ? TextBodyMedium(
+                                '$lastChildCheckoutName - $lastChildCheckoutTime',
+                              )
+                            : TextBodyMedium(
+                                translate('home.no_checkouts_registered'),
+                              ),
                       ),
                     ],
-                  ),
-                ),
-              ],
+                  );
+                },
+              ),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 }

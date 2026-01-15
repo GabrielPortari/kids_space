@@ -207,7 +207,7 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
                           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           overflow: TextOverflow.ellipsis,
                         ),
-                        if (child.isActive ?? false)
+                        if (child.checkedIn ?? false)
                           Container(
                             margin: const EdgeInsets.only(left: 8),
                             width: 10,

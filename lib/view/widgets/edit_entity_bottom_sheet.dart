@@ -68,7 +68,7 @@ class _EditEntityBottomSheetState extends State<EditEntityBottomSheet> {
 
         if (f.initialValue is DateTime) {
           final dt = f.initialValue as DateTime;
-          display = formatDateFull(dt);
+          display = formatDate_ddMMyyyy(dt);
           isoValue = dt.toIso8601String().split('T').first;
         } else if (f.initialValue is String) {
           // try parse ISO or dd/MM/yyyy
@@ -80,14 +80,14 @@ class _EditEntityBottomSheetState extends State<EditEntityBottomSheet> {
             if (iso != null) parsed = DateTime.tryParse(iso);
           }
           if (parsed != null) {
-            display = formatDateFull(parsed);
+            display = formatDate_ddMMyyyy(parsed);
             isoValue = parsed.toIso8601String().split('T').first;
           } else {
-            display = formatDateFull(defaultDate);
+            display = formatDate_ddMMyyyy(defaultDate);
             isoValue = defaultDate.toIso8601String().split('T').first;
           }
         } else {
-          display = formatDateFull(defaultDate);
+          display = formatDate_ddMMyyyy(defaultDate);
           isoValue = defaultDate.toIso8601String().split('T').first;
         }
 
@@ -196,7 +196,7 @@ class _EditEntityBottomSheetState extends State<EditEntityBottomSheet> {
                               lastDate: DateTime.now(),
                             );
                             if (picked != null) {
-                              _controllers[f.key]?.text = formatDateFull(picked);
+                              _controllers[f.key]?.text = formatDate_ddMMyyyy(picked);
                               _values[f.key] = picked.toIso8601String().split('T').first;
                             }
                           },

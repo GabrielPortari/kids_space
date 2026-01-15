@@ -1,4 +1,5 @@
 import 'dart:developer' as dev;
+import 'dart:developer' as developer;
 
 import 'package:dio/dio.dart';
 import 'package:kids_space/service/base_service.dart';
@@ -10,8 +11,21 @@ class ChildService extends BaseService {
     return [];
   }
   
-  Child? getChildById(String childId) {
-    return null;
+  Future<Child?> getChildById(String? childId) async {
+    try {
+      developer.log('getChildById -> request', name: 'ChildService', error: {'path': '/child/$childId'});
+      final response = await dio.get('/child/$childId');
+      developer.log('getChildById -> response', name: 'ChildService', error: {'status': response.statusCode, 'data': response.data});
+      if (response.statusCode == 200 && response.data != null) {
+        developer.log(response.toString(), name: 'ChildService');
+        return Child.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        return null;
+      }
+    } catch (e, st) {
+      developer.log('getCollaboratorById error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
+      return null;
+    }
   }
 
   Future<bool> addChild(Child child) async {
@@ -32,7 +46,7 @@ class ChildService extends BaseService {
       payload.remove('companyId');
       payload.remove('createdAt');
       payload.remove('updatedAt');
-      payload.remove('isActive');
+      payload.remove('checkedIn');
       payload.remove('responsibleUserIds');
 
       final response = await dio.put('/child/$id', data: payload);

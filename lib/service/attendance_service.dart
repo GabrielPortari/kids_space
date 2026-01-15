@@ -120,7 +120,7 @@ class AttendanceService extends BaseService{
   }
 
   /// Fetch attendances list for a given companyId
-  Future<List<Attendance>> getAttendancesByCompany(String companyId) async {
+  Future<List<Attendance>> getAttendancesByCompanyId(String companyId) async {
     try {
       final response = await dio.get('/attendance/company/$companyId');
       if (response.statusCode == 200 && response.data != null) {
@@ -183,6 +183,85 @@ class AttendanceService extends BaseService{
       return [];
     } catch (e, st) {
       dev.log('AttendanceService.getAttendancesByCompany error: $e', name: 'AttendanceService', error: st);
+      return [];
+    }
+  }
+
+  /// Fetch last N attendances for a company using the server endpoint
+  /// The backend exposes '/attendance/company/:companyId/last-10' — we request that and
+  /// return up to [limit] entries (defaults to 10).
+  Future<List<Attendance>> getLastAttendances(String companyId, {int limit = 10}) async {
+    try {
+      final response = await dio.get('/attendance/company/$companyId/last-10');
+      final items = <Map<String, dynamic>>[];
+      final raw = response.data;
+      if (raw is List) {
+        for (final e in raw) {
+          if (e is Map) items.add(Map<String, dynamic>.from(e));
+        }
+      } else if (raw is String) {
+        final trimmed = raw.trim();
+        if (trimmed.isNotEmpty) {
+          try {
+            final decoded = convert.json.decode(trimmed);
+            if (decoded is List) {
+              for (final e in decoded) if (e is Map) items.add(Map<String, dynamic>.from(e));
+            }
+          } catch (_) {}
+        }
+      } else if (raw is Map) {
+        final mapRaw = Map<String, dynamic>.from(raw);
+        if (mapRaw.containsKey('items') && mapRaw['items'] is List) {
+          for (final e in mapRaw['items']) if (e is Map) items.add(Map<String, dynamic>.from(e));
+        }
+      }
+
+      final list = items.map((m) => Attendance.fromJson(m)).toList();
+      if (list.length <= limit) return list;
+      return list.take(limit).toList();
+    } on DioException catch (e) {
+      dev.log('AttendanceService.getLastAttendances DioException: ${e.response?.statusCode} ${e.response?.data ?? e.message}', name: 'AttendanceService');
+      return [];
+    } catch (e, st) {
+      dev.log('AttendanceService.getLastAttendances error: $e', name: 'AttendanceService', error: st);
+      return [];
+    }
+  }
+
+  /// Fetch active checkins for a company.
+  /// Backend route assumed: GET /attendance/company/:companyId/active
+  Future<List<Attendance>> getActiveCheckinsByCompanyId(String companyId) async {
+    try {
+      final response = await dio.get('/attendance/company/$companyId/active-checkins');
+      final items = <Map<String, dynamic>>[];
+      final raw = response.data;
+      if (raw is List) {
+        for (final e in raw) {
+          if (e is Map) items.add(Map<String, dynamic>.from(e));
+        }
+      } else if (raw is String) {
+        final trimmed = raw.trim();
+        if (trimmed.isNotEmpty) {
+          try {
+            final decoded = convert.json.decode(trimmed);
+            if (decoded is List) {
+              for (final e in decoded) if (e is Map) items.add(Map<String, dynamic>.from(e));
+            }
+          } catch (_) {}
+        }
+      } else if (raw is Map) {
+        final mapRaw = Map<String, dynamic>.from(raw);
+        if (mapRaw.containsKey('items') && mapRaw['items'] is List) {
+          for (final e in mapRaw['items']) if (e is Map) items.add(Map<String, dynamic>.from(e));
+        }
+      }
+
+      return items.map((m) => Attendance.fromJson(m)).toList();
+    } on DioException catch (e) {
+      dev.log('AttendanceService.getActiveCheckinsByCompanyId DioException: ${e.response?.statusCode} ${e.response?.data ?? e.message}', name: 'AttendanceService');
+      return [];
+    } catch (e, st) {
+      dev.log('AttendanceService.getActiveCheckinsByCompanyId error: $e', name: 'AttendanceService', error: st);
       return [];
     }
   }

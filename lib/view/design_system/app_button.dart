@@ -8,6 +8,7 @@ class AppButton extends StatelessWidget {
 	final VoidCallback? onPressed;
 	final String text;
 	final ButtonStyle? style;
+  final bool enabled;
 	final EdgeInsetsGeometry? padding;
 	final Widget? icon;
 	final bool iconOnRight;
@@ -16,6 +17,7 @@ class AppButton extends StatelessWidget {
 		Key? key,
 		required this.text,
 		required this.onPressed,
+    this.enabled = true,
 		this.style,
 		this.padding,
 		this.icon,
@@ -25,7 +27,7 @@ class AppButton extends StatelessWidget {
 	@override
 	Widget build(BuildContext context) {
 		return ElevatedButton(
-			onPressed: onPressed,
+			onPressed: enabled ? onPressed : null,
 			style: style ?? ElevatedButton.styleFrom(
 				padding: padding ?? const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
 			),

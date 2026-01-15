@@ -11,117 +11,89 @@ class AttendanceController = _AttendanceController with _$AttendanceController;
 abstract class _AttendanceController extends BaseController with Store {
   final AttendanceService _service = AttendanceService();
 
-  @observable
-  bool isLoadingEvents = false;
-
-  @observable
-  bool isLoadingActiveCheckins = false;
-
-  @observable
-  bool isLoadingLastCheck = false;
-
-  @observable
-  bool isLoadingLog = false;
-
-  @computed
-  bool get allLoaded => !isLoadingEvents && !isLoadingActiveCheckins && !isLoadingLastCheck && !isLoadingLog;
-  
-  @observable
-  List<Attendance>? events = [];
-
-  @observable
-  List<Attendance>? activeCheckins = [];
-
-  @observable
-  Attendance? lastCheckIn;
-
-  @observable
-  Attendance? lastCheckOut;
-
-  @observable
-  List<Attendance> logEvents = [];
-
-
   Future<bool> doCheckin(Attendance attendance) async {
-    return await _service.doCheckin(attendance);
+    final ok = await _service.doCheckin(attendance);
+    if (ok) {
+      final cid = attendance.companyId;
+      if (cid != null && cid.isNotEmpty) {
+        await loadActiveCheckinsForCompany(cid);
+        await loadLast10AttendancesForCompany(cid);
+        await loadLastCheckinAndCheckoutForCompany(cid);
+      }
+    }
+    return ok;
   }
 
   Future<bool> doCheckout(Attendance attendance) async {
-    return await _service.doCheckout(attendance);
+    final ok = await _service.doCheckout(attendance);
+    if (ok) {
+      final cid = attendance.companyId;
+      if (cid != null && cid.isNotEmpty) {
+        await loadActiveCheckinsForCompany(cid);
+        await loadLast10AttendancesForCompany(cid);
+        await loadLastCheckinAndCheckoutForCompany(cid);
+      }
+    }
+    return ok;
   }
 
+  @observable
+  bool isLoadingEvents = false;
+  @observable
+  List<Attendance>? events = [];
   /// Refresh all attendances for a company and populate `events` and `activeCheckins`.
   Future<void> refreshAttendancesForCompany(String companyId) async {
     isLoadingEvents = true;
     try {
-      final list = await _service.getAttendancesByCompany(companyId);
+      final list = await _service.getAttendancesByCompanyId(companyId);
       events = list;
-      // Active checkins are checkin records without a checkout time.
-      activeCheckins = list.where((a) => a.checkoutTime == null).toList();
-      // Build log events: for each attendance with checkout produce two events (checkin and checkout),
-      // otherwise produce only checkin event. Then sort chronologically and keep the last 30.
-      final built = <Attendance>[];
-      for (final a in list) {
-        if (a.checkinTime != null) {
-          built.add(Attendance(
-            id: a.id,
-            createdAt: a.createdAt,
-            updatedAt: a.updatedAt,
-            attendanceType: AttendanceType.checkin,
-            notes: a.notes,
-            companyId: a.companyId,
-            collaboratorCheckedInId: a.collaboratorCheckedInId,
-            collaboratorCheckedOutId: a.collaboratorCheckedOutId,
-            responsibleId: a.responsibleId,
-            childId: a.childId,
-            checkinTime: a.checkinTime,
-            checkoutTime: null,
-          ));
-        }
-        if (a.checkoutTime != null) {
-          built.add(Attendance(
-            id: a.id,
-            createdAt: a.createdAt,
-            updatedAt: a.updatedAt,
-            attendanceType: AttendanceType.checkout,
-            notes: a.notes,
-            companyId: a.companyId,
-            collaboratorCheckedInId: a.collaboratorCheckedInId,
-            collaboratorCheckedOutId: a.collaboratorCheckedOutId,
-            responsibleId: a.responsibleId,
-            childId: a.childId,
-            checkinTime: null,
-            checkoutTime: a.checkoutTime,
-          ));
-        }
-      }
-
-      // Sort by event time (checkinTime or checkoutTime)
-      built.sort((x, y) {
-        final tx = x.checkinTime ?? x.checkoutTime;
-        final ty = y.checkinTime ?? y.checkoutTime;
-        if (tx == null && ty == null) return 0;
-        if (tx == null) return -1;
-        if (ty == null) return 1;
-        return tx.compareTo(ty);
-      });
-
-      // Keep only the last 30 events (most recent)
-      if (built.length <= 30) {
-        logEvents = built.reversed.toList();
-      } else {
-        final slice = built.sublist(built.length - 30);
-        logEvents = slice.reversed.toList();
-      }
-
-      // No debug logs here; only service call/response logs are kept in services.
     } finally {
       isLoadingEvents = false;
     }
   }
 
-  /// Load last checkin and checkout for given companyId
-  Future<void> loadLastChecksForCompany(String companyId) async {
+
+  @observable
+  bool isLoadingActiveCheckins = false;
+  @observable
+  List<Attendance>? activeCheckins = [];
+
+  @action
+  Future<void> loadActiveCheckinsForCompany(String companyId) async {
+    isLoadingActiveCheckins = true;
+    try {
+      final list = await _service.getActiveCheckinsByCompanyId(companyId);
+      activeCheckins = list;
+    } finally {
+      isLoadingActiveCheckins = false;
+    }
+  }
+
+  /// Load the last N attendances (default 10) and populate `logEvents`.
+  @observable
+  bool isLoadingLog = false;
+  @observable
+  List<Attendance> logEvents = [];
+  @action
+  Future<void> loadLast10AttendancesForCompany(String companyId, {int limit = 10}) async {
+    isLoadingLog = true;
+    try {
+      final list = await _service.getLastAttendances(companyId, limit: limit);
+      logEvents = list;
+    } finally {
+      isLoadingLog = false;
+    }
+  }
+
+
+  @observable
+  Attendance? lastCheckIn;
+  @observable
+  Attendance? lastCheckOut;
+  @observable
+  bool isLoadingLastCheck = false;
+  @action
+  Future<void> loadLastCheckinAndCheckoutForCompany(String companyId) async {
     isLoadingLastCheck = true;
     try {
       final lastIn = await _service.getLastCheckin(companyId);

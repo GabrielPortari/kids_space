@@ -91,19 +91,21 @@ class _SplashScreenState extends State<SplashScreen> {
       } catch (e) {
         debugPrint('Failed to refresh logged collaborator: $e');
       }
+    if (!mounted) return;
     if (loggedCollaborator != null) {
       final companyId = loggedCollaborator.companyId;
       if (companyId != null) {
         final company = _companyController.getCompanyById(companyId);
         if (company != null) {
           _companyController.selectCompany(company);
+          if (!mounted) return;
           Navigator.pushReplacementNamed(context, '/app_bottom_nav');
           return;
         }
       }
       Navigator.pushReplacementNamed(context, '/company_selection');
-    } else {
-      Navigator.pushReplacementNamed(context, '/company_selection');
+      return;
     }
+    Navigator.pushReplacementNamed(context, '/company_selection');
   }
 }

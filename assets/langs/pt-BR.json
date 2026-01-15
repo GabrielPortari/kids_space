@@ -16,6 +16,8 @@
     "check_out": "Check-out",
     "last_check_in": "Último check-in",
     "last_check_out": "Último check-out",
+    "loading": "Carregando...",
+    "child_removed": "Criança removida",
     "no_checkins_registered": "Nenhum check-in registrado",
     "no_checkouts_registered": "Nenhum check-out registrado",
     "30_last_presence_log": "30 últimos registros de presença",

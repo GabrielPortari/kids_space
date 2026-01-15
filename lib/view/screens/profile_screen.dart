@@ -260,7 +260,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return {
         'Nome': u.name ?? '-',
         'Email': u.email ?? '-',
-        'Data de Nascimento': dt == null ? '-' : formatDateFull(dt),
+        'Data de Nascimento': dt == null ? '-' : formatDate_ddMMyyyy(dt),
         'Telefone': u.phone ?? '-',
         'Documento': u.document ?? '-',
       };
@@ -270,7 +270,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return {
         'Nome': c.name ?? '-',
         'Email': c.email ?? '-',
-        'Data de Nascimento': dt == null ? '-' : formatDateFull(dt),
+        'Data de Nascimento': dt == null ? '-' : formatDate_ddMMyyyy(dt),
         'Telefone': c.phone ?? '-',
         'Documento': c.document ?? '-',
       };
@@ -293,10 +293,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return {
         'Nome': ch.name ?? '-',
         'Email': ch.email ?? '-',
-        'Data de Nascimento': dt == null ? '-' : formatDateFull(dt),
+        'Data de Nascimento': dt == null ? '-' : formatDate_ddMMyyyy(dt),
         'Telefone': ch.phone ?? '-',
         'Documento': ch.document ?? '-',
-        'Status': (ch.isActive ?? false) ? 'Ativa' : 'Inativa',
+        'Status': (ch.checkedIn ?? false) ? 'Ativa' : 'Inativa',
       };
     }
     return {};

@@ -64,7 +64,7 @@ class _ProfileChildrenCardSectionState extends State<ProfileChildrenCardSection>
         : ListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(_children.first.name ?? ''),
-            subtitle: Text('${(_children.first.isActive ?? false) ? 'Ativa' : 'Inativa'}${_children.first.document != null && _children.first.document!.isNotEmpty ? ' · ${_children.first.document}' : ''}'),
+            subtitle: Text('${(_children.first.checkedIn ?? false) ? 'Ativa' : 'Inativa'}${_children.first.document != null && _children.first.document!.isNotEmpty ? ' · ${_children.first.document}' : ''}'),
             onTap: () {
               Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => ProfileScreen(selectedChild: _children.first)));
             },
@@ -78,7 +78,7 @@ class _ProfileChildrenCardSectionState extends State<ProfileChildrenCardSection>
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(c.name ?? ''),
-                  subtitle: Text('${(c.isActive ?? false) ? 'Ativa' : 'Inativa'}${c.document != null && c.document!.isNotEmpty ? ' · ${c.document}' : ''}'),
+                  subtitle: Text('${(c.checkedIn ?? false) ? 'Ativa' : 'Inativa'}${c.document != null && c.document!.isNotEmpty ? ' · ${c.document}' : ''}'),
                   onTap: () {
                     Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => ProfileScreen(selectedChild: c)));
                   },

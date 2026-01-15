@@ -36,24 +36,6 @@ mixin _$ChildController on _ChildController, Store {
     });
   }
 
-  late final _$childrenAtom = Atom(
-    name: '_ChildController.children',
-    context: context,
-  );
-
-  @override
-  ObservableList<Child> get children {
-    _$childrenAtom.reportRead();
-    return super.children;
-  }
-
-  @override
-  set children(ObservableList<Child> value) {
-    _$childrenAtom.reportWrite(value, super.children, () {
-      super.children = value;
-    });
-  }
-
   late final _$refreshLoadingAtom = Atom(
     name: '_ChildController.refreshLoading',
     context: context,
@@ -72,24 +54,30 @@ mixin _$ChildController on _ChildController, Store {
     });
   }
 
-  late final _$refreshChildrenForCompanyAsyncAction = AsyncAction(
-    '_ChildController.refreshChildrenForCompany',
+  late final _$childrenAtom = Atom(
+    name: '_ChildController.children',
     context: context,
   );
 
   @override
-  Future<void> refreshChildrenForCompany(String? companyId) {
-    return _$refreshChildrenForCompanyAsyncAction.run(
-      () => super.refreshChildrenForCompany(companyId),
-    );
+  List<Child> get children {
+    _$childrenAtom.reportRead();
+    return super.children;
+  }
+
+  @override
+  set children(List<Child> value) {
+    _$childrenAtom.reportWrite(value, super.children, () {
+      super.children = value;
+    });
   }
 
   @override
   String toString() {
     return '''
 childFilter: ${childFilter},
-children: ${children},
 refreshLoading: ${refreshLoading},
+children: ${children},
 filteredChildren: ${filteredChildren}
     ''';
   }

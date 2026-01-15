@@ -22,6 +22,8 @@ class CompanyController extends BaseController {
     void Function(String message)? onError,
   }) async {
     try {
+      isLoading = true;
+      onLoading?.call(true);
       final result = await _companyService.getAllCompanies();
       _companies = result;
       onSuccess?.call(_companies);
@@ -31,7 +33,7 @@ class CompanyController extends BaseController {
       } else {
         error = e.toString();
       }
-      onError?.call(error!);
+      onError?.call(error ?? '');
     } finally {
       isLoading = false;
       onLoading?.call(false);
@@ -50,6 +52,10 @@ class CompanyController extends BaseController {
   }
 
   Company? getCompanyById(String id) {
-    return _companies.firstWhere((company) => company.id == id);
+    try {
+      return _companies.firstWhere((company) => company.id == id);
+    } catch (_) {
+      return null;
+    }
   }
 }

@@ -352,7 +352,7 @@ Future<bool?> _editChildPersonal(
 
   final updated = Child(
     responsibleUserIds: c.responsibleUserIds,
-    isActive: c.isActive,
+    checkedIn: c.checkedIn,
     userType: c.userType,
     name: res['name']?.toString() ?? c.name,
     email: res['email']?.toString() ?? c.email,
@@ -407,7 +407,7 @@ Future<bool?> _editChildAddress(
 
   final updated = Child(
     responsibleUserIds: c.responsibleUserIds,
-    isActive: c.isActive,
+    checkedIn: c.checkedIn,
     userType: c.userType,
     name: c.name,
     email: c.email,
