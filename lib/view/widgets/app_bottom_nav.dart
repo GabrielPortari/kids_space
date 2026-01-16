@@ -17,7 +17,7 @@ class _AppBottomNavState extends State<AppBottomNav> {
   static final List<Widget> _pages = <Widget>[
     const HomeScreen(),
     const UsersScreen(),
-    const ChildrensScreen(),
+    const ChildrensScreen(onlyActive: false),
   ];
 
   List<BottomNavigationBarItem> get _items => <BottomNavigationBarItem>[

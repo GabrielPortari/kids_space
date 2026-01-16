@@ -85,21 +85,21 @@ mixin _$AttendanceController on _AttendanceController, Store {
     });
   }
 
-  late final _$isLoadingLogAtom = Atom(
-    name: '_AttendanceController.isLoadingLog',
+  late final _$isLoadingLogsAtom = Atom(
+    name: '_AttendanceController.isLoadingLogs',
     context: context,
   );
 
   @override
-  bool get isLoadingLog {
-    _$isLoadingLogAtom.reportRead();
-    return super.isLoadingLog;
+  bool get isLoadingLogs {
+    _$isLoadingLogsAtom.reportRead();
+    return super.isLoadingLogs;
   }
 
   @override
-  set isLoadingLog(bool value) {
-    _$isLoadingLogAtom.reportWrite(value, super.isLoadingLog, () {
-      super.isLoadingLog = value;
+  set isLoadingLogs(bool value) {
+    _$isLoadingLogsAtom.reportWrite(value, super.isLoadingLogs, () {
+      super.isLoadingLogs = value;
     });
   }
 
@@ -221,7 +221,7 @@ isLoadingEvents: ${isLoadingEvents},
 events: ${events},
 isLoadingActiveCheckins: ${isLoadingActiveCheckins},
 activeCheckins: ${activeCheckins},
-isLoadingLog: ${isLoadingLog},
+isLoadingLogs: ${isLoadingLogs},
 logEvents: ${logEvents},
 lastCheckIn: ${lastCheckIn},
 lastCheckOut: ${lastCheckOut},

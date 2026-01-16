@@ -28,8 +28,36 @@ class ChildService extends BaseService {
     }
   }
 
-  Future<bool> addChild(Child child) async {
-    return true;
+  Future<bool> addChild(Child child, String? parentId) async {
+    try {
+      final payload = Map<String, dynamic>.from(child.toJson());
+      // remove nulls and empty strings (backend validates e-mail and other fields)
+      payload.removeWhere((k, v) => v == null || (v is String && v.trim().isEmpty));
+      // backend rejects certain properties on create
+      payload.remove('id');
+      payload.remove('createdAt');
+      payload.remove('updatedAt');
+      payload.remove('userType');
+      payload.remove('companyId');
+      payload.remove('responsibleUserIds');
+
+      // If no address fields were provided, signal backend to inherit address
+      final addressKeys = ['address', 'addressNumber', 'addressComplement', 'neighborhood', 'city', 'state', 'zipCode'];
+      final hasAddress = addressKeys.any((k) => payload.containsKey(k));
+      if (!hasAddress) payload['inheritAddress'] = true;
+
+      dev.log('ChildService.addChild payload: $payload');
+      // If parentId is expected as part of the route, send to /user/{parentId}/child
+      final response = await dio.post('/user/$parentId/child', data: payload);
+      dev.log('ChildService.addChild status=${response.statusCode} data=${response.data}');
+      return response.statusCode == 200 || response.statusCode == 201;
+    } on DioException catch (e) {
+      dev.log('ChildService.addChild DioException: ${e.response?.data ?? e.message}');
+      return false;
+    } catch (e, st) {
+      dev.log('ChildService.addChild error: $e', stackTrace: st);
+      return false;
+    }
   }
 
   Future<bool> updateChild(Child child) async {

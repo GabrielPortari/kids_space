@@ -103,6 +103,21 @@ abstract class _ChildController extends BaseController with Store {
     return await _childService.deleteChild(childId);
   }
 
+  /// Cria uma nova criança associada a um responsável (parentId).
+  /// Retorna true se sucesso.
+  Future<bool> createChild(String parentId, Child child) async {
+    try {
+      final success = await _childService.addChild(child, parentId);
+      if (success) {
+        // opcional: adicionar ao cache local para feedback imediato
+        children = [...children, child];
+      }
+      return success;
+    } catch (e) {
+      return false;
+    }
+  }
+
 	@observable
 	List<Child> children = [];
   // Busca crianças da empresa (delegando ao serviço)

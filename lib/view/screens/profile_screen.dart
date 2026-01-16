@@ -6,6 +6,7 @@ import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/base_model.dart';
 import 'package:kids_space/model/child.dart';
+import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
 import 'package:kids_space/view/widgets/profile_edit_helper.dart';
 import 'package:kids_space/model/base_user.dart';
 import 'package:kids_space/model/collaborator.dart';
@@ -136,7 +137,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _showEditChoice();
         },
         onAddChild: () {
-          // implementar ação de adicionar criança
+          _onAddChild();
         },
         onDelete: () async {
           await _confirmAndDelete();
@@ -382,5 +383,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Navigator.pushNamedAndRemoveUntil(context, '/company_selection', (route) => false);
   }
 
+  Future<void> _onAddChild() async {
+    final parent = widget.selectedUser;
+    if (parent == null) return;
+
+    // Step 1: get personal data
+    final personalFields = [
+      FieldDefinition(key: 'name', label: 'Nome', initialValue: null, required: true),
+      FieldDefinition(key: 'email', label: 'Email', type: FieldType.email, initialValue: null),
+      FieldDefinition(key: 'birthDate', label: 'Data de Nascimento', type: FieldType.date, initialValue: null),
+      FieldDefinition(key: 'phone', label: 'Telefone', type: FieldType.phone, initialValue: null),
+      FieldDefinition(key: 'document', label: 'Documento', initialValue: null),
+    ];
+
+    final personalRes = await showEditEntityBottomSheet(context: context, title: 'Cadastrar criança - Dados pessoais', fields: personalFields);
+    if (personalRes == null) return;
+
+    // Ask whether to inherit address
+    final inherit = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Endereço'),
+        content: const Text('Deseja herdar o endereço do responsável?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Sim')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Não')),
+        ],
+      ),
+    );
+    if (inherit == null) return;
+
+    Map<String, dynamic>? addressRes;
+    if (inherit == false) {
+      final addressFields = [
+        FieldDefinition(key: 'address', label: 'Endereço', initialValue: null),
+        FieldDefinition(key: 'addressNumber', label: 'Número', initialValue: null),
+        FieldDefinition(key: 'addressComplement', label: 'Complemento', initialValue: null),
+        FieldDefinition(key: 'neighborhood', label: 'Bairro', initialValue: ''),
+        FieldDefinition(key: 'city', label: 'Cidade', initialValue: null),
+        FieldDefinition(key: 'state', label: 'Estado', initialValue: null),
+        FieldDefinition(key: 'zipCode', label: 'CEP', initialValue: null),
+      ];
+      addressRes = await showEditEntityBottomSheet(context: context, title: 'Cadastrar criança - Endereço', fields: addressFields);
+      if (addressRes == null) return;
+    }
+
+    // Build Child model
+    final child = Child(
+      responsibleUserIds: [parent.id!],
+      checkedIn: false,
+      userType: UserType.user,
+      name: personalRes['name']?.toString(),
+      email: personalRes['email']?.toString(),
+      birthDate: personalRes['birthDate']?.toString(),
+      document: personalRes['document']?.toString(),
+      phone: personalRes['phone']?.toString(),
+      address: inherit ? null : addressRes?['address']?.toString(),
+      addressNumber: inherit ? null : addressRes?['addressNumber']?.toString(),
+      addressComplement: inherit ? null : addressRes?['addressComplement']?.toString(),
+      neighborhood: inherit ? null : addressRes?['neighborhood']?.toString(),
+      city: inherit ? null : addressRes?['city']?.toString(),
+      state: inherit ? null : addressRes?['state']?.toString(),
+      zipCode: inherit ? null : addressRes?['zipCode']?.toString(),
+      companyId: parent.companyId,
+      id: null,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    // Call controller to create
+    final success = await _childController.createChild(parent.id!, child);
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(success ? 'Sucesso' : 'Erro'),
+        content: Text(success ? 'Criança cadastrada com sucesso.' : 'Falha ao cadastrar criança.'),
+        actions: [TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('OK'))],
+      ),
+    );
+    if (success) Navigator.of(context).pop();
+  }
   
 }

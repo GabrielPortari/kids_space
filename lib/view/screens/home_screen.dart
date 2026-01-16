@@ -9,6 +9,7 @@ import 'package:kids_space/model/attendance.dart';
 import 'package:kids_space/util/date_hour_util.dart';
 import 'package:kids_space/util/localization_service.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
+import 'package:kids_space/view/screens/childrens_screen.dart';
 import 'package:kids_space/view/widgets/attendance_modal.dart';
 import 'package:kids_space/view/design_system/app_card.dart';
 import 'package:kids_space/view/design_system/app_button.dart';
@@ -266,8 +267,11 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           children: [
             GestureDetector(
-              onTap: () =>
-                  Navigator.of(context).pushNamed('/all_active_children'),
+              onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ChildrensScreen(onlyActive: true),
+                    ),
+                  ),
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

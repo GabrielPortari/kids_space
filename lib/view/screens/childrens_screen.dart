@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
+import 'package:kids_space/model/user.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
@@ -14,7 +15,8 @@ import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class ChildrensScreen extends StatefulWidget {
-  const ChildrensScreen({super.key});
+  final bool onlyActive;
+  const ChildrensScreen({super.key, this.onlyActive = false});
 
   @override
   State<ChildrensScreen> createState() => _ChildrensScreenState();
@@ -27,12 +29,19 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
 
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
+  List<Child> _allChildren = [];
+  List<Child> _filteredChildren = [];
+  late Map<String, List<User>> _childrenResponsibles;
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
-    _onRefresh();
+    if (widget.onlyActive) {
+      _loadActiveChildrenWithResponsibles();
+    } else {
+      _onRefresh();
+    }
   }
 
   @override
@@ -46,8 +55,21 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   void _onSearchChanged() {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
-      _childController.childFilter = _searchController.text.trim();
-      if (mounted) setState(() {});
+      final query = _searchController.text.trim();
+      if (widget.onlyActive) {
+        final q = query.toLowerCase();
+        setState(() {
+          _filteredChildren = _allChildren.where((child) {
+            final name = child.name?.toLowerCase() ?? '';
+            final responsibles = _childrenResponsibles[child.id] ?? [];
+            final responsibleName = responsibles.isNotEmpty ? responsibles.first.name?.toLowerCase() ?? '' : '';
+            return name.contains(q) || responsibleName.contains(q);
+          }).toList();
+        });
+      } else {
+        _childController.childFilter = query;
+        if (mounted) setState(() {});
+      }
     });
   }
 
@@ -56,13 +78,37 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
     await _childController.refreshChildrenForCompany(companyId);
   }
 
+  Future<void> _loadActiveChildrenWithResponsibles() async {
+    final companyId = _companyController.companySelected?.id;
+    if (companyId == null) {
+      setState(() {
+        _allChildren = [];
+        _filteredChildren = [];
+        _childrenResponsibles = {};
+      });
+      return;
+    }
+
+    await _childController.refreshChildrenForCompany(companyId);
+
+    final actives = _childController.activeCheckedInChildren(companyId);
+    actives.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
+    final respMap = _childController.getChildrenWithResponsibles(actives);
+
+    setState(() {
+      _allChildren = actives;
+      _filteredChildren = List.from(_allChildren);
+      _childrenResponsibles = respMap;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool showAppBar = Navigator.canPop(context);
     final double topSpacing = showAppBar ? 8.0 : 8 + MediaQuery.of(context).padding.top;
 
     return Scaffold(
-      appBar: showAppBar ? AppBar(title: const Text('Crianças'), leading: Navigator.canPop(context) ? const BackButton() : null,) : null,
+      appBar: showAppBar ? AppBar(title: Text(widget.onlyActive ? 'Crianças ativas' : 'Crianças'), leading: Navigator.canPop(context) ? const BackButton() : null,) : null,
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -111,6 +157,25 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   }
 
   Widget _childrenList() {
+    if (widget.onlyActive) {
+      return Expanded(
+        child: _allChildren.isEmpty
+            ? ListView(padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0), children: [
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24.0),
+                    child: Text(_searchController.text.isEmpty ? 'Nenhuma criança ativa' : 'Nenhuma criança encontrada', style: const TextStyle(color: Colors.grey, fontSize: 16)),
+                  ),
+                )
+              ])
+            : ListView.builder(
+                padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+                itemCount: _filteredChildren.length,
+                itemBuilder: (context, index) => _childTile(_filteredChildren[index]),
+              ),
+      );
+    }
+
     return Expanded(
       child: RefreshIndicator(
         onRefresh: () async => await _onRefresh(),

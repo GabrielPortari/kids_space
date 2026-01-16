@@ -71,17 +71,17 @@ abstract class _AttendanceController extends BaseController with Store {
 
   /// Load the last N attendances (default 10) and populate `logEvents`.
   @observable
-  bool isLoadingLog = false;
+  bool isLoadingLogs = false;
   @observable
   List<Attendance> logEvents = [];
   @action
   Future<void> loadLast10AttendancesForCompany(String companyId, {int limit = 10}) async {
-    isLoadingLog = true;
+    isLoadingLogs = true;
     try {
       final list = await _service.getLastAttendances(companyId, limit: limit);
       logEvents = list;
     } finally {
-      isLoadingLog = false;
+      isLoadingLogs = false;
     }
   }
 

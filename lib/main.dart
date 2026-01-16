@@ -8,7 +8,6 @@ import 'package:kids_space/util/getit_factory.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/screens/admin_panel_screen.dart';
-import 'package:kids_space/view/screens/all_active_children_screen.dart';
 import 'package:kids_space/view/screens/childrens_screen.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/view/screens/reports_screen.dart';
@@ -141,7 +140,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         '/childrens': (context) => const ChildrensScreen(),
         '/app_bottom_nav': (context) => const AppBottomNav(),
         '/profile': (context) => const ProfileScreen(),
-        '/all_active_children': (context) => const AllActiveChildrenScreen(),
         '/reports': (context) => const ReportsScreen(),
         '/admin_panel': (context) => const AdminPanelScreen(),
       },
