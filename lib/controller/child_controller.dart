@@ -123,7 +123,13 @@ abstract class _ChildController extends BaseController with Store {
   // Busca crianças da empresa (delegando ao serviço)
   Future<void> getChildrenByCompanyId(String? companyId) async {
     if (companyId == null) return;
-    children = await _childService.getChildrenByCompanyId(companyId);
+    refreshLoading = true;
+    try {
+      final list = await _childService.getChildrenByCompanyId(companyId);
+      children = list;
+    } finally {
+      refreshLoading = false;
+    }
   }
 
   /// Refresh children list for a company (keeps same behavior as getChildrenByCompanyId).

@@ -15,6 +15,7 @@ import 'package:kids_space/view/design_system/app_card.dart';
 import 'package:kids_space/view/design_system/app_button.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -47,11 +48,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _onRefresh() async {
     final companyId = _companyController.companySelected?.id ?? '';
-    _companyController.getCompanyById(companyId);
-    _childController.refreshChildrenForCompany(companyId);
-    _attendanceController.loadActiveCheckinsForCompany(companyId);
-    _attendanceController.loadLast10AttendancesForCompany(companyId);
-    _attendanceController.loadLastCheckinAndCheckoutForCompany(companyId);
+    // Ensure we await all parts so RefreshIndicator closes correctly
+    final futures = <Future>[];
+    // company update (non-async cache lookup) - try loading companies if empty
+    if (_companyController.companies.isEmpty) {
+      futures.add(_companyController.loadCompanies());
+    }
+    futures.add(_childController.refreshChildrenForCompany(companyId));
+    futures.add(_attendanceController.loadActiveCheckinsForCompany(companyId));
+    futures.add(
+      _attendanceController.loadLast10AttendancesForCompany(companyId),
+    );
+    futures.add(
+      _attendanceController.loadLastCheckinAndCheckoutForCompany(companyId),
+    );
+    await Future.wait(futures);
   }
 
   @override
@@ -113,62 +124,114 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _presenceLogCard(double listHeight) {
-    return Observer(builder: (_) {
+    return Observer(
+      builder: (_) {
+        final events = _attendanceController.logEvents;
+        final loading = _attendanceController.isLoadingLogs;
 
-      final events = _attendanceController.logEvents;
-      if (events.isEmpty) {
+        if (loading) {
+          return AppCard(
+            child: SizedBox(
+              height: listHeight,
+              child: ListView.builder(
+                padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+                itemCount: 6,
+                itemBuilder: (context, index) => Skeletonizer(
+                  enabled: true,
+                  child: Card(
+                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    child: SizedBox(
+                      height: 56,
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.grey.shade300,
+                        ),
+                        title: const SizedBox.shrink(),
+                        subtitle: const SizedBox.shrink(),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        if (events.isEmpty) {
+          return AppCard(
+            child: SizedBox(
+              height: listHeight,
+              child: Center(
+                child: TextBodyMedium(translate('home.no_presence_records')),
+              ),
+            ),
+          );
+        }
+
         return AppCard(
           child: SizedBox(
             height: listHeight,
-            child: Center(
-              child: TextBodyMedium(translate('home.no_presence_records')),
+            child: Scrollbar(
+              thumbVisibility: true,
+              controller: _logListController,
+              child: ListView.separated(
+                controller: _logListController,
+                itemCount: events.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (context, idx) {
+                  final event = events[idx];
+                  final isCheckin =
+                      event.attendanceType == AttendanceType.checkin;
+                  final child = _childController.getChildById(event.childId);
+                  final childName = child?.name ?? '';
+
+                  return ListTile(
+                    contentPadding: const EdgeInsets.fromLTRB(
+                      4.0,
+                      0.0,
+                      8.0,
+                      0.0,
+                    ),
+                    leading: CircleAvatar(
+                      radius: 20,
+                      backgroundColor: isCheckin ? successBg : dangerBg,
+                      child: Icon(
+                        isCheckin ? Icons.login : Icons.logout,
+                        color: isCheckin ? success : danger,
+                        size: 18,
+                      ),
+                    ),
+                    title: TextBodyMedium(
+                      childName,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: TextBodySmall(
+                      formatDate_ddMM_HHmm(
+                        event.checkinTime ?? event.checkoutTime,
+                      ),
+                    ),
+                    trailing: Chip(
+                      label: TextBodySmall(
+                        isCheckin
+                            ? translate('home.check_in')
+                            : translate('home.check_out'),
+                        style: TextStyle(
+                          color: isCheckin ? successBg : dangerBg,
+                        ),
+                      ),
+                      backgroundColor: isCheckin ? success : danger,
+                    ),
+                    onTap: () =>
+                        debugPrint('Tapped event idx=$idx id=${event.id}'),
+                  );
+                },
+              ),
             ),
           ),
         );
-      }
-
-      return AppCard(
-        child: SizedBox(
-          height: listHeight,
-          child: Scrollbar(
-            thumbVisibility: true,
-            controller: _logListController,
-            child: ListView.separated(
-              controller: _logListController,
-              itemCount: events.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (context, idx) {
-
-                final event = events[idx];
-                final isCheckin = event.attendanceType == AttendanceType.checkin;
-                final child = _childController.getChildById(event.childId);
-                final childName = child?.name ?? '';
-
-                return ListTile(
-                  contentPadding: const EdgeInsets.fromLTRB(4.0, 0.0, 8.0, 0.0),
-                  leading: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: isCheckin ? successBg : dangerBg,
-                    child: Icon(
-                      isCheckin ? Icons.login : Icons.logout,
-                      color: isCheckin ? success : danger,
-                      size: 18,
-                    ),
-                  ),
-                  title: TextBodyMedium(childName, overflow: TextOverflow.ellipsis),
-                  subtitle: TextBodySmall(formatDate_ddMM_HHmm(event.checkinTime ?? event.checkoutTime)),
-                  trailing: Chip(
-                    label: TextBodySmall(isCheckin ? translate('home.check_in') : translate('home.check_out'), style: TextStyle(color: isCheckin ? successBg : dangerBg)),
-                    backgroundColor: isCheckin ? success : danger,
-                  ),
-                  onTap: () => debugPrint('Tapped event idx=$idx id=${event.id}'),
-                );
-              },
-            ),
-          ),
-        ),
-      );
-    });
+      },
+    );
   }
 
   Widget _infoCompanyCard() {
@@ -185,52 +248,59 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
         },
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Observer(
-              builder: (_) {
-                final urlPhoto = _companyController.companySelected?.logoUrl;
-                return CircleAvatar(
-                  radius: 32,
-                  backgroundImage: urlPhoto != null
-                      ? NetworkImage(urlPhoto)
-                      : const AssetImage(
-                              'assets/images/company_logo_placeholder.png',
-                            )
-                            as ImageProvider,
-                );
-              },
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Observer(
-                    builder: (_) {
-                      final companyName =
-                          _companyController.companySelected?.fantasyName ??
-                          '-';
-                      return TextHeaderMedium(companyName);
-                    },
-                  ),
-                  const SizedBox(height: 2),
-                  Observer(
-                    builder: (_) {
-                      final collaboratorName = _collaboratorController.loggedCollaborator?.name ?? '-';
-                      return TextBodyMedium(
-                        translate('home.collaborator_name',
-                          namedArgs: {'name_placeholder': collaboratorName},
-                        ),
-                      );
-                    },
-                  ),
-                ],
+        child: Skeletonizer(
+          enabled:
+              _companyController.isLoading || _childController.refreshLoading,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Observer(
+                builder: (_) {
+                  final urlPhoto = _companyController.companySelected?.logoUrl;
+                  return CircleAvatar(
+                    radius: 32,
+                    backgroundImage: urlPhoto != null
+                        ? NetworkImage(urlPhoto)
+                        : const AssetImage(
+                                'assets/images/company_logo_placeholder.png',
+                              )
+                              as ImageProvider,
+                  );
+                },
               ),
-            ),
-          ],
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Observer(
+                      builder: (_) {
+                        final companyName =
+                            _companyController.companySelected?.fantasyName ??
+                            '-';
+                        return TextHeaderMedium(companyName);
+                      },
+                    ),
+                    const SizedBox(height: 2),
+                    Observer(
+                      builder: (_) {
+                        final collaboratorName =
+                            _collaboratorController.loggedCollaborator?.name ??
+                            '-';
+                        return TextBodyMedium(
+                          translate(
+                            'home.collaborator_name',
+                            namedArgs: {'name_placeholder': collaboratorName},
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -239,23 +309,37 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _checkInAndOutButtons() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          AppButton(
-            enabled: true,
-            text: translate('home.check_in'),
-            icon: const Icon(Icons.login_rounded, color: Colors.white),
-            onPressed: () =>
-              showAttendanceModal(context, AttendanceType.checkin),
-          ),
-          AppButton(
-            text: translate('home.check_out'),
-            icon: const Icon(Icons.logout_rounded, color: Colors.white),
-            onPressed: () =>
-                showAttendanceModal(context, AttendanceType.checkout),
-          ),
-        ],
+      child: Observer(
+        builder: (_) {
+          final loading =
+              _attendanceController.isLoadingActiveCheckins ||
+              _attendanceController.isLoadingLogs ||
+              _childController.refreshLoading ||
+              _companyController.isLoading;
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              AppButton(
+                enabled: !loading,
+                text: translate('home.check_in'),
+                icon: const Icon(Icons.login_rounded, color: Colors.white),
+                onPressed: loading
+                    ? null
+                    : () =>
+                          showAttendanceModal(context, AttendanceType.checkin),
+              ),
+              AppButton(
+                enabled: !loading,
+                text: translate('home.check_out'),
+                icon: const Icon(Icons.logout_rounded, color: Colors.white),
+                onPressed: loading
+                    ? null
+                    : () =>
+                          showAttendanceModal(context, AttendanceType.checkout),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -264,87 +348,118 @@ class _HomeScreenState extends State<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: AppCard(
-        child: Row(
-          children: [
-            GestureDetector(
-              onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const ChildrensScreen(onlyActive: true),
+        child: Observer(
+          builder: (_) {
+            final loading =
+                _attendanceController.isLoadingActiveCheckins ||
+                _childController.refreshLoading;
+            return Skeletonizer(
+              enabled: loading,
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const ChildrensScreen(onlyActive: true),
+                      ),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          TextTitle(translate('home.actives')),
+                          Observer(
+                            builder: (_) {
+                              final totalActives =
+                                  _attendanceController
+                                      .activeCheckins
+                                      ?.length ??
+                                  0;
+                              return TextHeaderLarge('$totalActives');
+                            },
+                          ),
+                          TextBodyMedium(translate('home.see_more')),
+                        ],
+                      ),
                     ),
                   ),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    TextTitle(translate('home.actives')),
-                    Observer(
+                  const SizedBox(width: 32),
+                  Expanded(
+                    child: Observer(
                       builder: (_) {
-                        final totalActives =
-                            _attendanceController.activeCheckins?.length ?? 0;
-                        return TextHeaderLarge('$totalActives');
+                        final lastCheckIn = _attendanceController.lastCheckIn;
+                        final lastCheckOut = _attendanceController.lastCheckOut;
+
+                        final lastChildCheckinName = _childController
+                            .getChildById(lastCheckIn?.childId)
+                            ?.name;
+                        final lastChildCheckinTime = formatDate_ddMM_HHmm(
+                          lastCheckIn?.checkinTime,
+                        );
+                        final lastChildCheckoutName = _childController
+                            .getChildById(lastCheckOut?.childId)
+                            ?.name;
+                        final lastChildCheckoutTime = formatDate_ddMM_HHmm(
+                          lastCheckOut?.checkoutTime,
+                        );
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.login, color: success, size: 20),
+                                const SizedBox(width: 6),
+                                TextHeaderSmall(
+                                  translate('home.last_check_in'),
+                                ),
+                              ],
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 32.0,
+                                top: 2.0,
+                              ),
+                              child: lastChildCheckinName != null
+                                  ? TextBodyMedium(
+                                      '$lastChildCheckinName - $lastChildCheckinTime',
+                                    )
+                                  : TextBodyMedium(
+                                      translate('home.no_checkins_registered'),
+                                    ),
+                            ),
+                            const Divider(height: 20),
+                            Row(
+                              children: [
+                                Icon(Icons.logout, color: danger, size: 20),
+                                const SizedBox(width: 6),
+                                TextHeaderSmall(
+                                  translate('home.last_check_out'),
+                                ),
+                              ],
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 32.0,
+                                top: 2.0,
+                              ),
+                              child: lastChildCheckoutName != null
+                                  ? TextBodyMedium(
+                                      '$lastChildCheckoutName - $lastChildCheckoutTime',
+                                    )
+                                  : TextBodyMedium(
+                                      translate('home.no_checkouts_registered'),
+                                    ),
+                            ),
+                          ],
+                        );
                       },
                     ),
-                    TextBodyMedium(translate('home.see_more')),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(width: 32),
-            Expanded(
-              child: Observer(
-                builder: (_) {
-                  final lastCheckIn = _attendanceController.lastCheckIn;
-                  final lastCheckOut = _attendanceController.lastCheckOut;
-
-                  final lastChildCheckinName = _childController.getChildById(lastCheckIn?.childId,)?.name;
-                  final lastChildCheckinTime = formatDate_ddMM_HHmm(lastCheckIn?.checkinTime);
-                  final lastChildCheckoutName = _childController.getChildById(lastCheckOut?.childId)?.name;
-                  final lastChildCheckoutTime = formatDate_ddMM_HHmm(lastCheckOut?.checkoutTime);
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.login, color: success, size: 20),
-                          const SizedBox(width: 6),
-                          TextHeaderSmall(translate('home.last_check_in')),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 32.0, top: 2.0),
-                        child: lastChildCheckinName != null
-                            ? TextBodyMedium(
-                                '$lastChildCheckinName - $lastChildCheckinTime',
-                              )
-                            : TextBodyMedium(
-                                translate('home.no_checkins_registered'),
-                              ),
-                      ),
-                      const Divider(height: 20),
-                      Row(
-                        children: [
-                          Icon(Icons.logout, color: danger, size: 20),
-                          const SizedBox(width: 6),
-                          TextHeaderSmall(translate('home.last_check_out')),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 32.0, top: 2.0),
-                        child: lastChildCheckoutName != null
-                            ? TextBodyMedium(
-                                '$lastChildCheckoutName - $lastChildCheckoutTime',
-                              )
-                            : TextBodyMedium(
-                                translate('home.no_checkouts_registered'),
-                              ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
