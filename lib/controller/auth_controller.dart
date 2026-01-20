@@ -50,6 +50,9 @@ class AuthController extends BaseController {
 
     await secureStorage.write(key: _kIdTokenKey, value: idToken);
     await secureStorage.write(key: _kRefreshTokenKey, value: refreshToken);
+    // Ensure ApiClient provides the new token for subsequent requests (e.g., fetching collaborator)
+    ApiClient().tokenProvider = () async => await secureStorage.read(key: _kIdTokenKey);
+    ApiClient().refreshToken = () async => await this.refreshToken();
 
     if (userId != null) {
       dev.log('AuthController.login -> fetching collaborator for userId', name: 'AuthController', error: {'userId': userId});
@@ -62,8 +65,6 @@ class AuthController extends BaseController {
     } else {
       dev.log('AuthController.login -> userId null in auth result', name: 'AuthController');
     }
-    ApiClient().tokenProvider = () async => await secureStorage.read(key: _kIdTokenKey);
-    ApiClient().refreshToken = () async => refreshToken;
 
     return true;
   }

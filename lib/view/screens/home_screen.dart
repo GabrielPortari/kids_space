@@ -54,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_companyController.companies.isEmpty) {
       futures.add(_companyController.loadCompanies());
     }
-    
+
     futures.add(_childController.refreshChildrenForCompany(companyId));
     if (companyId != null && companyId.isNotEmpty) {
       futures.add(_attendanceController.loadActiveCheckinsForCompany(companyId));
@@ -248,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
         child: Skeletonizer(
-          enabled: _companyController.isLoading || _childController.refreshLoading,
+          enabled: _companyController.isLoading && _childController.refreshLoading,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [

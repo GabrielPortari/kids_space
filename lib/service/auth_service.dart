@@ -66,5 +66,4 @@ class AuthService extends BaseService {
       return false;
     }
   }
-
 }

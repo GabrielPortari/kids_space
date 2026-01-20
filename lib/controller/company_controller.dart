@@ -6,7 +6,9 @@ import '../service/company_service.dart';
 import '../util/network_exceptions.dart';
 import 'base_controller.dart';
 
-class CompanyController extends BaseController {
+part 'company_controller.g.dart';
+class CompanyController = _CompanyControllerBase with _$CompanyController;
+abstract class _CompanyControllerBase extends BaseController with Store {
   final CompanyService _companyService = GetIt.I<CompanyService>();
 
   List<Company> _companies = [];
@@ -18,9 +20,9 @@ class CompanyController extends BaseController {
   List<Company> get companies => _companies;
   Company? get companySelected => _companySelected;
 
+
   @observable
   bool isLoading = false;
-  
   Future<void> loadCompanies({
     void Function(bool isLoading)? onLoading,
     void Function(List<Company> companies)? onSuccess,

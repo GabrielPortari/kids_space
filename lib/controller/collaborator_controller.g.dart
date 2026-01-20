@@ -184,6 +184,18 @@ mixin _$CollaboratorController on _CollaboratorController, Store {
     );
   }
 
+  late final _$createCollaboratorAsyncAction = AsyncAction(
+    '_CollaboratorController.createCollaborator',
+    context: context,
+  );
+
+  @override
+  Future<bool> createCollaborator(Collaborator collaborator) {
+    return _$createCollaboratorAsyncAction.run(
+      () => super.createCollaborator(collaborator),
+    );
+  }
+
   late final _$_CollaboratorControllerActionController = ActionController(
     name: '_CollaboratorController',
     context: context,

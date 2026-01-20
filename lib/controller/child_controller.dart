@@ -32,8 +32,6 @@ abstract class _ChildController extends BaseController with Store {
     }
   }
 
-  @observable
-  bool refreshLoading = false;
   // Retorna um mapa de childId para lista de responsáveis (User)
   Map<String, List<User>> getChildrenWithResponsibles(List<Child> children) {
     Map<String, List<User>> result = {};
@@ -117,6 +115,8 @@ abstract class _ChildController extends BaseController with Store {
     }
   }
 
+  @observable
+  bool refreshLoading = false;
 	@observable
 	List<Child> children = [];
   // Busca crianças da empresa (delegando ao serviço)
