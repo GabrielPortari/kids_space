@@ -6,9 +6,11 @@ import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/model/collaborator.dart';
+import 'package:kids_space/util/date_hour_util.dart';
 import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
+import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class CollaboratorsScreen extends StatefulWidget {
@@ -24,8 +26,6 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
 
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
-
-  bool _loading = false;
 
   @override
   void initState() {
@@ -90,7 +90,49 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _onAddCollaborator,
+        child: const Icon(Icons.add),
+      ),
     );
+  }
+
+  Future<void> _onAddCollaborator() async {
+    // Step 1: personal data
+    final dataFields = [
+      FieldDefinition(key: 'name', initialValue: null, label: 'Nome*', required: true),
+      FieldDefinition(key: 'birthDate', initialValue: null, label: 'Data de Nascimento', type: FieldType.date),
+      FieldDefinition(key: 'email', initialValue: null, label: 'Email*', type: FieldType.email, required: true),
+      FieldDefinition(key: 'phone', initialValue: null, label: 'Telefone', type: FieldType.phone),
+      FieldDefinition(key: 'document', initialValue: null, label: 'Documento*', type: FieldType.number, required: true),
+      FieldDefinition(key: 'address', initialValue: null, label: 'Endereço'),
+      FieldDefinition(key: 'addressNumber', initialValue: null, label: 'Número'),
+      FieldDefinition(key: 'addressComplement', initialValue: null, label: 'Complemento'),
+      FieldDefinition(key: 'neighborhood', initialValue: null, label: 'Bairro'),
+      FieldDefinition(key: 'city', initialValue: null, label: 'Cidade'),
+      FieldDefinition(key: 'state', initialValue: null, label: 'Estado'),
+      FieldDefinition(key: 'zipCode', initialValue: null, label: 'CEP'),
+    ];
+
+    final personalData = await showEditEntityBottomSheet(context: context, title: 'Dados pessoais', fields: dataFields);
+    if (personalData == null) return; // cancelled
+
+    final newCollaborator = Collaborator(
+      name: personalData['name']?.toString(),
+      email: personalData['email']?.toString(),
+      birthDate: personalData['birthDate']?.toString(),
+      document: personalData['document']?.toString(),
+      phone: personalData['phone']?.toString(),
+      address: formatDateToIsoString(personalData['address']?.toString() ?? ''),
+      addressNumber: personalData['addressNumber']?.toString(),
+      addressComplement: personalData['addressComplement']?.toString(),
+      neighborhood: personalData['neighborhood']?.toString(),
+      city: personalData['city']?.toString(),
+      state: personalData['state']?.toString(),
+      zipCode: personalData['zipCode']?.toString(),
+    );
+
+    _collaboratorController.createCollaborator(newCollaborator);
   }
 
   Widget _searchField() {
@@ -117,26 +159,27 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
     return Expanded(
       child: RefreshIndicator(
         onRefresh: () async => await _onRefresh(),
-        child: _loading
-            ? _buildSkeleton()
-            : Observer(builder: (_) {
-                final filtered = _collaboratorController.filteredCollaborators;
-                if (filtered.isEmpty) {
-                  return ListView(padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0), children: [
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 24.0),
-                        child: Text(_searchController.text.isEmpty ? 'Nenhum colaborador cadastrado' : 'Nenhum colaborador encontrado', style: const TextStyle(color: Colors.grey, fontSize: 16)),
-                      ),
-                    )
-                  ]);
-                }
-                return ListView.builder(
-                  padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-                  itemCount: filtered.length,
-                  itemBuilder: (context, index) => _tile(filtered[index]),
-                );
-              }),
+        child: Observer(builder: (_) {
+          if (_collaboratorController.refreshLoading) {
+            return _buildSkeleton();
+          }
+          final filtered = _collaboratorController.filteredCollaborators;
+          if (filtered.isEmpty) {
+            return ListView(padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0), children: [
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24.0),
+                  child: Text(_searchController.text.isEmpty ? 'Nenhum colaborador cadastrado' : 'Nenhum colaborador encontrado', style: const TextStyle(color: Colors.grey, fontSize: 16)),
+                ),
+              )
+            ]);
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+            itemCount: filtered.length,
+            itemBuilder: (context, index) => _tile(filtered[index]),
+          );
+        }),
       ),
     );
   }

@@ -20,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthController _authController = GetIt.I<AuthController>();
+  final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
   bool _loading = false;
 
   void _login() async {
@@ -29,9 +30,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final success = await _authController.login(email, password);
     setState(() => _loading = false);
     if (success) {
-      final collabController = GetIt.I<CollaboratorController>();
-      final logged = collabController.loggedCollaborator;
-      if (logged != null && logged.userType == UserType.admin) {
+      
+      final logged = _collaboratorController.loggedCollaborator;
+      if (logged != null && logged.userType == UserType.companyAdmin) {
         Navigator.pushNamedAndRemoveUntil(context, '/admin_panel', (route) => false);
       } else {
         Navigator.pushNamedAndRemoveUntil(context, '/app_bottom_nav', (route) => false);

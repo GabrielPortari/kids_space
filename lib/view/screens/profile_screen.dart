@@ -67,7 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (widget.selectedUser != null) {
       return SelectedProfileType.user;
     } else if (widget.selectedCollaborator != null) {
-      return widget.selectedCollaborator!.userType == UserType.admin ? 
+      return widget.selectedCollaborator!.userType == UserType.companyAdmin ? 
       SelectedProfileType.admin : SelectedProfileType.collaborator;
     } else if (widget.selectedCompany != null) {
       return SelectedProfileType.company;
@@ -94,16 +94,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final loggedCollaborator = _collaboratorController.loggedCollaborator;
     final loggedUserType = loggedCollaborator?.userType;
 
-    final bool canEdit = (loggedUserType == UserType.admin && selectedProfileType != null && selectedProfileType != SelectedProfileType.company) ||
+    final bool canEdit = (loggedUserType == UserType.companyAdmin && selectedProfileType != null && selectedProfileType != SelectedProfileType.company) ||
         (loggedUserType == UserType.collaborator && (selectedProfileType == SelectedProfileType.user || selectedProfileType == SelectedProfileType.child));
 
-    final bool canAddChild = (loggedUserType == UserType.admin || loggedUserType == UserType.collaborator) &&
+    final bool canAddChild = (loggedUserType == UserType.companyAdmin || loggedUserType == UserType.collaborator) &&
         (selectedProfileType != null && selectedProfileType == SelectedProfileType.user);
 
     final bool canLogout = (loggedUserType == UserType.collaborator) &&
         (selectedProfileType != null && widget.selectedCollaborator?.id == loggedCollaborator?.id);
 
-    final bool canDelete = (loggedUserType == UserType.admin) &&
+    final bool canDelete = (loggedUserType == UserType.companyAdmin) &&
         (selectedProfileType != null && selectedProfileType != SelectedProfileType.company && selectedProfileType != SelectedProfileType.admin);
         debugPrint('Can delete: $canDelete - $selectedProfileType - Logged type: $loggedUserType - Selected id: ${widget.selectedChild?.id} - Logged id: ${loggedCollaborator?.id}');
     
@@ -180,7 +180,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                         userTypeLabel: widget.selectedUser != null ? 'Usuário' : 
                           widget.selectedCompany != null ? 'Empresa' : 
-                          widget.selectedCollaborator != null ? (widget.selectedCollaborator?.userType == UserType.admin ? 'Administrador' : 'Colaborador') : 
+                          widget.selectedCollaborator != null ? (widget.selectedCollaborator?.userType == UserType.companyAdmin ? 'Administrador' : 'Colaborador') : 
                           widget.selectedChild != null ? 'Criança' : 'user_type_placeholder',
 
                         id: selectedProfileType == SelectedProfileType.user ? widget.selectedUser?.id : 

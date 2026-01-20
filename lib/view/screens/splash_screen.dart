@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
+import 'package:kids_space/model/base_user.dart';
 import '../../controller/auth_controller.dart';
 import '../../controller/company_controller.dart';
 
@@ -48,7 +49,6 @@ class _SplashScreenState extends State<SplashScreen> {
       );
       return;
     }
-
     await _checkLoggedUser();
   }
 
@@ -99,7 +99,9 @@ class _SplashScreenState extends State<SplashScreen> {
         if (company != null) {
           _companyController.selectCompany(company);
           if (!mounted) return;
-          Navigator.pushReplacementNamed(context, '/app_bottom_nav');
+          loggedCollaborator.userType == UserType.companyAdmin ? 
+          Navigator.pushReplacementNamed(context, '/admin_panel')
+          : Navigator.pushReplacementNamed(context, '/app_bottom_nav');
           return;
         }
       }

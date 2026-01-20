@@ -134,4 +134,10 @@ abstract class _CollaboratorController extends BaseController with Store {
       return null;
     }
   }
+
+  @action
+  Future<bool> createCollaborator(Collaborator collaborator) async {
+    final success = await _collaboratorService.createCollaborator(collaborator);
+    return success;
+  }
 }

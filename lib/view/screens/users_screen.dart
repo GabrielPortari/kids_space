@@ -57,18 +57,18 @@ class _UsersScreenState extends State<UsersScreen> {
   Future<void> _onAddUser() async {
     // Step 1: personal data
     final dataFields = [
-      FieldDefinition(key: 'name', label: 'Nome*', required: true),
-      FieldDefinition(key: 'birthDate', label: 'Data de Nascimento', type: FieldType.date),
-      FieldDefinition(key: 'email', label: 'Email', type: FieldType.email),
-      FieldDefinition(key: 'phone', label: 'Telefone*', type: FieldType.phone, required: true),
-      FieldDefinition(key: 'document', label: 'Documento*', type: FieldType.number, required: true),
-      FieldDefinition(key: 'address', label: 'Endereço'),
-      FieldDefinition(key: 'addressNumber', label: 'Número'),
-      FieldDefinition(key: 'addressComplement', label: 'Complemento'),
-      FieldDefinition(key: 'neighborhood', label: 'Bairro'),
-      FieldDefinition(key: 'city', label: 'Cidade'),
-      FieldDefinition(key: 'state', label: 'Estado'),
-      FieldDefinition(key: 'zipCode', label: 'CEP'),
+      FieldDefinition(key: 'name', initialValue: null, label: 'Nome*', required: true),
+      FieldDefinition(key: 'birthDate', initialValue: null, label: 'Data de Nascimento', type: FieldType.date),
+      FieldDefinition(key: 'email', initialValue: null, label: 'Email', type: FieldType.email),
+      FieldDefinition(key: 'phone', initialValue: null, label: 'Telefone*', type: FieldType.phone, required: true),
+      FieldDefinition(key: 'document', initialValue: null, label: 'Documento*', type: FieldType.number, required: true),
+      FieldDefinition(key: 'address', initialValue: null, label: 'Endereço'),
+      FieldDefinition(key: 'addressNumber', initialValue: null, label: 'Número'),
+      FieldDefinition(key: 'addressComplement', initialValue: null, label: 'Complemento'),
+      FieldDefinition(key: 'neighborhood', initialValue: null, label: 'Bairro'),
+      FieldDefinition(key: 'city', initialValue: null, label: 'Cidade'),
+      FieldDefinition(key: 'state', initialValue: null, label: 'Estado'),
+      FieldDefinition(key: 'zipCode', initialValue: null, label: 'CEP'),
     ];
 
     final personalData = await showEditEntityBottomSheet(context: context, title: 'Dados pessoais', fields: dataFields);

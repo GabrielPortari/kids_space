@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:mobx/mobx.dart';
 
 import '../model/company.dart';
 import '../service/company_service.dart';
@@ -9,13 +10,17 @@ class CompanyController extends BaseController {
   final CompanyService _companyService = GetIt.I<CompanyService>();
 
   List<Company> _companies = [];
-  bool isLoading = false;
+
+
   String? error;
   Company? _companySelected;
 
   List<Company> get companies => _companies;
   Company? get companySelected => _companySelected;
 
+  @observable
+  bool isLoading = false;
+  
   Future<void> loadCompanies({
     void Function(bool isLoading)? onLoading,
     void Function(List<Company> companies)? onSuccess,

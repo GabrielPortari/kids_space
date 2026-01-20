@@ -47,21 +47,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _onRefresh() async {
-    final companyId = _companyController.companySelected?.id ?? '';
-    // Ensure we await all parts so RefreshIndicator closes correctly
+
+    final String? companyId = _companyController.companySelected?.id;
+
     final futures = <Future>[];
-    // company update (non-async cache lookup) - try loading companies if empty
     if (_companyController.companies.isEmpty) {
       futures.add(_companyController.loadCompanies());
     }
+    
     futures.add(_childController.refreshChildrenForCompany(companyId));
-    futures.add(_attendanceController.loadActiveCheckinsForCompany(companyId));
-    futures.add(
-      _attendanceController.loadLast10AttendancesForCompany(companyId),
-    );
-    futures.add(
-      _attendanceController.loadLastCheckinAndCheckoutForCompany(companyId),
-    );
+    if (companyId != null && companyId.isNotEmpty) {
+      futures.add(_attendanceController.loadActiveCheckinsForCompany(companyId));
+      futures.add(_attendanceController.loadLast10AttendancesForCompany(companyId));
+      futures.add(_attendanceController.loadLastCheckinAndCheckoutForCompany(companyId));
+    }
     await Future.wait(futures);
   }
 
@@ -249,8 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
         child: Skeletonizer(
-          enabled:
-              _companyController.isLoading || _childController.refreshLoading,
+          enabled: _companyController.isLoading || _childController.refreshLoading,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [

@@ -4,7 +4,7 @@ enum UserType {
   child,
   user,
   collaborator,
-  admin
+  companyAdmin
 }
 
 class BaseUser extends BaseModel{
@@ -75,7 +75,7 @@ class BaseUser extends BaseModel{
     if (raw != null) {
       final rawStr = raw.toString();
       try {
-        // support formats like 'UserType.admin' or 'admin' or 'Admin'
+        // support formats like 'UserType.companyAdmin' or 'admin' or 'Admin'
         final candidate = rawStr.contains('.') ? rawStr.split('.').last.toLowerCase() : rawStr.toLowerCase();
         for (final e in UserType.values) {
           if (e.toString().split('.').last.toLowerCase() == candidate) {

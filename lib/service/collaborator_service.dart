@@ -137,5 +137,29 @@ class CollaboratorService extends BaseService {
       return false;
     }
   }
-}
 
+  Future<bool> createCollaborator(Collaborator collaborator) async {
+    try {
+      final payload = Map<String, dynamic>.from(collaborator.toJson());
+      // remove nulls
+      payload.removeWhere((k, v) => v == null || (v is String && v.trim().isEmpty));
+      // backend rejects certain properties on create
+      payload.remove('id');
+      payload.remove('createdAt');
+      payload.remove('updatedAt');
+      payload.remove('userType');
+      payload.remove('companyId');
+
+      developer.log('createCollaborator payload=$payload', name: 'CollaboratorService');
+      
+      final response = await dio.post('/collaborator/register', data: payload);
+      return response.statusCode == 200 || response.statusCode == 201;
+    } on DioException catch (e) {
+      developer.log('CollaboratorService.createCollaborator DioException: ${e.response?.data ?? e.message}', name: 'CollaboratorService');
+      return false;
+    } catch (e, st) {
+      developer.log('CollaboratorService.createCollaborator error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
+      return false;
+    }
+  }
+}
