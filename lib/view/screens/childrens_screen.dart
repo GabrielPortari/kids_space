@@ -31,7 +31,7 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   Timer? _debounce;
   List<Child> _allChildren = [];
   List<Child> _filteredChildren = [];
-  late Map<String, List<User>> _childrenResponsibles;
+  Map<String, List<User>> _childrenResponsibles = {};
 
   @override
   void initState() {
@@ -159,20 +159,49 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   Widget _childrenList() {
     if (widget.onlyActive) {
       return Expanded(
-        child: _allChildren.isEmpty
-            ? ListView(padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0), children: [
+        child: RefreshIndicator(
+          onRefresh: () async => await _loadActiveChildrenWithResponsibles(),
+          child: Observer(builder: (_) {
+            if (_childController.refreshLoading) {
+              return ListView.builder(
+                padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+                itemCount: 6,
+                itemBuilder: (context, index) {
+                  return Skeletonizer(
+                    enabled: true,
+                    child: Card(
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      child: Center(
+                        child: ListTile(
+                          leading: CircleAvatar(radius: 20, backgroundColor: Colors.grey.shade300),
+                          title: const SizedBox.shrink(),
+                          subtitle: const SizedBox.shrink(),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              );
+            }
+
+            if (_allChildren.isEmpty) {
+              return ListView(padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0), children: [
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 24.0),
                     child: Text(_searchController.text.isEmpty ? 'Nenhuma criança ativa' : 'Nenhuma criança encontrada', style: const TextStyle(color: Colors.grey, fontSize: 16)),
                   ),
                 )
-              ])
-            : ListView.builder(
-                padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-                itemCount: _filteredChildren.length,
-                itemBuilder: (context, index) => _childTile(_filteredChildren[index]),
-              ),
+              ]);
+            }
+
+            return ListView.builder(
+              padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+              itemCount: _filteredChildren.length,
+              itemBuilder: (context, index) => _childTile(_filteredChildren[index]),
+            );
+          }),
+        ),
       );
     }
 
