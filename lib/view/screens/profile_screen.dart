@@ -11,6 +11,7 @@ import 'package:kids_space/view/widgets/profile_edit_helper.dart';
 import 'package:kids_space/model/base_user.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/model/company.dart';
+import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/model/user.dart';
 import 'package:kids_space/view/widgets/profile_picture_section.dart';
 import 'package:kids_space/view/widgets/profile_header_section.dart';
@@ -19,6 +20,8 @@ import 'package:kids_space/view/widgets/profile_children_card_section.dart';
 import 'package:kids_space/view/widgets/profile_app_bar.dart';
 import 'package:kids_space/util/date_hour_util.dart';
 import 'package:kids_space/view/widgets/profile_responsibles_card_section.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+import 'profile_sections.dart';
 
 enum SelectedProfileType {
   child,
@@ -62,6 +65,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final UserController _userController = GetIt.I<UserController>();
   final ChildController _childController = GetIt.I<ChildController>();
   final AuthController _authController = GetIt.I<AuthController>();
+  final CompanyController _companyController = GetIt.I<CompanyController>();
+
+  Company? _company;
+  bool _isLoading = false;
+  // fetched entities when opening profile
+  User? _fetchedUser;
+  Collaborator? _fetchedCollaborator;
+  Child? _fetchedChild;
 
   SelectedProfileType? get selectedProfileType {
     if (widget.selectedUser != null) {
@@ -77,6 +88,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return null;
   }
 
+  Company? get _effectiveCompany => _company ?? widget.selectedCompany;
+
+  @override
+  void initState() {
+    super.initState();
+    // If any entity is provided, attempt to refresh it from API and show skeleton while loading
+    if (widget.selectedCompany != null && widget.selectedCompany!.id != null) {
+      _company = widget.selectedCompany;
+      setState(() { _isLoading = true; });
+      _companyController.fetchCompanyById(widget.selectedCompany!.id!).then((fetched) {
+        if (fetched != null && mounted) {
+          setState(() { _company = fetched; });
+        }
+      }).whenComplete(() { if (mounted) setState(() { _isLoading = false; }); });
+      return;
+    }
+
+    if (widget.selectedUser != null && widget.selectedUser!.id != null) {
+      _fetchedUser = widget.selectedUser;
+      setState(() { _isLoading = true; });
+      _userController.fetchUserById(widget.selectedUser!.id!).then((fetched) {
+        if (fetched != null && mounted) {
+          setState(() { _fetchedUser = fetched; });
+        }
+      }).whenComplete(() { if (mounted) setState(() { _isLoading = false; }); });
+      return;
+    }
+
+    if (widget.selectedCollaborator != null && widget.selectedCollaborator!.id != null) {
+      _fetchedCollaborator = widget.selectedCollaborator;
+      setState(() { _isLoading = true; });
+      _collaboratorController.getCollaboratorById(widget.selectedCollaborator!.id!).then((fetched) {
+        if (fetched != null && mounted) {
+          setState(() { _fetchedCollaborator = fetched; });
+        }
+      }).whenComplete(() { if (mounted) setState(() { _isLoading = false; }); });
+      return;
+    }
+
+    if (widget.selectedChild != null && widget.selectedChild!.id != null) {
+      _fetchedChild = widget.selectedChild;
+      setState(() { _isLoading = true; });
+      _childController.fetchChildById(widget.selectedChild!.id!).then((fetched) {
+        if (fetched != null && mounted) {
+          setState(() { _fetchedChild = fetched; });
+        }
+      }).whenComplete(() { if (mounted) setState(() { _isLoading = false; }); });
+      return;
+    }
+  }
+
   _AppBarConfig _computeAppBarConfig() {
     String title = 'Perfil';
     if (selectedProfileType != null) {
@@ -85,7 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       } else if (selectedProfileType == SelectedProfileType.collaborator || selectedProfileType == SelectedProfileType.admin) {
         title = 'Perfil de ${widget.selectedCollaborator?.name ?? 'collaborator_placeholder'}';
       } else if (selectedProfileType == SelectedProfileType.company) {
-        title = 'Perfil de ${widget.selectedCompany?.fantasyName ?? widget.selectedCompany?.corporateName ?? 'company_placeholder'}';
+        title = 'Perfil de ${_effectiveCompany?.fantasyName ?? _effectiveCompany?.corporateName ?? 'company_placeholder'}';
       } else if (selectedProfileType == SelectedProfileType.child) {
         title = 'Perfil de ${widget.selectedChild?.name ?? 'child_placeholder'}';
       }
@@ -155,49 +217,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 16),
-                      // Profile picture
-                      ProfilePictureSection(
-                        name: widget.selectedUser?.name ?? 
-                        widget.selectedCollaborator?.name ?? 
-                        widget.selectedCompany?.fantasyName ??
-                        widget.selectedChild?.name ?? '?',
-                        onAddPhoto: () {
-                          debugPrint('DebuggerLog: UserProfileScreen.addPhoto tapped');
-                          // TODO: Implementar ação para adicionar foto
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      // Header
-                      ProfileHeaderSection(
-                        name: widget.selectedChild?.name ?? 
-                        widget.selectedUser?.name ?? 
-                        widget.selectedCollaborator?.name ?? 
-                        widget.selectedCompany?.fantasyName ?? 'name_placeholder',
-
-                        userTypeLabel: widget.selectedUser != null ? 'Usuário' : 
-                          widget.selectedCompany != null ? 'Empresa' : 
-                          widget.selectedCollaborator != null ? (widget.selectedCollaborator?.userType == UserType.companyAdmin ? 'Administrador' : 'Colaborador') : 
-                          widget.selectedChild != null ? 'Criança' : 'user_type_placeholder',
-
-                        id: selectedProfileType == SelectedProfileType.user ? widget.selectedUser?.id : 
-                        (selectedProfileType == SelectedProfileType.collaborator || selectedProfileType == SelectedProfileType.admin) ? widget.selectedCollaborator?.id :
-                        (selectedProfileType == SelectedProfileType.child) ? widget.selectedChild?.id : 
-                        (selectedProfileType == SelectedProfileType.company) ? widget.selectedCompany?.id : 'user_id_placeholder',
-                      
-                      ),
-                      const SizedBox(height: 16),
-                      ProfileInfoCardSection(title: 'Dados pessoais', entries: profileEntries),
-                      const SizedBox(height: 16),
-                      ProfileInfoCardSection(title: 'Endereço', entries: addressEntries),
-                      const SizedBox(height: 16),
-                      if (selectedProfileType == SelectedProfileType.user) ProfileChildrenCardSection(user: widget.selectedUser),
-                      if (selectedProfileType == SelectedProfileType.child) ProfileResponsiblesCardSection(child: widget.selectedChild),
-                    ],
-                  ),
+                  child: _isLoading
+                      ? _buildSkeleton()
+                      : ProfileContent(
+                          selectedUser: _fetchedUser ?? widget.selectedUser,
+                          selectedCollaborator: _fetchedCollaborator ?? widget.selectedCollaborator,
+                          selectedCompany: _effectiveCompany,
+                          selectedChild: _fetchedChild ?? widget.selectedChild,
+                        ),
                 ),
               ),
             ),
@@ -254,6 +281,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (success) Navigator.pop(context);
   }
 
+  Widget _buildSkeleton() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const SizedBox(height: 16),
+        Skeletonizer(
+          enabled: true,
+          child: CircleAvatar(radius: 48, backgroundColor: Colors.grey.shade300),
+        ),
+        const SizedBox(height: 16),
+        Skeletonizer(
+          enabled: true,
+          child: Container(height: 24, width: 220, color: Colors.grey.shade300),
+        ),
+        const SizedBox(height: 16),
+        Skeletonizer(
+          enabled: true,
+          child: Card(margin: const EdgeInsets.symmetric(vertical: 8), child: SizedBox(height: 120)),
+        ),
+        Skeletonizer(
+          enabled: true,
+          child: Card(margin: const EdgeInsets.symmetric(vertical: 8), child: SizedBox(height: 120)),
+        ),
+        Skeletonizer(
+          enabled: true,
+          child: Card(margin: const EdgeInsets.symmetric(vertical: 8), child: SizedBox(height: 80)),
+        ),
+      ],
+    );
+  }
+
   Map<String, String> _getProfileData() {
     if (selectedProfileType == SelectedProfileType.user && widget.selectedUser != null) {
       final u = widget.selectedUser!;
@@ -275,8 +333,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'Telefone': c.phone ?? '-',
         'Documento': c.document ?? '-',
       };
-    } else if (selectedProfileType == SelectedProfileType.company && widget.selectedCompany != null) {
-      final co = widget.selectedCompany!;
+    } else if (selectedProfileType == SelectedProfileType.company && _effectiveCompany != null) {
+      final co = _effectiveCompany!;
       return {
         'Nome fantasia': co.fantasyName ?? '-',
         'Razão social': co.corporateName ?? '-',
@@ -284,9 +342,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'Site': co.website ?? '-',
         'Responsável': co.responsible?.name ?? '-',
         'Logo (URL)': co.logoUrl ?? '-',
-        'Colaboradores': (co.collaborators?.length ?? 0).toString(),
-        'Usuários': (co.users?.length ?? 0).toString(),
-        'Crianças': (co.children?.length ?? 0).toString(),
+        'Colaboradores': (co.collaborators ?? 0).toString(),
+        'Usuários': (co.users ?? 0).toString(),
+        'Crianças': (co.children ?? 0).toString(),
       };
     } else if (selectedProfileType == SelectedProfileType.child && widget.selectedChild != null) {
       final ch = widget.selectedChild!;
@@ -326,8 +384,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'Estado': c.state ?? '-',
         'CEP': c.zipCode ?? '-',
       };
-    } else if (selectedProfileType == SelectedProfileType.company && widget.selectedCompany != null) {
-      final co = widget.selectedCompany!;
+    } else if (selectedProfileType == SelectedProfileType.company && _effectiveCompany != null) {
+      final co = _effectiveCompany!;
       return {
         'Endereço': co.address ?? '-',
         'Número': co.addressNumber ?? '-',
@@ -452,7 +510,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     // Call controller to create
-    final success = await _childController.createChild(parent.id!, child);
+    final success = await _childController.registerChild(parent.id!, child);
     await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(

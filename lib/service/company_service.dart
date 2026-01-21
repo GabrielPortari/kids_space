@@ -14,4 +14,14 @@ class CompanyService extends BaseService {
       rethrow;
     }
   }
+
+  Future<Company> getCompanyById(String id) async {
+    try{
+      final response = await dio.get('/company/$id');
+      dev.log('Fetched company with id: $id', name: 'CompanyService');
+      return Company.fromJson(response.data);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

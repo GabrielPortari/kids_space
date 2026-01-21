@@ -1,8 +1,5 @@
 import 'package:kids_space/model/base_model.dart';
 import 'package:kids_space/model/base_user.dart';
-import 'package:kids_space/model/child.dart';
-import 'package:kids_space/model/collaborator.dart';
-import 'package:kids_space/model/user.dart';
 
 class Company extends BaseModel{
 
@@ -21,9 +18,9 @@ class Company extends BaseModel{
   final String? zipCode;
   final BaseUser? responsible;
   final String? logoUrl;
-  final List<Collaborator>? collaborators;
-  final List<User>? users;
-  final List<Child>? children;
+  final int? collaborators;
+  final int? users;
+  final int? children;
 
   Company({
     required super.createdAt, 
@@ -37,7 +34,7 @@ class Company extends BaseModel{
     this.addressNumber, 
     this.addressComplement, 
     this.neighborhood,
-     this.city, 
+    this.city, 
     this.state, 
     this.zipCode, 
     this.responsible, 
@@ -65,9 +62,9 @@ class Company extends BaseModel{
     base['zipCode'] = zipCode;
     base['logoUrl'] = logoUrl;
     base['responsible'] = responsible?.toJson();
-    base['collaborators'] = collaborators?.map((e) => e.toJson()).toList();
-    base['users'] = users?.map((e) => e.toJson()).toList();
-    base['children'] = children?.map((e) => e.toJson()).toList();
+    base['collaborators'] = collaborators;
+    base['users'] = users;
+    base['children'] = children;
     return base;
   }
 
@@ -91,15 +88,9 @@ class Company extends BaseModel{
       zipCode: json['zipCode'] as String?,
       logoUrl: json['logoUrl'] as String?,
       responsible: json['responsible'] != null ? BaseUser.fromJson(Map<String, dynamic>.from(json['responsible'])) : null,
-      collaborators: json['collaborators'] != null
-          ? (json['collaborators'] as List).map((e) => Collaborator.fromJson(Map<String, dynamic>.from(e))).toList()
-          : null,
-      users: json['users'] != null
-          ? (json['users'] as List).map((e) => User.fromJson(Map<String, dynamic>.from(e))).toList()
-          : null,
-      children: json['children'] != null
-          ? (json['children'] as List).map((e) => Child.fromJson(Map<String, dynamic>.from(e))).toList()
-          : null,
+      collaborators: json['collaborators'] as int?,
+      users: json['users'] as int?,
+      children: json['children'] as int?,
     );
   }
 }

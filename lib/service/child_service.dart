@@ -28,7 +28,7 @@ class ChildService extends BaseService {
     }
   }
 
-  Future<bool> addChild(Child child, String? parentId) async {
+  Future<bool> registerChild(Child child, String? parentId) async {
     try {
       final payload = Map<String, dynamic>.from(child.toJson());
       // remove nulls and empty strings (backend validates e-mail and other fields)

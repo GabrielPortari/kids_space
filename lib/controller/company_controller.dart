@@ -13,13 +13,13 @@ abstract class _CompanyControllerBase extends BaseController with Store {
 
   List<Company> _companies = [];
 
-
   String? error;
+
   Company? _companySelected;
 
   List<Company> get companies => _companies;
-  Company? get companySelected => _companySelected;
 
+  Company? get companySelected => _companySelected;
 
   @observable
   bool isLoading = false;
@@ -58,10 +58,35 @@ abstract class _CompanyControllerBase extends BaseController with Store {
     _companySelected = company;
   }
 
+  /// Synchronous lookup from cached list. Returns null if not found or id empty.
   Company? getCompanyById(String id) {
+    if (id.isEmpty) return null;
     try {
-      return _companies.firstWhere((company) => company.id == id);
+      return _companies.firstWhere((c) => c.id == id);
     } catch (_) {
+      return null;
+    }
+  }
+
+  /// Fetch company from API and update cache. Returns the fetched company or null on error.
+  Future<Company?> fetchCompanyById(String id) async {
+    if (id.isEmpty) return null;
+    try {
+      final result = await _companyService.getCompanyById(id);
+      // update or add to cache
+      final idx = _companies.indexWhere((c) => c.id == result.id);
+      if (idx >= 0) {
+        _companies[idx] = result;
+      } else {
+        _companies.add(result);
+      }
+      return result;
+    } catch (e) {
+      if (e is NetworkException) {
+        error = e.message;
+      } else {
+        error = e.toString();
+      }
       return null;
     }
   }

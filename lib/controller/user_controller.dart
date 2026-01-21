@@ -65,9 +65,15 @@ abstract class _UserController extends BaseController with Store {
 		}
 		final token = await getIdToken();
 		final list = await _userService.getUsersByCompanyId(companyId, token: token);
+		// deduplicate by id (preserve last occurrence)
+		final Map<String, User> byId = {};
+		for (final u in list) {
+			if (u.id != null) byId[u.id!] = u;
+		}
+		final unique = byId.values.toList();
 		users
 			..clear()
-			..addAll(list);
+			..addAll(unique);
     refreshLoading = false;
 	}
 
@@ -76,7 +82,41 @@ abstract class _UserController extends BaseController with Store {
 		try {
 			return users.firstWhere((u) => u.id == id);
 			} catch (_) {
-				return _userService.getUserById(id);
+				// try synchronous service cache or trigger async fetch
+				// if service provides synchronous lookup it will return a User, otherwise return null
+				try {
+					final maybe = _userService.getUserById(id);
+					if (maybe != null) return maybe;
+				} catch (_) {}
+				// trigger background fetch for later
+				fetchUserById(id);
+				return null;
+		}
+	}
+
+	/// Async fetch by id that queries service and updates local cache.
+	Future<User?> fetchUserById(String id) async {
+		try {
+			final fetched = await _userService.fetchUserById(id);
+			if (fetched != null) {
+				final idx = users.indexWhere((u) => u.id == fetched.id);
+				if (idx >= 0) {
+					users[idx] = fetched;
+				} else {
+					users.add(fetched);
+				}
+				// ensure uniqueness by id (preserve ObservableList identity)
+				final Map<String, User> uniq = {};
+				for (final u in users) {
+					if (u.id != null) uniq[u.id!] = u;
+				}
+				users
+					..clear()
+					..addAll(uniq.values);
+			}
+			return fetched;
+		} catch (e) {
+			return null;
 		}
 	}
 

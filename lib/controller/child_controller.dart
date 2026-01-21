@@ -40,9 +40,10 @@ abstract class _ChildController extends BaseController with Store {
       if(responsibleIds != null){
         for(final id in responsibleIds) {
           for(final user in _userController.users) {
-            // lógica para associar usuários às crianças
-            user.id == id;
-            result.putIfAbsent(child.id!, () => []).add(user);
+            // associate only matching users
+            if (user.id == id) {
+              result.putIfAbsent(child.id!, () => []).add(user);
+            }
           }
         }
       }
@@ -76,10 +77,20 @@ abstract class _ChildController extends BaseController with Store {
     if (id == null) return null;
     final fetched = await _childService.getChildById(id);
     if (fetched != null) {
-      final exists = children.any((c) => c.id == fetched.id);
-      if (!exists) {
+      final idx = children.indexWhere((c) => c.id == fetched.id);
+      if (idx >= 0) {
+        final newList = List<Child>.from(children);
+        newList[idx] = fetched;
+        children = newList;
+      } else {
         children = [...children, fetched];
       }
+      // deduplicate children by id and assign to trigger observers
+      final Map<String, Child> uniq = {};
+      for (final c in children) {
+        if (c.id != null) uniq[c.id!] = c;
+      }
+      children = uniq.values.toList();
     }
     return fetched;
   }
@@ -102,11 +113,11 @@ abstract class _ChildController extends BaseController with Store {
 
   /// Cria uma nova criança associada a um responsável (parentId).
   /// Retorna true se sucesso.
-  Future<bool> createChild(String parentId, Child child) async {
+  Future<bool> registerChild(String parentId, Child child) async {
     try {
-      final success = await _childService.addChild(child, parentId);
+      final success = await _childService.registerChild(child, parentId);
       if (success) {
-        // opcional: adicionar ao cache local para feedback imediato
+        // optional: add to cache local for immediate feedback (assign to trigger MobX)
         children = [...children, child];
       }
       return success;
@@ -125,7 +136,13 @@ abstract class _ChildController extends BaseController with Store {
     refreshLoading = true;
     try {
       final list = await _childService.getChildrenByCompanyId(companyId);
-      children = list;
+      // deduplicate by id and assign to trigger MobX observers
+      final Map<String, Child> byId = {};
+      for (final c in list) {
+        if (c.id != null) byId[c.id!] = c;
+      }
+      final unique = byId.values.toList();
+      children = unique;
     } finally {
       refreshLoading = false;
     }

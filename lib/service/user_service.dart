@@ -9,7 +9,7 @@ class UserService extends BaseService {
     try {
       final payload = Map<String, dynamic>.from(user.toJson());
       // remove nulls
-      payload.removeWhere((k, v) => v == null);
+      payload.removeWhere((k, v) => v == null || (v is String && v.trim().isEmpty));
       // backend rejects certain properties on update - ensure they're not sent
       payload.remove('id');
       payload.remove('createdAt');
@@ -29,6 +29,21 @@ class UserService extends BaseService {
 
   User? getUserById(String id) {
     return null;
+  }
+
+  Future<User?> fetchUserById(String id) async {
+    try {
+      final response = await dio.get('/user/$id');
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data;
+        if (data is Map<String, dynamic>) return User.fromJson(data);
+        return User.fromJson(Map<String, dynamic>.from(data));
+      }
+      return null;
+    } catch (e) {
+      dev.log('UserService.fetchUserById error: $e');
+      return null;
+    }
   }
 
   Future<List<User>> getUsersByCompanyId(String companyId, {String? token}) async {
