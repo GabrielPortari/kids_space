@@ -4,7 +4,6 @@ import 'package:kids_space/controller/auth_controller.dart';
 import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
-import 'package:kids_space/model/base_model.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
 import 'package:kids_space/view/widgets/profile_edit_helper.dart';
@@ -13,13 +12,7 @@ import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/model/company.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/model/user.dart';
-import 'package:kids_space/view/widgets/profile_picture_section.dart';
-import 'package:kids_space/view/widgets/profile_header_section.dart';
-import 'package:kids_space/view/widgets/profile_info_card_section.dart';
-import 'package:kids_space/view/widgets/profile_children_card_section.dart';
 import 'package:kids_space/view/widgets/profile_app_bar.dart';
-import 'package:kids_space/util/date_hour_util.dart';
-import 'package:kids_space/view/widgets/profile_responsibles_card_section.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'profile_sections.dart';
 
@@ -181,11 +174,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
 
-    final Map<String, String> infoMap = _getProfileData();
-    final profileEntries = infoMap.entries.toList();
-    final Map<String, String> addressMap = _getAddressData();
-    final addressEntries = addressMap.entries.toList();
-
     final _AppBarConfig appBarConfig = _computeAppBarConfig();
 
     return Scaffold(
@@ -310,104 +298,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ],
     );
-  }
-
-  Map<String, String> _getProfileData() {
-    if (selectedProfileType == SelectedProfileType.user && widget.selectedUser != null) {
-      final u = widget.selectedUser!;
-      final dt = BaseModel.tryParseTimestamp(u.birthDate);
-      return {
-        'Nome': u.name ?? '-',
-        'Email': u.email ?? '-',
-        'Data de Nascimento': dt == null ? '-' : formatDate_ddMMyyyy(dt),
-        'Telefone': u.phone ?? '-',
-        'Documento': u.document ?? '-',
-      };
-    } else if ((selectedProfileType == SelectedProfileType.collaborator || selectedProfileType == SelectedProfileType.admin) && widget.selectedCollaborator != null) {
-      final c = widget.selectedCollaborator!;
-      final dt = BaseModel.tryParseTimestamp(c.birthDate);
-      return {
-        'Nome': c.name ?? '-',
-        'Email': c.email ?? '-',
-        'Data de Nascimento': dt == null ? '-' : formatDate_ddMMyyyy(dt),
-        'Telefone': c.phone ?? '-',
-        'Documento': c.document ?? '-',
-      };
-    } else if (selectedProfileType == SelectedProfileType.company && _effectiveCompany != null) {
-      final co = _effectiveCompany!;
-      return {
-        'Nome fantasia': co.fantasyName ?? '-',
-        'Razão social': co.corporateName ?? '-',
-        'CNPJ': co.cnpj ?? '-',
-        'Site': co.website ?? '-',
-        'Responsável': co.responsible?.name ?? '-',
-        'Logo (URL)': co.logoUrl ?? '-',
-        'Colaboradores': (co.collaborators ?? 0).toString(),
-        'Usuários': (co.users ?? 0).toString(),
-        'Crianças': (co.children ?? 0).toString(),
-      };
-    } else if (selectedProfileType == SelectedProfileType.child && widget.selectedChild != null) {
-      final ch = widget.selectedChild!;
-      final dt = BaseModel.tryParseTimestamp(ch.birthDate);
-      return {
-        'Nome': ch.name ?? '-',
-        'Email': ch.email ?? '-',
-        'Data de Nascimento': dt == null ? '-' : formatDate_ddMMyyyy(dt),
-        'Telefone': ch.phone ?? '-',
-        'Documento': ch.document ?? '-',
-        'Status': (ch.checkedIn ?? false) ? 'Ativa' : 'Inativa',
-      };
-    }
-    return {};
-  }
-
-  Map<String, String> _getAddressData() {
-    if (selectedProfileType == SelectedProfileType.user && widget.selectedUser != null) {
-      final u = widget.selectedUser!;
-      return {
-        'Endereço': u.address ?? '-',
-        'Número': u.addressNumber ?? '-',
-        'Complemento': u.addressComplement ?? '-',
-        'Bairro': u.neighborhood ?? '-',
-        'Cidade': u.city ?? '-',
-        'Estado': u.state ?? '-',
-        'CEP': u.zipCode ?? '-',
-      };
-    } else if ((selectedProfileType == SelectedProfileType.collaborator || selectedProfileType == SelectedProfileType.admin) && widget.selectedCollaborator != null) {
-      final c = widget.selectedCollaborator!;
-      return {
-        'Endereço': c.address ?? '-',
-        'Número': c.addressNumber ?? '-',
-        'Complemento': c.addressComplement ?? '-',
-        'Bairro': c.neighborhood ?? '-',
-        'Cidade': c.city ?? '-',
-        'Estado': c.state ?? '-',
-        'CEP': c.zipCode ?? '-',
-      };
-    } else if (selectedProfileType == SelectedProfileType.company && _effectiveCompany != null) {
-      final co = _effectiveCompany!;
-      return {
-        'Endereço': co.address ?? '-',
-        'Número': co.addressNumber ?? '-',
-        'Complemento': co.addressComplement ?? '-',
-        'Bairro': co.neighborhood ?? '-',
-        'Cidade': co.city ?? '-',
-        'Estado': co.state ?? '-',
-        'CEP': co.zipCode ?? '-',
-      };
-    } else if (selectedProfileType == SelectedProfileType.child && widget.selectedChild != null) {
-      final ch = widget.selectedChild!;
-      return {
-        'Endereço': ch.address ?? '-',
-        'Número': ch.addressNumber ?? '-',
-        'Complemento': ch.addressComplement ?? '-',
-        'Bairro': ch.neighborhood ?? '-',
-        'Cidade': ch.city ?? '-',
-        'Estado': ch.state ?? '-',
-        'CEP': ch.zipCode ?? '-',
-      };
-    }
-    return {};
   }
 
   Future<void> _showEditChoice() async {

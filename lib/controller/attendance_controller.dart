@@ -52,6 +52,21 @@ abstract class _AttendanceController extends BaseController with Store {
     }
   }
 
+  /// Fetch attendances between optional date range (from/to ISO strings) and populate `events`.
+  @action
+  Future<List<Attendance>> getAttendancesBetween(String companyId, {DateTime? from, DateTime? to}) async {
+    isLoadingEvents = true;
+    try {
+      final fromS = from?.toIso8601String();
+      final toS = to?.toIso8601String();
+      final list = await _service.getAttendancesBetween(companyId, from: fromS, to: toS);
+      events = list;
+      return list;
+    } finally {
+      isLoadingEvents = false;
+    }
+  }
+
 
   @observable
   bool isLoadingActiveCheckins = false;

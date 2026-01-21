@@ -266,5 +266,62 @@ class AttendanceService extends BaseService{
     }
   }
 
+  /// Fetch attendances between two optional ISO date strings for a company
+  Future<List<Attendance>> getAttendancesBetween(String companyId, {String? from, String? to}) async {
+    try {
+      final qp = <String, dynamic>{};
+      if (from != null) qp['from'] = from;
+      if (to != null) qp['to'] = to;
+      final response = await dio.get('/attendance/company/$companyId/between', queryParameters: qp);
+      if (response.statusCode == 200 && response.data != null) {
+        final List<Map<String, dynamic>> items = [];
+        final raw = response.data;
+
+        if (raw is List) {
+          for (final e in raw) {
+            if (e is Map) items.add(Map<String, dynamic>.from(e));
+            else if (e is String) {
+              final trimmed = e.trim();
+              if (trimmed.isNotEmpty) {
+                try {
+                  final decoded = convert.json.decode(trimmed);
+                  if (decoded is Map) items.add(Map<String, dynamic>.from(decoded));
+                } catch (_) {}
+              }
+            }
+          }
+        } else if (raw is String) {
+          final trimmed = raw.trim();
+          if (trimmed.isNotEmpty) {
+            try {
+              final decoded = convert.json.decode(trimmed);
+              if (decoded is List) {
+                for (final e in decoded) if (e is Map) items.add(Map<String, dynamic>.from(e));
+              }
+            } catch (_) {}
+          }
+        } else if (raw is Map) {
+          final mapRaw = Map<String, dynamic>.from(raw);
+          if (mapRaw.containsKey('items') && mapRaw['items'] is List) {
+            for (final e in mapRaw['items']) if (e is Map) items.add(Map<String, dynamic>.from(e));
+          } else if (mapRaw.containsKey('data') && mapRaw['data'] is List) {
+            for (final e in mapRaw['data']) if (e is Map) items.add(Map<String, dynamic>.from(e));
+          } else {
+            items.add(mapRaw);
+          }
+        }
+
+        return items.map((m) => Attendance.fromJson(m)).toList();
+      }
+      return [];
+    } on DioException catch (e) {
+      dev.log('AttendanceService.getAttendancesBetween DioException: ${e.response?.statusCode} ${e.response?.data ?? e.message}', name: 'AttendanceService');
+      return [];
+    } catch (e, st) {
+      dev.log('AttendanceService.getAttendancesBetween error: $e', name: 'AttendanceService', error: st);
+      return [];
+    }
+  }
+
   
 }
