@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'reports_charts.dart';
+import 'package:kids_space/util/localization_service.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -13,12 +14,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
   DateTime? _from;
   DateTime? _to;
   final List<String> _reportTypes = [
-    'Check-ins (7d)',
-    'Check-ins por período',
-    'Distribuição por colaborador',
-    'Check-ins por hora',
-    'Resumo geral',
-    'Colaboradores ativos',
+    translate('reports.type_checkins_7d'),
+    translate('reports.type_checkins_period'),
+    translate('reports.type_distribution_by_collaborator'),
+    translate('reports.type_checkins_by_hour'),
+    translate('reports.type_general_summary'),
+    translate('reports.type_active_collaborators'),
   ];
   String _selectedReportType = '';
 
@@ -61,8 +62,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text('Início:'),
-                  TextButton(onPressed: _pickFrom, child: Text(_from == null ? 'Data inicial' : DateFormat('dd/MM/yyyy').format(_from!))),
+                  Text(translate('reports.start')),
+                  TextButton(onPressed: _pickFrom, child: Text(_from == null ? translate('reports.date_initial') : DateFormat('dd/MM/yyyy').format(_from!))),
                 ],
               ),
             ),
@@ -71,8 +72,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text('Fim:'),
-                  TextButton(onPressed: _pickTo, child: Text(_to == null ? 'Data final' : DateFormat('dd/MM/yyyy').format(_to!))),
+                  Text(translate('reports.end')),
+                  TextButton(onPressed: _pickTo, child: Text(_to == null ? translate('reports.date_final') : DateFormat('dd/MM/yyyy').format(_to!))),
                 ],
               ),
             ),
@@ -85,7 +86,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Relatórios')),
+    appBar: AppBar(title: Text(translate('reports.title'))),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -96,7 +97,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               // Report type selector
               Row(
                 children: [
-                  const Text('Tipo: '),
+                  Text(translate('reports.type')),
                   const SizedBox(width: 8),
                   Expanded(
                     child: DropdownButton<String>(

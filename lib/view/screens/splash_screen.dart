@@ -4,6 +4,7 @@ import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/model/base_user.dart';
 import '../../controller/auth_controller.dart';
 import '../../controller/company_controller.dart';
+import 'package:kids_space/util/localization_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -34,15 +35,15 @@ class _SplashScreenState extends State<SplashScreen> {
         context: context,
         barrierDismissible: false,
         builder: (c) => AlertDialog(
-          title: const Text('Sessão expirada'),
-          content: const Text('Sua sessão expirou. Faça login novamente.'),
+          title: Text(translate('splash.session_expired_title')),
+          content: Text(translate('splash.session_expired_message')),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(c).pop();
                 Navigator.of(context).pushNamedAndRemoveUntil('/company_selection', (route) => false);
               },
-              child: const Text('OK'),
+              child: Text(translate('buttons.ok')),
             )
           ],
         ),

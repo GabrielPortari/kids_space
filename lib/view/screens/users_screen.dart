@@ -11,6 +11,7 @@ import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
 import 'package:kids_space/view/widgets/skeleton_list.dart';
+import 'package:kids_space/util/localization_service.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -57,21 +58,21 @@ class _UsersScreenState extends State<UsersScreen> {
   Future<void> _onAddUser() async {
     // Step 1: personal data
     final dataFields = [
-      FieldDefinition(key: 'name', initialValue: null, label: 'Nome*', required: true),
-      FieldDefinition(key: 'birthDate', initialValue: null, label: 'Data de Nascimento', type: FieldType.date),
-      FieldDefinition(key: 'email', initialValue: null, label: 'Email', type: FieldType.email),
-      FieldDefinition(key: 'phone', initialValue: null, label: 'Telefone*', type: FieldType.phone, required: true),
-      FieldDefinition(key: 'document', initialValue: null, label: 'Documento*', type: FieldType.number, required: true),
-      FieldDefinition(key: 'address', initialValue: null, label: 'Endereço'),
-      FieldDefinition(key: 'addressNumber', initialValue: null, label: 'Número'),
-      FieldDefinition(key: 'addressComplement', initialValue: null, label: 'Complemento'),
-      FieldDefinition(key: 'neighborhood', initialValue: null, label: 'Bairro'),
-      FieldDefinition(key: 'city', initialValue: null, label: 'Cidade'),
-      FieldDefinition(key: 'state', initialValue: null, label: 'Estado'),
-      FieldDefinition(key: 'zipCode', initialValue: null, label: 'CEP'),
+      FieldDefinition(key: 'name', initialValue: null, label: translate('profile.name'), required: true),
+      FieldDefinition(key: 'birthDate', initialValue: null, label: translate('profile.birth_date'), type: FieldType.date),
+      FieldDefinition(key: 'email', initialValue: null, label: translate('profile.email'), type: FieldType.email),
+      FieldDefinition(key: 'phone', initialValue: null, label: translate('profile.phone'), type: FieldType.phone, required: true),
+      FieldDefinition(key: 'document', initialValue: null, label: translate('profile.document'), type: FieldType.number, required: true),
+      FieldDefinition(key: 'address', initialValue: null, label: translate('profile.address')),
+      FieldDefinition(key: 'addressNumber', initialValue: null, label: translate('profile.address_number')),
+      FieldDefinition(key: 'addressComplement', initialValue: null, label: translate('profile.address_complement')),
+      FieldDefinition(key: 'neighborhood', initialValue: null, label: translate('profile.neighborhood')),
+      FieldDefinition(key: 'city', initialValue: null, label: translate('profile.city')),
+      FieldDefinition(key: 'state', initialValue: null, label: translate('profile.state')),
+      FieldDefinition(key: 'zipCode', initialValue: null, label: translate('profile.zip_code')),
     ];
 
-    final personalData = await showEditEntityBottomSheet(context: context, title: 'Dados pessoais', fields: dataFields);
+    final personalData = await showEditEntityBottomSheet(context: context, title: translate('profile.personal_title'), fields: dataFields);
     if (personalData == null) return; // cancelled
 
     final newUser = User(
@@ -98,7 +99,7 @@ class _UsersScreenState extends State<UsersScreen> {
     final double topSpacing = showAppBar ? 8.0 : 8 + MediaQuery.of(context).padding.top;
 
     return Scaffold(
-      appBar: showAppBar ? AppBar(title: const Text('Usuários'), leading: Navigator.canPop(context) ? const BackButton() : null,) : null,
+      appBar: showAppBar ? AppBar(title: Text(translate('users.title')), leading: Navigator.canPop(context) ? const BackButton() : null,) : null,
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -132,7 +133,7 @@ class _UsersScreenState extends State<UsersScreen> {
     return TextField(
       controller: _searchController,
       decoration: InputDecoration(
-        labelText: 'Buscar usuário',
+        labelText: translate('users.search'),
         prefixIcon: const Icon(Icons.search),
         border: const OutlineInputBorder(),
         suffixIcon: _searchController.text.isEmpty
@@ -164,7 +165,7 @@ class _UsersScreenState extends State<UsersScreen> {
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24.0),
-                  child: Text(_searchController.text.isEmpty ? 'Nenhum usuário cadastrado' : 'Nenhum usuário encontrado', style: const TextStyle(color: Colors.grey, fontSize: 16)),
+                  child: Text(_searchController.text.isEmpty ? translate('users.empty') : translate('users.not_found'), style: const TextStyle(color: Colors.grey, fontSize: 16)),
                 ),
               )
             ]);

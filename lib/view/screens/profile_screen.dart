@@ -15,6 +15,7 @@ import 'package:kids_space/model/user.dart';
 import 'package:kids_space/view/widgets/profile_app_bar.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'profile_sections.dart';
+import 'package:kids_space/util/localization_service.dart';
 
 enum SelectedProfileType {
   child,
@@ -133,16 +134,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   _AppBarConfig _computeAppBarConfig() {
-    String title = 'Perfil';
+    String title = translate('profile.screen_title');
     if (selectedProfileType != null) {
       if (selectedProfileType == SelectedProfileType.user) {
-        title = 'Perfil de ${widget.selectedUser?.name ?? 'user_placeholder'}';
+        title = translate('profile.profile_of', namedArgs: {'name_placeholder': widget.selectedUser?.name ?? translate('profile.name_placeholder')});
       } else if (selectedProfileType == SelectedProfileType.collaborator || selectedProfileType == SelectedProfileType.admin) {
-        title = 'Perfil de ${widget.selectedCollaborator?.name ?? 'collaborator_placeholder'}';
+        title = translate('profile.profile_of', namedArgs: {'name_placeholder': widget.selectedCollaborator?.name ?? translate('profile.name_placeholder')});
       } else if (selectedProfileType == SelectedProfileType.company) {
-        title = 'Perfil de ${_effectiveCompany?.fantasyName ?? _effectiveCompany?.corporateName ?? 'company_placeholder'}';
+        title = translate('profile.profile_of', namedArgs: {'name_placeholder': _effectiveCompany?.fantasyName ?? _effectiveCompany?.corporateName ?? translate('profile.name_placeholder')});
       } else if (selectedProfileType == SelectedProfileType.child) {
-        title = 'Perfil de ${widget.selectedChild?.name ?? 'child_placeholder'}';
+        title = translate('profile.profile_of', namedArgs: {'name_placeholder': widget.selectedChild?.name ?? translate('profile.name_placeholder')});
       }
     }
 
@@ -232,11 +233,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Confirmar exclusão'),
-        content: Text('Deseja realmente excluir $targetName?'),
+        title: Text(translate('ui.confirm_delete_title')),
+        content: Text(translate('ui.confirm_delete_message', namedArgs: {'name': targetName})),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancelar')),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Excluir')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(translate('buttons.cancel'))),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(translate('profile.delete'))),
         ],
       ),
     );
@@ -257,10 +258,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(success ? 'Sucesso' : 'Erro'),
-        content: Text(success ? 'Operação concluída: $targetName excluído.' : 'Falha ao excluir $targetName.'),
+        title: Text(success ? translate('common.success') : translate('common.error')),
+        content: Text(success ? translate('profile.delete_success', namedArgs: {'name': targetName}) : translate('profile.delete_error', namedArgs: {'name': targetName})),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('OK')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(translate('buttons.ok'))),
         ],
       ),
     );
@@ -315,11 +316,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Confirmar logout'),
-        content: const Text('Deseja realmente sair da conta?'),
+        title: Text(translate('ui.logout_confirm_title')),
+        content: Text(translate('ui.logout_confirm_message')),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancelar')),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Sair')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(translate('buttons.cancel'))),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(translate('ui.logout_button'))),
         ],
       ),
     );
@@ -335,13 +336,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (parent == null) return;
 
     // Step 1: get personal data
-    final personalFields = [
-      FieldDefinition(key: 'name', label: 'Nome', initialValue: null, required: true),
-      FieldDefinition(key: 'email', label: 'Email', type: FieldType.email, initialValue: null),
-      FieldDefinition(key: 'birthDate', label: 'Data de Nascimento', type: FieldType.date, initialValue: null),
-      FieldDefinition(key: 'phone', label: 'Telefone', type: FieldType.phone, initialValue: null),
-      FieldDefinition(key: 'document', label: 'Documento', initialValue: null),
-    ];
+      final personalFields = [
+        FieldDefinition(key: 'name', label: translate('profile.name'), initialValue: null, required: true),
+        FieldDefinition(key: 'email', label: translate('profile.email'), type: FieldType.email, initialValue: null),
+        FieldDefinition(key: 'birthDate', label: translate('profile.birth_date'), type: FieldType.date, initialValue: null),
+        FieldDefinition(key: 'phone', label: translate('profile.phone'), type: FieldType.phone, initialValue: null),
+        FieldDefinition(key: 'document', label: translate('profile.document'), initialValue: null),
+      ];
 
     final personalRes = await showEditEntityBottomSheet(context: context, title: 'Cadastrar criança - Dados pessoais', fields: personalFields);
     if (personalRes == null) return;
@@ -350,11 +351,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final inherit = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Endereço'),
-        content: const Text('Deseja herdar o endereço do responsável?'),
+        title: Text(translate('profile.address_title')),
+        content: Text(translate('ui.inherit_address_question')),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Sim')),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Não')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(translate('ui.yes'))),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(translate('ui.no'))),
         ],
       ),
     );
@@ -363,13 +364,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Map<String, dynamic>? addressRes;
     if (inherit == false) {
       final addressFields = [
-        FieldDefinition(key: 'address', label: 'Endereço', initialValue: null),
+        FieldDefinition(key: 'address', label: translate('profile.address'), initialValue: null),
         FieldDefinition(key: 'addressNumber', label: 'Número', initialValue: null),
         FieldDefinition(key: 'addressComplement', label: 'Complemento', initialValue: null),
         FieldDefinition(key: 'neighborhood', label: 'Bairro', initialValue: ''),
         FieldDefinition(key: 'city', label: 'Cidade', initialValue: null),
         FieldDefinition(key: 'state', label: 'Estado', initialValue: null),
-        FieldDefinition(key: 'zipCode', label: 'CEP', initialValue: null),
+        FieldDefinition(key: 'zipCode', label: translate('profile.zip_code'), initialValue: null),
       ];
       addressRes = await showEditEntityBottomSheet(context: context, title: 'Cadastrar criança - Endereço', fields: addressFields);
       if (addressRes == null) return;

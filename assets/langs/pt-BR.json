@@ -23,4 +23,152 @@
     "30_last_presence_log": "30 últimos registros de presença",
     "no_presence_records": "Nenhum registro de presença"
   }
+  ,
+  "profile": {
+    "name_placeholder": "-",
+    "user_type": {
+      "user": "Usuário",
+      "company": "Empresa",
+      "admin": "Administrador",
+      "collaborator": "Colaborador",
+      "child": "Criança",
+      "unknown": "Desconhecido"
+    },
+    "personal_title": "Dados pessoais",
+    "address_title": "Endereço",
+    "responsibles_title": "Responsáveis",
+    "no_responsibles": "Nenhum responsável cadastrado.",
+    "edit_user": "Editar dados do usuário",
+    "edit_personal": "Editar dados pessoais",
+    "edit_address": "Editar endereço",
+    "edit_child": "Editar dados da criança",
+    "confirm_change_title": "Confirmar alteração",
+    "confirm_change_personal": "Deseja aplicar as alterações nos dados pessoais?",
+    "confirm_change_address": "Deseja aplicar as alterações no endereço?",
+    "personal_update_success": "Dados pessoais atualizados com sucesso.",
+    "personal_update_error": "Falha ao atualizar dados pessoais.",
+    "address_update_success": "Endereço atualizado com sucesso.",
+    "address_update_error": "Falha ao atualizar endereço.",
+    "name": "Nome",
+    "email": "Email",
+    "birth_date": "Data de Nascimento",
+    "phone": "Telefone",
+    "document": "Documento",
+    "status": "Status",
+    "active": "Ativa",
+    "inactive": "Inativa",
+    "fantasy_name": "Nome fantasia",
+    "corporate_name": "Razão social",
+    "cnpj": "CNPJ",
+    "website": "Site",
+    "responsible": "Responsável",
+    "logo_url": "Logo (URL)",
+    "collaborators": "Colaboradores",
+    "users": "Usuários",
+    "children": "Crianças",
+    "address": "Endereço",
+    "address_number": "Número",
+    "address_complement": "Complemento",
+    "neighborhood": "Bairro",
+    "city": "Cidade",
+    "state": "Estado",
+    "zip_code": "CEP",
+    "id_label": "Id:"
+  },
+  "profile": {
+    "screen_title": "Perfil",
+    "profile_of": "Perfil de {name_placeholder}",
+    "delete": "Excluir",
+    "delete_success": "Operação concluída: {name} excluído.",
+    "delete_error": "Falha ao excluir {name}."
+  },
+  "buttons": {
+    "confirm": "Confirmar",
+    "ok": "OK",
+    "cancel": "Cancelar",
+    "save": "Salvar"
+    ,"next": "Próximo"
+  },
+  "common": {
+    "success": "Sucesso",
+    "error": "Erro"
+  }
+  ,
+  "attendance": {
+    "search_child": "Buscar criança",
+    "no_children_found": "Nenhuma criança encontrada",
+    "responsible_and_notes": "Responsável e Observações",
+    "select_responsible": "Selecione o responsável:",
+    "notes_optional": "Observações (opcional)",
+    "confirm_attendance": "Confirmar presença",
+    "child_label": "Criança",
+    "type_label": "Tipo",
+    "responsible_label": "Responsável",
+    "collaborator_label": "Colaborador",
+    "notes_label": "Observações",
+    "operation_success": "Operação concluída",
+    "operation_error": "Operação cancelada/erro"
+  }
+  ,
+  "splash": {
+    "session_expired_title": "Sessão expirada",
+    "session_expired_message": "Sua sessão expirou. Faça login novamente."
+  }
+,
+  "users": {
+    "title": "Usuários",
+    "search": "Buscar usuário",
+    "empty": "Nenhum usuário cadastrado",
+    "not_found": "Nenhum usuário encontrado"
+  },
+  "reports": {
+    "title": "Relatórios",
+    "start": "Início:",
+    "end": "Fim:",
+    "date_initial": "Data inicial",
+    "date_final": "Data final",
+    "type": "Tipo:",
+    "no_data": "Sem dados"
+    ,
+    "type_checkins_7d": "Check-ins (7d)",
+    "type_checkins_period": "Check-ins por período",
+    "type_distribution_by_collaborator": "Distribuição por colaborador",
+    "type_checkins_by_hour": "Check-ins por hora",
+    "type_general_summary": "Resumo geral",
+    "type_active_collaborators": "Colaboradores ativos"
+  },
+  "login": {
+    "invalid_credentials": "Usuário ou senha inválidos!",
+    "title": "Login - {company}",
+    "welcome": "Bem-vindo {company}",
+    "email_label": "E-mail",
+    "email_hint": "Digite seu e-mail",
+    "password_label": "Senha",
+    "password_hint": "Digite sua senha",
+    "login_button": "Entrar"
+  },
+  "admin": {
+    "exit_title": "Sair",
+    "exit_message": "Deseja sair do painel de administrador?",
+    "logout": "Deslogar"
+  },
+  "ui": {
+    "id_copied": "ID copiado para a área de transferência: {id}",
+    "profile_menu": {
+      "edit": "Editar",
+      "add_child": "Cadastrar criança",
+      "logout": "Deslogar",
+      "delete": "Excluir (Admin)"
+    },
+    "children_under_responsibility": "Crianças sob responsabilidade",
+    "no_children": "Nenhuma criança cadastrada",
+    "logout_confirm_title": "Confirmar logout",
+    "logout_confirm_message": "Deseja realmente sair da conta?",
+    "logout_button": "Sair",
+    "confirm_delete_title": "Confirmar exclusão",
+    "confirm_delete_message": "Deseja realmente excluir {name}?",
+    "inherit_address_question": "Deseja herdar o endereço do responsável?",
+    "yes": "Sim",
+    "no": "Não"
+  }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kids_space/util/localization_service.dart';
 
 class ProfileAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -53,10 +54,10 @@ class ProfileAppBar extends StatelessWidget implements PreferredSizeWidget {
             }
           },
           itemBuilder: (context) => [
-            if (canEdit) const PopupMenuItem(value: 'edit', child: Text('Editar')),
-            if (canAddChild) const PopupMenuItem(value: 'add_child', child: Text('Cadastrar criança')),
-            if (canLogout) const PopupMenuItem(value: 'logout', child: Text('Deslogar')),
-            if (canDelete) const PopupMenuItem(value: 'delete', child: Text('Excluir (Admin)')),
+            if (canEdit) PopupMenuItem(value: 'edit', child: Text(translate('ui.profile_menu.edit'))),
+            if (canAddChild) PopupMenuItem(value: 'add_child', child: Text(translate('ui.profile_menu.add_child'))),
+            if (canLogout) PopupMenuItem(value: 'logout', child: Text(translate('ui.profile_menu.logout'))),
+            if (canDelete) PopupMenuItem(value: 'delete', child: Text(translate('ui.profile_menu.delete'))),
           ],
         ),
       ],

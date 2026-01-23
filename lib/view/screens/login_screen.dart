@@ -8,6 +8,7 @@ import 'package:kids_space/view/design_system/app_button.dart';
 import 'package:kids_space/view/design_system/app_card.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
 import 'package:kids_space/view/design_system/app_textfield.dart';
+import 'package:kids_space/util/localization_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -39,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Usuário ou senha inválidos!')),
+        SnackBar(content: Text(translate('login.invalid_credentials'))),
       );
     }
   }
@@ -49,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final company = GetIt.I<CompanyController>().companySelected;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login - ${company?.fantasyName ?? "Empresa"}'),
+        title: Text(translate('login.title', namedArgs: {'company': company?.fantasyName ?? translate('company.default_name')})),
       ),
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -96,14 +97,14 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildWelcome(String? companyName) {
-    return TextHeaderLarge('Bem-vindo${companyName != null ? " à $companyName" : ""}!');
+    return TextHeaderLarge(translate('login.welcome', namedArgs: {'company': companyName ?? ''}));
   }
 
   Widget _emailField() {
     return AppTextField(
       controller: _emailController,
-      labelText: 'E-mail',
-      hintText: 'Digite seu e-mail',
+      labelText: translate('login.email_label'),
+      hintText: translate('login.email_hint'),
       keyboardType: TextInputType.emailAddress,
     );
   }
@@ -112,14 +113,14 @@ class _LoginScreenState extends State<LoginScreen> {
     return AppTextField(
       controller: _passwordController,
       obscureText: true,
-      labelText: 'Senha',
-      hintText: 'Digite sua senha',
+      labelText: translate('login.password_label'),
+      hintText: translate('login.password_hint'),
     );
   }
 
   Widget _loginButton() {
     return AppButton(
-      text: 'Entrar',
+      text: translate('login.login_button'),
       onPressed: _loading ? null : _login
     );
   }

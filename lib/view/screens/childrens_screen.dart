@@ -14,6 +14,7 @@ import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:kids_space/view/widgets/skeleton_list.dart';
+import 'package:kids_space/util/localization_service.dart';
 
 class ChildrensScreen extends StatefulWidget {
   final bool onlyActive;

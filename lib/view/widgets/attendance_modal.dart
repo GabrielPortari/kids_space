@@ -8,6 +8,7 @@ import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/attendance.dart';
 import 'package:kids_space/model/child.dart';
+import 'package:kids_space/util/localization_service.dart';
 
 Future<void> showAttendanceModal(BuildContext context, AttendanceType type) async {
   final ChildController childController = GetIt.I<ChildController>();
@@ -46,7 +47,7 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
         final screenHeight = MediaQuery.of(innerCtx).size.height;
         return AlertDialog(
           insetPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-          title: Text(type == AttendanceType.checkin ? 'Check-in' : 'Check-out'),
+          title: Text(type == AttendanceType.checkin ? translate('home.check_in') : translate('home.check_out')),
           content: SizedBox(
             width: double.maxFinite,
             height: screenHeight * 0.85,
@@ -54,9 +55,9 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
               mainAxisSize: MainAxisSize.max,
               children: [
                 TextField(
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search),
-                    hintText: 'Buscar criança',
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search),
+                    hintText: translate('attendance.search_child'),
                   ),
                   onChanged: (v) {
                     // update observable filter; Observer will react
@@ -79,7 +80,7 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
                         ? activeChildren
                         : childController.filteredChildren.where((ch) => !(ch.id != null && activeIds.contains(ch.id))).toList();
 
-                    if (source.isEmpty) return const Center(child: Text('Nenhuma criança encontrada'));
+                    if (source.isEmpty) return Center(child: Text(translate('attendance.no_children_found')));
 
                     return Scrollbar(
                       child: ListView.separated(
@@ -105,10 +106,10 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
             ),
           ),
           actions: [
-            TextButton(onPressed: (){
+                TextButton(onPressed: (){
               childController.childFilter = '';
               Navigator.of(ctx).pop();
-            }, child: const Text('Cancelar')),
+            }, child: Text(translate('buttons.cancel'))),
             ElevatedButton(
               onPressed: (selectedChildId == null || loading)
                   ? null
@@ -152,14 +153,14 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
                           String localNotes = '';
                           return StatefulBuilder(builder: (rcCtx, rcSetState) {
                             return AlertDialog(
-                              title: const Text('Responsável e Observações'),
+                              title: Text(translate('attendance.responsible_and_notes')),
                               content: SizedBox(
                                 width: double.maxFinite,
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     if (responsibles.isNotEmpty) ...[
-                                      const Align(alignment: Alignment.centerLeft, child: Text('Selecione o responsável:')),
+                                      Align(alignment: Alignment.centerLeft, child: Text(translate('attendance.select_responsible'))),
                                       const SizedBox(height: 8),
                                       ConstrainedBox(
                                         constraints: BoxConstraints(maxHeight: MediaQuery.of(rcCtx).size.height * 0.3),
@@ -181,7 +182,7 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
                                     ],
                                     const SizedBox(height: 8),
                                     TextField(
-                                      decoration: const InputDecoration(hintText: 'Observações (opcional)'),
+                                      decoration: InputDecoration(hintText: translate('attendance.notes_optional')),
                                       maxLines: 3,
                                       onChanged: (v) => localNotes = v,
                                     ),
@@ -189,8 +190,8 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
                                 ),
                               ),
                               actions: [
-                                TextButton(onPressed: () => Navigator.of(rc).pop(null), child: const Text('Cancelar')),
-                                ElevatedButton(onPressed: () => Navigator.of(rc).pop({'responsible': chosen, 'notes': localNotes}), child: const Text('Próximo')),
+                                TextButton(onPressed: () => Navigator.of(rc).pop(null), child: Text(translate('buttons.cancel'))),
+                                ElevatedButton(onPressed: () => Navigator.of(rc).pop({'responsible': chosen, 'notes': localNotes}), child: Text(translate('buttons.next'))),
                               ],
                             );
                           });
@@ -210,25 +211,25 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
                         final childName = child.name ?? selectedChildId ?? '-';
                         final responsibleName = selectedResponsibleId != null ? GetIt.I<UserController>().getUserById(selectedResponsibleId)?.name ?? selectedResponsibleId : (collaboratorController.loggedCollaborator?.name ?? '-');
                         return AlertDialog(
-                          title: const Text('Confirmar presença'),
+                          title: Text(translate('attendance.confirm_attendance')),
                           content: Column(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Criança: $childName'),
+                              Text('${translate('attendance.child_label')}: $childName'),
                               const SizedBox(height: 8),
-                              Text('Tipo: ${type == AttendanceType.checkin ? 'Check-in' : 'Check-out'}'),
+                              Text('${translate('attendance.type_label')}: ${type == AttendanceType.checkin ? translate('home.check_in') : translate('home.check_out')}'),
                               const SizedBox(height: 8),
-                              Text('Responsável: $responsibleName'),
+                              Text('${translate('attendance.responsible_label')}: $responsibleName'),
                               const SizedBox(height: 8),
-                              Text('Colaborador: ${collaboratorController.loggedCollaborator?.name ?? '-'}'),
+                              Text('${translate('attendance.collaborator_label')}: ${collaboratorController.loggedCollaborator?.name ?? '-'}'),
                               const SizedBox(height: 8),
-                              if (notes != null && notes.isNotEmpty) Text('Observações: $notes'),
+                              if (notes != null && notes.isNotEmpty) Text('${translate('attendance.notes_label')}: $notes'),
                             ],
                           ),
                           actions: [
-                            TextButton(onPressed: () => Navigator.of(cc).pop(false), child: const Text('Cancelar')),
-                            ElevatedButton(onPressed: () => Navigator.of(cc).pop(true), child: const Text('Confirmar')),
+                            TextButton(onPressed: () => Navigator.of(cc).pop(false), child: Text(translate('buttons.cancel'))),
+                            ElevatedButton(onPressed: () => Navigator.of(cc).pop(true), child: Text(translate('buttons.confirm'))),
                           ],
                         );
                       });
@@ -288,11 +289,11 @@ Future<void> showAttendanceModal(BuildContext context, AttendanceType type) asyn
                       Navigator.of(ctx).pop();
                       if (!innerCtx.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(ok ? 'Operação concluída' : 'Operação cancelada/erro')),
+                        SnackBar(content: Text(ok ? translate('attendance.operation_success') : translate('attendance.operation_error'))),
                       );
                       childController.refreshChildrenForCompany(companyId!);
                     },
-              child: loading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Confirmar'),
+              child: loading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : Text(translate('buttons.confirm')),
             ),
           ],
         );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
+import 'package:kids_space/util/localization_service.dart';
 
 class ProfileHeaderSection extends StatelessWidget {
   final String name;
@@ -23,7 +24,7 @@ class ProfileHeaderSection extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                TextBodyMedium('Id:'),
+                TextBodyMedium(translate('profile.id_label')),
                 const SizedBox(width: 8),
                 TextBodyMedium(id!, style: TextStyle(color: Theme.of(context).colorScheme.primary)),
                 const SizedBox(width: 8),
@@ -32,7 +33,7 @@ class ProfileHeaderSection extends StatelessWidget {
                   icon: Icon(Icons.copy, size: 14, color: Theme.of(context).colorScheme.primary),
                   onPressed: () async {
                     await Clipboard.setData(ClipboardData(text: id ?? ''));
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('ID copiado para a área de transferência: $id')));
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(translate('ui.id_copied', namedArgs: {'id': id ?? ''}))));
                   },
                 ),
               ],

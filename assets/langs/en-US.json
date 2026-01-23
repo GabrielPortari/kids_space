@@ -33,6 +33,150 @@
     "edit": "Edit",
     "save": "Save",
     "cancel": "Cancel",
-    "register_child": "Register child"
+    "register_child": "Register child",
+    "confirm": "Confirm",
+    "ok": "OK"
+    ,"next": "Next"
+  }
+  ,
+  "profile": {
+    "name_placeholder": "-",
+    "user_type": {
+      "user": "User",
+      "company": "Company",
+      "admin": "Administrator",
+      "collaborator": "Collaborator",
+      "child": "Child",
+      "unknown": "Unknown"
+    },
+    "personal_title": "Personal Data",
+    "address_title": "Address",
+    "responsibles_title": "Responsibles",
+    "no_responsibles": "No responsibles registered.",
+    "edit_user": "Edit user data",
+    "edit_personal": "Edit personal data",
+    "edit_address": "Edit address",
+    "edit_child": "Edit child data",
+    "confirm_change_title": "Confirm change",
+    "confirm_change_personal": "Apply changes to personal data?",
+    "confirm_change_address": "Apply changes to address?",
+    "personal_update_success": "Personal data updated successfully.",
+    "personal_update_error": "Failed to update personal data.",
+    "address_update_success": "Address updated successfully.",
+    "address_update_error": "Failed to update address.",
+    "name": "Name",
+    "email": "Email",
+    "birth_date": "Birth date",
+    "phone": "Phone",
+    "document": "Document",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "fantasy_name": "Fantasy Name",
+    "corporate_name": "Corporate Name",
+    "cnpj": "CNPJ",
+    "website": "Website",
+    "responsible": "Responsible",
+    "logo_url": "Logo (URL)",
+    "collaborators": "Collaborators",
+    "users": "Users",
+    "children": "Children",
+    "address": "Address",
+    "address_number": "Number",
+    "address_complement": "Complement",
+    "neighborhood": "Neighborhood",
+    "city": "City",
+    "state": "State",
+    "zip_code": "ZIP",
+    "id_label": "Id:"
+  },
+    "profile": {
+      "screen_title": "Profile",
+      "profile_of": "Profile of {name_placeholder}",
+      "delete": "Delete",
+      "delete_success": "Operation completed: {name} deleted.",
+      "delete_error": "Failed to delete {name}."
+    },
+  "common": {
+    "success": "Success",
+    "error": "Error"
+  }
+  ,
+  "attendance": {
+    "search_child": "Search child",
+    "no_children_found": "No child found",
+    "responsible_and_notes": "Responsible and Notes",
+    "select_responsible": "Select responsible:",
+    "notes_optional": "Notes (optional)",
+    "confirm_attendance": "Confirm attendance",
+    "child_label": "Child",
+    "type_label": "Type",
+    "responsible_label": "Responsible",
+    "collaborator_label": "Collaborator",
+    "notes_label": "Notes",
+    "operation_success": "Operation completed",
+    "operation_error": "Operation cancelled/error"
+  }
+  ,
+  "splash": {
+    "session_expired_title": "Session expired",
+    "session_expired_message": "Your session has expired. Please log in again."
+  }
+,
+  "users": {
+    "title": "Users",
+    "search": "Search user",
+    "empty": "No users registered",
+    "not_found": "No users found"
+  },
+  "reports": {
+    "title": "Reports",
+    "start": "Start:",
+    "end": "End:",
+    "date_initial": "Start date",
+    "date_final": "End date",
+    "type": "Type:",
+    "no_data": "No data"
+    ,
+    "type_checkins_7d": "Check-ins (7d)",
+    "type_checkins_period": "Check-ins by period",
+    "type_distribution_by_collaborator": "Distribution by collaborator",
+    "type_checkins_by_hour": "Check-ins by hour",
+    "type_general_summary": "General summary",
+    "type_active_collaborators": "Active collaborators"
+  },
+  "login": {
+    "invalid_credentials": "Invalid user or password!",
+    "title": "Login - {company}",
+    "welcome": "Welcome {company}",
+    "email_label": "E-mail",
+    "email_hint": "Enter your e-mail",
+    "password_label": "Password",
+    "password_hint": "Enter your password",
+    "login_button": "Log in"
+  },
+  "admin": {
+    "exit_title": "Log out",
+    "exit_message": "Do you want to leave the admin panel?",
+    "logout": "Log out"
+  },
+  "ui": {
+    "id_copied": "ID copied to clipboard: {id}",
+    "profile_menu": {
+      "edit": "Edit",
+      "add_child": "Register child",
+      "logout": "Log out",
+      "delete": "Delete (Admin)"
+    },
+    "children_under_responsibility": "Children under responsibility",
+    "no_children": "No child registered",
+    "logout_confirm_title": "Confirm logout",
+    "logout_confirm_message": "Do you really want to sign out?",
+    "logout_button": "Sign out",
+    "confirm_delete_title": "Confirm deletion",
+    "confirm_delete_message": "Do you really want to delete {name}?",
+    "inherit_address_question": "Do you want to inherit the responsible's address?",
+    "yes": "Yes",
+    "no": "No"
   }
 }

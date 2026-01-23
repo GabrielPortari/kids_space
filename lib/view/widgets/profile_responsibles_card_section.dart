@@ -4,6 +4,7 @@ import 'package:kids_space/controller/user_controller.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/model/user.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
+import 'package:kids_space/util/localization_service.dart';
 
 class ProfileResponsiblesCardSection extends StatefulWidget {
   final Child? child;
@@ -44,10 +45,10 @@ class _ProfileResponsiblesCardSectionState extends State<ProfileResponsiblesCard
   Widget build(BuildContext context) {
     final header = Row(children: [
       Expanded(
-        child: const Text(
-          'Responsáveis',
+        child: Text(
+          translate('profile.responsibles_title'),
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ),
       IconButton(
@@ -57,7 +58,7 @@ class _ProfileResponsiblesCardSectionState extends State<ProfileResponsiblesCard
     ]);
 
     final firstWidget = _responsibles.isEmpty
-        ? Center(child: Text('Nenhum responsável cadastrado.', style: TextStyle(color: Theme.of(context).colorScheme.primary)))
+      ? Center(child: Text(translate('profile.no_responsibles'), style: TextStyle(color: Theme.of(context).colorScheme.primary)))
         : ListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(_responsibles.first.name ?? ''),
@@ -68,7 +69,7 @@ class _ProfileResponsiblesCardSectionState extends State<ProfileResponsiblesCard
           );
 
     final fullListWidget = _responsibles.isEmpty
-        ? Center(child: Text('Nenhum responsável cadastrado.', style: TextStyle(color: Theme.of(context).colorScheme.primary)))
+      ? Center(child: Text(translate('profile.no_responsibles'), style: TextStyle(color: Theme.of(context).colorScheme.primary)))
         : Column(
             children: _responsibles.map((u) {
               return Column(children: [

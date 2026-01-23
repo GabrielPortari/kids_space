@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kids_space/util/date_hour_util.dart';
+import 'package:kids_space/util/localization_service.dart';
 
 enum FieldType { text, multiline, email, phone, number, date, select }
 
@@ -228,9 +229,9 @@ class _EditEntityBottomSheetState extends State<EditEntityBottomSheet> {
                 })(),
                 const SizedBox(height: 12),
                 Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                  TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
+                  TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(translate('buttons.cancel'))),
                   const SizedBox(width: 8),
-                  ElevatedButton(onPressed: _onSave, child: const Text('Salvar')),
+                  ElevatedButton(onPressed: _onSave, child: Text(translate('buttons.save'))),
                 ])
               ]),
             ),

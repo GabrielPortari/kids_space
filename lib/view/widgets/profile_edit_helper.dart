@@ -8,6 +8,7 @@ import 'package:kids_space/model/child.dart';
 import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
+import 'package:kids_space/util/localization_service.dart';
 
 /// Helper that shows a choice modal to edit personal data or address and
 /// opens the generic `EditEntityBottomSheet` to apply changes.
@@ -29,23 +30,23 @@ Future<void> showProfileEditDialogs(
         decoration: BoxDecoration(color: Theme.of(context).canvasColor, borderRadius: BorderRadius.circular(12)),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           const SizedBox(height: 16),
-          const Text('Editar dados do usuário', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(translate('profile.edit_user'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Divider(),
 
           ListTile(
             leading: const Icon(Icons.person),
-            title: const Text('Editar dados pessoais'),
+            title: Text(translate('profile.edit_personal')),
             onTap: () => Navigator.of(context).pop('personal'),
           ),
           ListTile(
             leading: const Icon(Icons.home),
-            title: const Text('Editar endereço'),
+            title: Text(translate('profile.edit_address')),
             onTap: () => Navigator.of(context).pop('address'),
           ),
           ListTile(
             leading: const Icon(Icons.close, color: danger),
-            title: const Text('Cancelar'),
+            title: Text(translate('buttons.cancel')),
             onTap: () => Navigator.of(context).pop(null),
           ),
         ]),
@@ -75,8 +76,8 @@ Future<bool?> _confirmDialog(BuildContext context, String title, String content)
       title: Text(title),
       content: Text(content),
       actions: [
-        TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancelar')),
-        TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Confirmar')),
+        TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(translate('buttons.cancel'))),
+        TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(translate('buttons.confirm'))),
       ],
     ),
   );
@@ -86,10 +87,10 @@ Future<void> _showResultDialog(BuildContext context, bool success, String succes
   return showDialog<void>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: Text(success ? 'Sucesso' : 'Erro'),
+      title: Text(success ? translate('common.success') : translate('common.error')),
       content: Text(success ? successMsg : errorMsg),
       actions: [
-        TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('OK')),
+        TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(translate('buttons.ok'))),
       ],
     ),
   );
@@ -106,16 +107,16 @@ Future<void> _editPersonal(
     final u = user;
     DateTime? parsedBirth = BaseModel.tryParseTimestamp(u.birthDate);
     final fields = [
-      FieldDefinition(key: 'name', label: 'Nome', initialValue: u.name ?? '', required: true),
-      FieldDefinition(key: 'email', label: 'Email', type: FieldType.email, initialValue: u.email ?? '', required: true),
-      FieldDefinition(key: 'birthDate', label: 'Data de Nascimento', type: FieldType.date, initialValue: parsedBirth),
-      FieldDefinition(key: 'phone', label: 'Telefone', type: FieldType.phone, initialValue: u.phone ?? ''),
-      FieldDefinition(key: 'document', label: 'Documento', initialValue: u.document ?? ''),
+      FieldDefinition(key: 'name', label: translate('profile.name'), initialValue: u.name ?? '', required: true),
+      FieldDefinition(key: 'email', label: translate('profile.email'), type: FieldType.email, initialValue: u.email ?? '', required: true),
+      FieldDefinition(key: 'birthDate', label: translate('profile.birth_date'), type: FieldType.date, initialValue: parsedBirth),
+      FieldDefinition(key: 'phone', label: translate('profile.phone'), type: FieldType.phone, initialValue: u.phone ?? ''),
+      FieldDefinition(key: 'document', label: translate('profile.document'), initialValue: u.document ?? ''),
     ];
 
-    final res = await showEditEntityBottomSheet(context: context, title: 'Editar dados pessoais', fields: fields);
+    final res = await showEditEntityBottomSheet(context: context, title: translate('profile.edit_personal'), fields: fields);
     if (res != null) {
-      final confirmed = await _confirmDialog(context, 'Confirmar alteração', 'Deseja aplicar as alterações nos dados pessoais?');
+      final confirmed = await _confirmDialog(context, translate('profile.confirm_change_title'), translate('profile.confirm_change_personal'));
       if (confirmed != true) return;
 
       final updated = User(
@@ -144,22 +145,22 @@ Future<void> _editPersonal(
         updatedAt: DateTime.now(),
       );
       final success = await userController.updateUser(updated);
-      await _showResultDialog(context, success, 'Dados pessoais atualizados com sucesso.', 'Falha ao atualizar dados pessoais.');
+      await _showResultDialog(context, success, translate('profile.personal_update_success'), translate('profile.personal_update_error'));
     }
   } else if (collaborator != null) {
     final c = collaborator;
     DateTime? parsedBirth = BaseModel.tryParseTimestamp(c.birthDate);
     final fields = [
-      FieldDefinition(key: 'name', label: 'Nome', initialValue: c.name ?? '', required: true),
-      FieldDefinition(key: 'email', label: 'Email', type: FieldType.email, initialValue: c.email ?? '', required: true),
-      FieldDefinition(key: 'birthDate', label: 'Data de Nascimento', type: FieldType.date, initialValue: parsedBirth),
-      FieldDefinition(key: 'phone', label: 'Telefone', type: FieldType.phone, initialValue: c.phone ?? ''),
-      FieldDefinition(key: 'document', label: 'Documento', initialValue: c.document ?? ''),
+      FieldDefinition(key: 'name', label: translate('profile.name'), initialValue: c.name ?? '', required: true),
+      FieldDefinition(key: 'email', label: translate('profile.email'), type: FieldType.email, initialValue: c.email ?? '', required: true),
+      FieldDefinition(key: 'birthDate', label: translate('profile.birth_date'), type: FieldType.date, initialValue: parsedBirth),
+      FieldDefinition(key: 'phone', label: translate('profile.phone'), type: FieldType.phone, initialValue: c.phone ?? ''),
+      FieldDefinition(key: 'document', label: translate('profile.document'), initialValue: c.document ?? ''),
     ];
 
-    final res = await showEditEntityBottomSheet(context: context, title: 'Editar dados pessoais', fields: fields);
+    final res = await showEditEntityBottomSheet(context: context, title: translate('profile.edit_personal'), fields: fields);
     if (res != null) {
-      final confirmed = await _confirmDialog(context, 'Confirmar alteração', 'Deseja aplicar as alterações nos dados pessoais?');
+      final confirmed = await _confirmDialog(context, translate('profile.confirm_change_title'), translate('profile.confirm_change_personal'));
       if (confirmed != true) return;
 
       final updated = Collaborator(
@@ -187,7 +188,7 @@ Future<void> _editPersonal(
         updatedAt: DateTime.now(),
       );
       final success = await collaboratorController.updateCollaborator(updated);
-      await _showResultDialog(context, success, 'Dados pessoais atualizados com sucesso.', 'Falha ao atualizar dados pessoais.');
+      await _showResultDialog(context, success, translate('profile.personal_update_success'), translate('profile.personal_update_error'));
     }
   }
 }
@@ -202,18 +203,18 @@ Future<void> _editAddress(
   if (user != null) {
     final u = user;
     final fields = [
-      FieldDefinition(key: 'address', label: 'Endereço', initialValue: u.address ?? ''),
-      FieldDefinition(key: 'addressNumber', label: 'Número', initialValue: u.addressNumber ?? ''),
-      FieldDefinition(key: 'addressComplement', label: 'Complemento', initialValue: u.addressComplement ?? ''),
-      FieldDefinition(key: 'neighborhood', label: 'Bairro', initialValue: u.neighborhood ?? ''),
-      FieldDefinition(key: 'city', label: 'Cidade', initialValue: u.city ?? ''),
-      FieldDefinition(key: 'state', label: 'Estado', initialValue: u.state ?? ''),
-      FieldDefinition(key: 'zipCode', label: 'CEP', initialValue: u.zipCode ?? ''),
+      FieldDefinition(key: 'address', label: translate('profile.address'), initialValue: u.address ?? ''),
+      FieldDefinition(key: 'addressNumber', label: translate('profile.address_number'), initialValue: u.addressNumber ?? ''),
+      FieldDefinition(key: 'addressComplement', label: translate('profile.address_complement'), initialValue: u.addressComplement ?? ''),
+      FieldDefinition(key: 'neighborhood', label: translate('profile.neighborhood'), initialValue: u.neighborhood ?? ''),
+      FieldDefinition(key: 'city', label: translate('profile.city'), initialValue: u.city ?? ''),
+      FieldDefinition(key: 'state', label: translate('profile.state'), initialValue: u.state ?? ''),
+      FieldDefinition(key: 'zipCode', label: translate('profile.zip_code'), initialValue: u.zipCode ?? ''),
     ];
 
-    final res = await showEditEntityBottomSheet(context: context, title: 'Editar endereço', fields: fields);
+    final res = await showEditEntityBottomSheet(context: context, title: translate('profile.edit_address'), fields: fields);
     if (res != null) {
-      final confirmed = await _confirmDialog(context, 'Confirmar alteração', 'Deseja aplicar as alterações no endereço?');
+      final confirmed = await _confirmDialog(context, translate('profile.confirm_change_title'), translate('profile.confirm_change_address'));
       if (confirmed != true) return;
 
       final updated = User(
@@ -237,18 +238,18 @@ Future<void> _editAddress(
         updatedAt: DateTime.now(),
       );
       final success = await userController.updateUser(updated);
-      await _showResultDialog(context, success, 'Endereço atualizado com sucesso.', 'Falha ao atualizar endereço.');
+      await _showResultDialog(context, success, translate('profile.address_update_success'), translate('profile.address_update_error'));
     }
   } else if (collaborator != null) {
     final c = collaborator;
     final fields = [
-      FieldDefinition(key: 'address', label: 'Endereço', initialValue: c.address ?? ''),
-      FieldDefinition(key: 'addressNumber', label: 'Número', initialValue: c.addressNumber ?? ''),
-      FieldDefinition(key: 'addressComplement', label: 'Complemento', initialValue: c.addressComplement ?? ''),
-      FieldDefinition(key: 'neighborhood', label: 'Bairro', initialValue: c.neighborhood ?? ''),
-      FieldDefinition(key: 'city', label: 'Cidade', initialValue: c.city ?? ''),
-      FieldDefinition(key: 'state', label: 'Estado', initialValue: c.state ?? ''),
-      FieldDefinition(key: 'zipCode', label: 'CEP', initialValue: c.zipCode ?? ''),
+      FieldDefinition(key: 'address', label: translate('profile.address'), initialValue: c.address ?? ''),
+      FieldDefinition(key: 'addressNumber', label: translate('profile.address_number'), initialValue: c.addressNumber ?? ''),
+      FieldDefinition(key: 'addressComplement', label: translate('profile.address_complement'), initialValue: c.addressComplement ?? ''),
+      FieldDefinition(key: 'neighborhood', label: translate('profile.neighborhood'), initialValue: c.neighborhood ?? ''),
+      FieldDefinition(key: 'city', label: translate('profile.city'), initialValue: c.city ?? ''),
+      FieldDefinition(key: 'state', label: translate('profile.state'), initialValue: c.state ?? ''),
+      FieldDefinition(key: 'zipCode', label: translate('profile.zip_code'), initialValue: c.zipCode ?? ''),
     ];
 
     final res = await showEditEntityBottomSheet(context: context, title: 'Editar endereço', fields: fields);
@@ -297,22 +298,22 @@ Future<bool?> showChildEditDialogs(
         decoration: BoxDecoration(color: Theme.of(context).canvasColor, borderRadius: BorderRadius.circular(12)),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           const SizedBox(height: 16),
-          const Text('Editar dados da criança', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(translate('profile.edit_child'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Divider(),
           ListTile(
             leading: const Icon(Icons.person),
-            title: const Text('Editar dados pessoais'),
+            title: Text(translate('profile.edit_personal')),
             onTap: () => Navigator.of(context).pop('personal'),
           ),
           ListTile(
             leading: const Icon(Icons.home),
-            title: const Text('Editar endereço'),
+            title: Text(translate('profile.edit_address')),
             onTap: () => Navigator.of(context).pop('address'),
           ),
           ListTile(
             leading: const Icon(Icons.close, color: danger),
-            title: const Text('Cancelar'),
+            title: Text(translate('buttons.cancel')),
             onTap: () => Navigator.of(context).pop(null),
           ),
         ]),
@@ -337,7 +338,7 @@ Future<bool?> _editChildPersonal(
   final c = child;
   DateTime? parsedBirth = BaseModel.tryParseTimestamp(c.birthDate);
   final fields = [
-    FieldDefinition(key: 'name', label: 'Nome', initialValue: c.name ?? '', required: true),
+    FieldDefinition(key: 'name', label: translate('profile.name'), initialValue: c.name ?? '', required: true),
     FieldDefinition(key: 'email', label: 'Email', type: FieldType.email, initialValue: c.email ?? ''),
     FieldDefinition(key: 'birthDate', label: 'Data de Nascimento', type: FieldType.date, initialValue: parsedBirth),
     FieldDefinition(key: 'phone', label: 'Telefone', type: FieldType.phone, initialValue: c.phone ?? ''),

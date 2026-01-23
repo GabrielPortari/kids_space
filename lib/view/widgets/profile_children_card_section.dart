@@ -4,6 +4,7 @@ import 'package:kids_space/model/child.dart';
 import 'package:kids_space/model/user.dart';
 import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
+import 'package:kids_space/util/localization_service.dart';
 
 
 class ProfileChildrenCardSection extends StatefulWidget {
@@ -47,10 +48,10 @@ class _ProfileChildrenCardSectionState extends State<ProfileChildrenCardSection>
   Widget build(BuildContext context) {
     final header = Row(children: [
       Expanded(
-        child: const Text(
-          'Crianças sob responsabilidade',
+            child: Text(
+              translate('ui.children_under_responsibility'),
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ),
       IconButton(
@@ -60,25 +61,25 @@ class _ProfileChildrenCardSectionState extends State<ProfileChildrenCardSection>
     ]);
 
     final firstChildWidget = _children.isEmpty
-        ? Center(child: Text('Nenhuma criança cadastrada.', style: TextStyle(color: Theme.of(context).colorScheme.primary)))
+          ? Center(child: Text(translate('ui.no_children'), style: TextStyle(color: Theme.of(context).colorScheme.primary)))
         : ListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(_children.first.name ?? ''),
-            subtitle: Text('${(_children.first.checkedIn ?? false) ? 'Ativa' : 'Inativa'}${_children.first.document != null && _children.first.document!.isNotEmpty ? ' · ${_children.first.document}' : ''}'),
+            subtitle: Text('${(_children.first.checkedIn ?? false) ? translate('profile.active') : translate('profile.inactive')}${_children.first.document != null && _children.first.document!.isNotEmpty ? ' · ${_children.first.document}' : ''}'),
             onTap: () {
               Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => ProfileScreen(selectedChild: _children.first)));
             },
           );
 
     final fullListWidget = _children.isEmpty
-        ? Center(child: Text('Nenhuma criança cadastrada.', style: TextStyle(color: Theme.of(context).colorScheme.primary)))
+            ? Center(child: Text(translate('ui.no_children'), style: TextStyle(color: Theme.of(context).colorScheme.primary)))
         : Column(
             children: _children.map((c) {
               return Column(children: [
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(c.name ?? ''),
-                  subtitle: Text('${(c.checkedIn ?? false) ? 'Ativa' : 'Inativa'}${c.document != null && c.document!.isNotEmpty ? ' · ${c.document}' : ''}'),
+                  subtitle: Text('${(c.checkedIn ?? false) ? translate('profile.active') : translate('profile.inactive')}${c.document != null && c.document!.isNotEmpty ? ' · ${c.document}' : ''}'),
                   onTap: () {
                     Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => ProfileScreen(selectedChild: c)));
                   },

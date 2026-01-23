@@ -4,6 +4,7 @@ import 'package:kids_space/controller/auth_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/model/company.dart';
+import 'package:kids_space/util/localization_service.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import '../../util/admin_tile_helpers.dart';
 import '../../model/admin_tile_model.dart';
@@ -44,19 +45,19 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        tooltip: 'Sair',
+        tooltip: translate('admin.exit_title'),
         onPressed: () {
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
-              title: const Text('Sair'),
-              content: const Text('Deseja sair do painel de administrador?'),
+              title: Text(translate('admin.exit_title')),
+              content: Text(translate('admin.exit_message')),
               actions: [
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: const Text('Cancelar'),
+                  child: Text(translate('buttons.cancel')),
                 ),
                 TextButton(
                   style: TextButton.styleFrom(
@@ -67,7 +68,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     await _authController.logout();
                     Navigator.of(context).pushNamedAndRemoveUntil('/company_selection', (route) => false);
                   },
-                  child: const Text('Deslogar'),
+                  child: Text(translate('admin.logout')),
                 ),
               ],
             ),
