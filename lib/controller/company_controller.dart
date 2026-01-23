@@ -61,11 +61,10 @@ abstract class _CompanyControllerBase extends BaseController with Store {
   /// Synchronous lookup from cached list. Returns null if not found or id empty.
   Company? getCompanyById(String id) {
     if (id.isEmpty) return null;
-    try {
-      return _companies.firstWhere((c) => c.id == id);
-    } catch (_) {
-      return null;
+    for (final c in _companies) {
+      if (c.id == id) return c;
     }
+    return null;
   }
 
   /// Fetch company from API and update cache. Returns the fetched company or null on error.

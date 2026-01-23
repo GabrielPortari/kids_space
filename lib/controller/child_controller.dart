@@ -34,25 +34,28 @@ abstract class _ChildController extends BaseController with Store {
 
   // Retorna um mapa de childId para lista de responsáveis (User)
   Map<String, List<User>> getChildrenWithResponsibles(List<Child> children) {
-    Map<String, List<User>> result = {};
+    final Map<String, List<User>> result = {};
+    if (children.isEmpty) return result;
+    // build fast lookup for users by id
+    final Map<String, User> usersById = {};
+    for (final u in _userController.users) {
+      if (u.id != null) usersById[u.id!] = u;
+    }
+
     for (final child in children) {
-      List<String>? responsibleIds = child.responsibleUserIds;
-      if(responsibleIds != null){
-        for(final id in responsibleIds) {
-          for(final user in _userController.users) {
-            // associate only matching users
-            if (user.id == id) {
-              result.putIfAbsent(child.id!, () => []).add(user);
-            }
-          }
-        }
+      final responsibleIds = child.responsibleUserIds;
+      if (responsibleIds == null || responsibleIds.isEmpty) continue;
+      for (final id in responsibleIds) {
+        final user = usersById[id];
+        if (user != null) result.putIfAbsent(child.id!, () => []).add(user);
       }
     }
     return result;
   }
   
   Map<String, List<User>> get activeChildrenWithResponsibles { 
-    return {};
+    final active = children.where((c) => c.checkedIn == true).toList();
+    return getChildrenWithResponsibles(active);
   }
 
   // Atualiza uma criança (delegando ao serviço)
@@ -76,33 +79,24 @@ abstract class _ChildController extends BaseController with Store {
   Future<Child?> fetchChildById(String? id) async {
     if (id == null) return null;
     final fetched = await _childService.getChildById(id);
-    if (fetched != null) {
-      final idx = children.indexWhere((c) => c.id == fetched.id);
-      if (idx >= 0) {
-        final newList = List<Child>.from(children);
-        newList[idx] = fetched;
-        children = newList;
-      } else {
-        children = [...children, fetched];
-      }
-      // deduplicate children by id and assign to trigger observers
-      final Map<String, Child> uniq = {};
-      for (final c in children) {
-        if (c.id != null) uniq[c.id!] = c;
-      }
-      children = uniq.values.toList();
+    if (fetched == null) return null;
+    // update cache using a map to ensure uniqueness (single assignment to observable)
+    final Map<String, Child> byId = {};
+    for (final c in children) {
+      if (c.id != null) byId[c.id!] = c;
     }
+    if (fetched.id != null) byId[fetched.id!] = fetched;
+    children = byId.values.toList();
     return fetched;
   }
 
   /// Synchronous cache-only lookup. Returns null if not present locally.
   Child? getChildFromCache(String? id) {
     if (id == null) return null;
-    try {
-      return children.firstWhere((c) => c.id == id);
-    } catch (_) {
-      return null;
+    for (final c in children) {
+      if (c.id == id) return c;
     }
+    return null;
   }
 
   // Expõe exclusão de criança delegando ao serviço

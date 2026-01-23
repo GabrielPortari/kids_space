@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
 import 'package:kids_space/service/collaborator_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mobx/mobx.dart';
@@ -54,18 +53,16 @@ abstract class _CollaboratorController extends BaseController with Store {
 
   /// Define o colaborador logado e persiste localmente
   @action
-  setLoggedCollaborator(Collaborator? collaborator)  {
+  setLoggedCollaborator(Collaborator? collaborator)  async{
     loggedCollaborator = collaborator;
     try {
       if (collaborator != null) {
-        secureStorage.write(key: 'loggedCollaborator', value: jsonEncode(collaborator.toJson()));
-        developer.log('CollaboratorController.setLoggedCollaborator persisted', name: 'CollaboratorController', error: {'id': collaborator.id});
+        await secureStorage.write(key: 'loggedCollaborator', value: jsonEncode(collaborator.toJson()));
       } else {
-        secureStorage.delete(key: 'loggedCollaborator');
-        developer.log('CollaboratorController.setLoggedCollaborator cleared', name: 'CollaboratorController');
+        await secureStorage.delete(key: 'loggedCollaborator');
       }
-    } catch (e) {
-      developer.log('CollaboratorController.setLoggedCollaborator persist failed', name: 'CollaboratorController', error: e);
+    } catch (_) {
+      // swallow storage errors silently; nothing actionable in UI
     }
   }
 
@@ -93,9 +90,7 @@ abstract class _CollaboratorController extends BaseController with Store {
         loggedCollaborator = Collaborator.fromJson(jsonDecode(jsonString));
         return true;
       }
-    } catch (e) {
-      developer.log('CollaboratorController.loadLoggedCollaboratorFromPrefs failed', name: 'CollaboratorController', error: e);
-    }
+    } catch (_) {}
     loggedCollaborator = null;
     return false;
   }
@@ -127,12 +122,7 @@ abstract class _CollaboratorController extends BaseController with Store {
 
   /// Busca colaborador por id delegando ao serviço
   Future<Collaborator?> getCollaboratorById(String id) async {
-    try {
-      return await _collaboratorService.getCollaboratorById(id);
-    } catch (e) {
-      developer.log('CollaboratorController.getCollaboratorById failed', name: 'CollaboratorController', error: e);
-      return null;
-    }
+    return await _collaboratorService.getCollaboratorById(id);
   }
 
   @action

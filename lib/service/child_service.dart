@@ -1,5 +1,4 @@
 import 'dart:developer' as dev;
-import 'dart:developer' as developer;
 
 import 'package:dio/dio.dart';
 import 'package:kids_space/service/base_service.dart';
@@ -7,23 +6,18 @@ import 'package:kids_space/service/base_service.dart';
 import '../model/child.dart';
 
 class ChildService extends BaseService {
-  List<Child> getActiveCheckedInChildren(String companyId) {
-    return [];
-  }
   
   Future<Child?> getChildById(String? childId) async {
     try {
-      developer.log('getChildById -> request', name: 'ChildService', error: {'path': '/children/$childId'});
       final response = await dio.get('/children/$childId');
-      developer.log('getChildById -> response', name: 'ChildService', error: {'status': response.statusCode, 'data': response.data});
       if (response.statusCode == 200 && response.data != null) {
-        developer.log(response.toString(), name: 'ChildService');
         return Child.fromJson(response.data as Map<String, dynamic>);
       } else {
         return null;
       }
-    } catch (e, st) {
-      developer.log('getCollaboratorById error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
+    } catch (e) {
+      // log error for diagnostics
+      dev.log('ChildService.getChildById error: $e');
       return null;
     }
   }
@@ -49,13 +43,12 @@ class ChildService extends BaseService {
       dev.log('ChildService.addChild payload: $payload');
       // If parentId is expected as part of the route, send to /users/{parentId}/child
       final response = await dio.post('/users/$parentId/child', data: payload);
-      dev.log('ChildService.addChild status=${response.statusCode} data=${response.data}');
       return response.statusCode == 200 || response.statusCode == 201;
     } on DioException catch (e) {
       dev.log('ChildService.addChild DioException: ${e.response?.data ?? e.message}');
       return false;
-    } catch (e, st) {
-      dev.log('ChildService.addChild error: $e', stackTrace: st);
+    } catch (e) {
+      dev.log('ChildService.addChild error: $e');
       return false;
     }
   }
@@ -80,10 +73,10 @@ class ChildService extends BaseService {
       final response = await dio.put('/children/$id', data: payload);
       return response.statusCode == 200 || response.statusCode == 201;
     } on DioException catch (e) {
-      dev.log('UserService.updateUser DioException: ${e.response?.data ?? e.message}');
+      dev.log('ChildService.updateChild DioException: ${e.response?.data ?? e.message}');
       return false;
-    } catch (e, st) {
-      dev.log('UserService.updateUser error: $e', stackTrace: st);
+    } catch (e) {
+      dev.log('ChildService.updateChild error: $e');
       return false;
     }
   }
@@ -92,13 +85,12 @@ class ChildService extends BaseService {
     try {
       if (childId.isEmpty) return false;
       final response = await dio.delete('/children/$childId');
-      dev.log('ChildService.deleteChild status=${response.statusCode} data=${response.data}');
       return response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204;
     } on DioException catch (e) {
       dev.log('ChildService.deleteChild DioException: ${e.response?.data ?? e.message}');
       return false;
-    } catch (e, st) {
-      dev.log('ChildService.deleteChild error: $e', stackTrace: st);
+    } catch (e) {
+      dev.log('ChildService.deleteChild error: $e');
       return false;
     }
   }
@@ -137,8 +129,8 @@ class ChildService extends BaseService {
     } on DioException catch (e) {
       dev.log('ChildService.getChildrenByCompanyId DioException: ${e.response?.data ?? e.message}');
       return [];
-    } catch (e, st) {
-      dev.log('ChildService.getChildrenByCompanyId error: $e', stackTrace: st);
+    } catch (e) {
+      dev.log('ChildService.getChildrenByCompanyId error: $e');
       return [];
     }
   }

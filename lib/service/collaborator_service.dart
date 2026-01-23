@@ -1,5 +1,5 @@
 // Serviço de colaboradores usando Firebase Auth e Firestore
-import 'dart:developer' as developer;
+import 'dart:developer' as dev;
 import 'package:dio/dio.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,7 +16,6 @@ class CollaboratorService extends BaseService {
 
   /// Tenta autenticar com Firebase Auth e retorna os dados do colaborador no Firestore
   Future<Collaborator?> loginCollaborator(String email, String password) async {
-    developer.log('loginCollaborator called: email=$email', name: 'CollaboratorService');
     try {
       final cred = await _auth.signInWithEmailAndPassword(email: email, password: password);
       final uid = cred.user?.uid;
@@ -26,7 +25,6 @@ class CollaboratorService extends BaseService {
         if (doc.exists && doc.data() != null) {
           final data = Map<String, dynamic>.from(doc.data()!);
           data['id'] = doc.id;
-          developer.log('loginCollaborator found id=${doc.id}', name: 'CollaboratorService');
           return Collaborator.fromJson(data);
         }
       }
@@ -37,31 +35,25 @@ class CollaboratorService extends BaseService {
         final doc = query.docs.first;
         final data = Map<String, dynamic>.from(doc.data());
         data['id'] = doc.id;
-        developer.log('loginCollaborator found by email id=${doc.id}', name: 'CollaboratorService');
         return Collaborator.fromJson(data);
       }
-
-      developer.log('loginCollaborator not found for email=$email', name: 'CollaboratorService');
       return null;
-    } catch (e, st) {
-      developer.log('loginCollaborator error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
+    } catch (e) {
+      dev.log('CollaboratorService.loginCollaborator error: $e');
       return null;
     }
   }
 
   Future<Collaborator?> getCollaboratorById(String id) async {
     try {
-      developer.log('getCollaboratorById -> request', name: 'CollaboratorService', error: {'path': '/collaborator/$id'});
       final response = await dio.get('/collaborator/$id');
-      developer.log('getCollaboratorById -> response', name: 'CollaboratorService', error: {'status': response.statusCode, 'data': response.data});
       if (response.statusCode == 200 && response.data != null) {
-        developer.log(response.toString(), name: 'CollaboratorService');
         return Collaborator.fromJson(response.data as Map<String, dynamic>);
       } else {
         return null;
       }
-    } catch (e, st) {
-      developer.log('getCollaboratorById error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
+    } catch (e) {
+      dev.log('CollaboratorService.getCollaboratorById error: $e');
       return null;
     }
   }
@@ -91,10 +83,10 @@ class CollaboratorService extends BaseService {
       }).whereType<Collaborator>().toList();
       return list;
     } on DioException catch (e) {
-      developer.log('CollaboratorService.getCollaboratorsByCompanyId DioException: ${e.response?.data ?? e.message}', name: 'CollaboratorService');
+      dev.log('CollaboratorService.getCollaboratorsByCompanyId DioException: ${e.response?.data ?? e.message}');
       return [];
-    } catch (e, st) {
-      developer.log('CollaboratorService.getCollaboratorsByCompanyId error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
+    } catch (e) {
+      dev.log('CollaboratorService.getCollaboratorsByCompanyId error: $e');
       return [];
     }
   }
@@ -103,13 +95,12 @@ class CollaboratorService extends BaseService {
     try {
       if (id.isEmpty) return false;
       final response = await dio.delete('/collaborator/$id');
-      developer.log('deleteCollaborator status=${response.statusCode} data=${response.data}', name: 'CollaboratorService');
       return response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204;
     } on DioException catch (e) {
-      developer.log('deleteCollaborator DioException: ${e.response?.data ?? e.message}', name: 'CollaboratorService');
+      dev.log('CollaboratorService.deleteCollaborator DioException: ${e.response?.data ?? e.message}');
       return false;
-    } catch (e, st) {
-      developer.log('deleteCollaborator error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
+    } catch (e) {
+      dev.log('CollaboratorService.deleteCollaborator error: $e');
       return false;
     }
   }
@@ -127,13 +118,12 @@ class CollaboratorService extends BaseService {
       payload.remove('companyId');
 
       final response = await dio.put('/collaborator/$id', data: payload);
-      developer.log('updateCollaborator status=${response.statusCode} data=${response.data}', name: 'CollaboratorService');
       return response.statusCode == 200 || response.statusCode == 201;
     } on DioException catch (e) {
-      developer.log('updateCollaborator DioException: ${e.response?.data ?? e.message}', name: 'CollaboratorService');
+      dev.log('CollaboratorService.updateCollaborator DioException: ${e.response?.data ?? e.message}');
       return false;
-    } catch (e, st) {
-      developer.log('updateCollaborator error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
+    } catch (e) {
+      dev.log('CollaboratorService.updateCollaborator error: $e');
       return false;
     }
   }
@@ -150,15 +140,13 @@ class CollaboratorService extends BaseService {
       payload.remove('userType');
       payload.remove('companyId');
 
-      developer.log('createCollaborator payload=$payload', name: 'CollaboratorService');
-      
       final response = await dio.post('/collaborator', data: payload);
       return response.statusCode == 200 || response.statusCode == 201;
     } on DioException catch (e) {
-      developer.log('CollaboratorService.createCollaborator DioException: ${e.response?.data ?? e.message}', name: 'CollaboratorService');
+      dev.log('CollaboratorService.createCollaborator DioException: ${e.response?.data ?? e.message}');
       return false;
-    } catch (e, st) {
-      developer.log('CollaboratorService.createCollaborator error: $e', name: 'CollaboratorService', error: e, stackTrace: st);
+    } catch (e) {
+      dev.log('CollaboratorService.createCollaborator error: $e');
       return false;
     }
   }
