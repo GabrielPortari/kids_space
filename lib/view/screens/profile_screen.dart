@@ -159,8 +159,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         (selectedProfileType != null && widget.selectedCollaborator?.id == loggedCollaborator?.id);
 
     final bool canDelete = (loggedUserType == UserType.companyAdmin) &&
-        (selectedProfileType != null && selectedProfileType != SelectedProfileType.company && selectedProfileType != SelectedProfileType.admin);
-        debugPrint('Can delete: $canDelete - $selectedProfileType - Logged type: $loggedUserType - Selected id: ${widget.selectedChild?.id} - Logged id: ${loggedCollaborator?.id}');
+      (selectedProfileType != null && selectedProfileType != SelectedProfileType.company && selectedProfileType != SelectedProfileType.admin);
     
     return _AppBarConfig(
       title: title,

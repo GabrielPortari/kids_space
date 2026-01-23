@@ -16,6 +16,7 @@ import 'package:kids_space/view/design_system/app_button.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:kids_space/view/widgets/skeleton_list.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -136,27 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return AppCard(
         child: SizedBox(
           height: listHeight,
-          child: ListView.builder(
-            padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-            itemCount: 6,
-            itemBuilder: (context, index) => Skeletonizer(
-              enabled: true,
-              child: Card(
-                margin: const EdgeInsets.symmetric(vertical: 6),
-                child: SizedBox(
-                  height: 56,
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Colors.grey.shade300,
-                    ),
-                    title: const SizedBox.shrink(),
-                    subtitle: const SizedBox.shrink(),
-                  ),
-                ),
-              ),
-            ),
-          ),
+          child: const SkeletonList(itemCount: 6),
         ),
       );
     }
@@ -222,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   backgroundColor: isCheckin ? success : danger,
                 ),
-                onTap: () => debugPrint('Tapped event idx=$idx id=${event.id}'),
+                onTap: null,
               );
             },
           ),

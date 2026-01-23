@@ -16,7 +16,7 @@ class UserService extends BaseService {
       payload.remove('updatedAt');
       payload.remove('childrenIds');
 
-      final response = await dio.post('/user/register', data: payload);
+      final response = await dio.post('/users/register', data: payload);
       return response.statusCode == 200 || response.statusCode == 201;
     } on DioException catch (e) {
       dev.log('UserService.createUser DioException: ${e.response?.data ?? e.message}');
@@ -33,7 +33,7 @@ class UserService extends BaseService {
 
   Future<User?> fetchUserById(String id) async {
     try {
-      final response = await dio.get('/user/$id');
+      final response = await dio.get('/users/$id');
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data;
         if (data is Map<String, dynamic>) return User.fromJson(data);
@@ -49,7 +49,7 @@ class UserService extends BaseService {
   Future<List<User>> getUsersByCompanyId(String companyId, {String? token}) async {
     try {
       final opts = token != null ? Options(headers: {'Authorization': 'Bearer $token'}) : null;
-      final response = await dio.get('/user/company/$companyId', options: opts);
+      final response = await dio.get('/users/company/$companyId', options: opts);
 
       if (response.statusCode != 200 && response.statusCode != 201) return [];
 
@@ -89,7 +89,7 @@ class UserService extends BaseService {
   Future<bool> deleteUser(String id) async {
     try {
       if (id.isEmpty) return false;
-      final response = await dio.delete('/user/$id');
+      final response = await dio.delete('/users/$id');
       dev.log('UserService.deleteUser status=${response.statusCode} data=${response.data}');
       return response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204;
     } on DioException catch (e) {
@@ -115,7 +115,7 @@ class UserService extends BaseService {
       payload.remove('updatedAt');
       payload.remove('childrenIds');
 
-      final response = await dio.put('/user/$id', data: payload);
+      final response = await dio.put('/users/$id', data: payload);
       return response.statusCode == 200 || response.statusCode == 201;
     } on DioException catch (e) {
       dev.log('UserService.updateUser DioException: ${e.response?.data ?? e.message}');

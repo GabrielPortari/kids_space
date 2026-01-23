@@ -28,7 +28,6 @@ class _ReportsChartsState extends State<ReportsCharts> {
   final UserController _userController = GetIt.I<UserController>();
   final CollaboratorController _collabController = GetIt.I<CollaboratorController>();
 
-  bool _loading = true;
   List<Attendance> _events = [];
 
   @override
@@ -46,8 +45,6 @@ class _ReportsChartsState extends State<ReportsCharts> {
   }
 
   Future<void> _loadData() async {
-    try{
-    setState(() => _loading = true);
       // determine effective date range based on selected type
       DateTime? effFrom = widget.from;
       DateTime? effTo = widget.to;
@@ -59,10 +56,10 @@ class _ReportsChartsState extends State<ReportsCharts> {
       final companyId = GetIt.I<CompanyController>().companySelected?.id;
       if (companyId != null && companyId.isNotEmpty) {
         final list = await _attendanceController.getAttendancesBetween(companyId, from: effFrom, to: effTo);
-        _events = list;
+        setState(() => _events = list);
       } else {
         final all = _attendanceController.events ?? [];
-        _events = _filterByRange(all, effFrom, effTo);
+        setState(() => _events = _filterByRange(all, effFrom, effTo));
       }
 
       // ensure controllers have cached data for name resolution (fire-and-forget)
@@ -84,15 +81,7 @@ class _ReportsChartsState extends State<ReportsCharts> {
         final exists = _collabController.collaborators.any((x) => x.id == c.id);
         if (!exists) _collabController.collaborators.add(c);
       }
-    } finally {
-      setState(() => _loading = false);
-    }
   }
-
-
-  // helper to call user fetch without blocking
-  // helper fetches (fire-and-forget)
-
   List<Attendance> _filterByRange(List<Attendance> all, DateTime? from, DateTime? to) {
     if (from == null && to == null) return all;
     final start = from ?? DateTime(1970);
@@ -113,7 +102,7 @@ class _ReportsChartsState extends State<ReportsCharts> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_attendanceController.isLoadingEvents) return const Center(child: CircularProgressIndicator());
 
     final events = _events;
 

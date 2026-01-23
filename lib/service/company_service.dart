@@ -6,7 +6,7 @@ class CompanyService extends BaseService {
   
   Future<List<Company>> getAllCompanies() async {
     try{
-      final response = await dio.get('/company');
+      final response = await dio.get('/companies');
       final companiesData = response.data as List<dynamic>;
       dev.log('Fetched ${companiesData.length} companies', name: 'CompanyService');
       return companiesData.map((data) => Company.fromJson(data)).toList();
@@ -17,7 +17,7 @@ class CompanyService extends BaseService {
 
   Future<Company> getCompanyById(String id) async {
     try{
-      final response = await dio.get('/company/$id');
+      final response = await dio.get('/companies/$id');
       dev.log('Fetched company with id: $id', name: 'CompanyService');
       return Company.fromJson(response.data);
     } catch (e) {

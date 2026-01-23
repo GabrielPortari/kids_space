@@ -1,6 +1,5 @@
 import 'package:kids_space/model/attendance.dart';
 import 'package:kids_space/service/attendance_service.dart';
-// developer logs removed; keep controller imports minimal
 import 'package:mobx/mobx.dart';
 import 'base_controller.dart';
 

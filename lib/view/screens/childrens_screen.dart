@@ -13,6 +13,7 @@ import 'package:kids_space/view/design_system/app_text.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:kids_space/view/widgets/skeleton_list.dart';
 
 class ChildrensScreen extends StatefulWidget {
   final bool onlyActive;
@@ -163,25 +164,7 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
           onRefresh: () async => await _loadActiveChildrenWithResponsibles(),
           child: Observer(builder: (_) {
             if (_childController.refreshLoading) {
-              return ListView.builder(
-                padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-                itemCount: 6,
-                itemBuilder: (context, index) {
-                  return Skeletonizer(
-                    enabled: true,
-                    child: Card(
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      child: Center(
-                        child: ListTile(
-                          leading: CircleAvatar(radius: 20, backgroundColor: Colors.grey.shade300),
-                          title: const SizedBox.shrink(),
-                          subtitle: const SizedBox.shrink(),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              );
+                      return const SkeletonList(itemCount: 6);
             }
 
             if (_allChildren.isEmpty) {
@@ -236,25 +219,7 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   }
 
   Widget _buildSkeletonList() {
-    return ListView.builder(
-      padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-      itemCount: 8,
-      itemBuilder: (context, index) {
-        return Skeletonizer(
-          enabled: true,
-          child: Card(
-            margin: const EdgeInsets.symmetric(vertical: 4),
-            child: Center(
-              child: ListTile(
-                leading: CircleAvatar(radius: 20, backgroundColor: Colors.grey.shade300),
-                title: const SizedBox.shrink(),
-                subtitle: const SizedBox.shrink(),
-              ),
-            ),
-          ),
-        );
-      },
-    );
+    return const SkeletonList(itemCount: 8);
   }
 
   Widget _childTile(Child child) {

@@ -10,7 +10,7 @@ import 'package:kids_space/util/date_hour_util.dart';
 import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
-import 'package:skeletonizer/skeletonizer.dart';
+import 'package:kids_space/view/widgets/skeleton_list.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -181,25 +181,7 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   Widget _buildSkeletonList() {
-    return ListView.builder(
-      padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-      itemCount: 8,
-      itemBuilder: (context, index) {
-        return Skeletonizer(
-          enabled: true,
-          child: Card(
-            margin: const EdgeInsets.symmetric(vertical: 4),
-            child: Center(
-              child: ListTile(
-                leading: CircleAvatar(radius: 20, backgroundColor: Colors.grey.shade300),
-                title: const SizedBox.shrink(),
-                subtitle: const SizedBox.shrink(),
-              ),
-            ),
-          ),
-        );
-      },
-    );
+    return const SkeletonList(itemCount: 8);
   }
 
   Widget _userTile(User user) {

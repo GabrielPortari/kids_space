@@ -13,8 +13,8 @@ class ChildService extends BaseService {
   
   Future<Child?> getChildById(String? childId) async {
     try {
-      developer.log('getChildById -> request', name: 'ChildService', error: {'path': '/child/$childId'});
-      final response = await dio.get('/child/$childId');
+      developer.log('getChildById -> request', name: 'ChildService', error: {'path': '/children/$childId'});
+      final response = await dio.get('/children/$childId');
       developer.log('getChildById -> response', name: 'ChildService', error: {'status': response.statusCode, 'data': response.data});
       if (response.statusCode == 200 && response.data != null) {
         developer.log(response.toString(), name: 'ChildService');
@@ -47,8 +47,8 @@ class ChildService extends BaseService {
       if (!hasAddress) payload['inheritAddress'] = true;
 
       dev.log('ChildService.addChild payload: $payload');
-      // If parentId is expected as part of the route, send to /user/{parentId}/child
-      final response = await dio.post('/user/$parentId/child', data: payload);
+      // If parentId is expected as part of the route, send to /users/{parentId}/child
+      final response = await dio.post('/users/$parentId/child', data: payload);
       dev.log('ChildService.addChild status=${response.statusCode} data=${response.data}');
       return response.statusCode == 200 || response.statusCode == 201;
     } on DioException catch (e) {
@@ -77,7 +77,7 @@ class ChildService extends BaseService {
       payload.remove('checkedIn');
       payload.remove('responsibleUserIds');
 
-      final response = await dio.put('/child/$id', data: payload);
+      final response = await dio.put('/children/$id', data: payload);
       return response.statusCode == 200 || response.statusCode == 201;
     } on DioException catch (e) {
       dev.log('UserService.updateUser DioException: ${e.response?.data ?? e.message}');
@@ -91,7 +91,7 @@ class ChildService extends BaseService {
   Future<bool> deleteChild(String childId) async {
     try {
       if (childId.isEmpty) return false;
-      final response = await dio.delete('/child/$childId');
+      final response = await dio.delete('/children/$childId');
       dev.log('ChildService.deleteChild status=${response.statusCode} data=${response.data}');
       return response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204;
     } on DioException catch (e) {
@@ -106,7 +106,7 @@ class ChildService extends BaseService {
   Future<List<Child>> getChildrenByCompanyId(String companyId, {String? token}) async {
     try {
       final opts = token != null ? Options(headers: {'Authorization': 'Bearer $token'}) : null;
-      final response = await dio.get('/child/company/$companyId', options: opts);
+      final response = await dio.get('/children/company/$companyId', options: opts);
 
       if (response.statusCode != 200 && response.statusCode != 201) return [];
 

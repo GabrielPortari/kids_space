@@ -54,7 +54,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    debugPrint('DebuggerLog: AdminPanelScreen.logout.cancel');
                     Navigator.pop(context);
                   },
                   child: const Text('Cancelar'),
@@ -65,7 +64,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   ),
                   onPressed: () async {
-                    debugPrint('DebuggerLog: AdminPanelScreen.logout.confirm');
                     await _authController.logout();
                     Navigator.of(context).pushNamedAndRemoveUntil('/company_selection', (route) => false);
                   },
@@ -98,19 +96,18 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                             MaterialPageRoute(builder: (_) => 
                             ProfileScreen(selectedCompany: company))
                           );
-                          debugPrint('DebuggerLog: AdminPanelScreen.navigate.companies');
                         } else if(model.type == AdminTileType.responsible){
                           Navigator.pushNamed(context, getNavigationRoute(model.type));
-                          debugPrint('DebuggerLog: AdminPanelScreen.navigate.responsibles');
+                          
                         } else if(model.type == AdminTileType.child){
                           Navigator.pushNamed(context, getNavigationRoute(model.type));
-                          debugPrint('DebuggerLog: AdminPanelScreen.navigate.children');
+                          
                         } else if(model.type == AdminTileType.collaborator){
                           Navigator.pushNamed(context, getNavigationRoute(model.type));
-                          debugPrint('DebuggerLog: AdminPanelScreen.navigate.collaborators');
+                          
                         } else if(model.type == AdminTileType.reports){
                           Navigator.pushNamed(context, getNavigationRoute(model.type));
-                          debugPrint('DebuggerLog: AdminPanelScreen.navigate.reports');
+                          
                         }
                       },
                     );

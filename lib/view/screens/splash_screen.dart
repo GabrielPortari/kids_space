@@ -89,7 +89,7 @@ class _SplashScreenState extends State<SplashScreen> {
           }
         }
       } catch (e) {
-        debugPrint('Failed to refresh logged collaborator: $e');
+        // ignore: avoid_print
       }
     if (!mounted) return;
     if (loggedCollaborator != null) {

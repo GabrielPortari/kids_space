@@ -152,7 +152,7 @@ class CollaboratorService extends BaseService {
 
       developer.log('createCollaborator payload=$payload', name: 'CollaboratorService');
       
-      final response = await dio.post('/collaborator/register', data: payload);
+      final response = await dio.post('/collaborator', data: payload);
       return response.statusCode == 200 || response.statusCode == 201;
     } on DioException catch (e) {
       developer.log('CollaboratorService.createCollaborator DioException: ${e.response?.data ?? e.message}', name: 'CollaboratorService');
