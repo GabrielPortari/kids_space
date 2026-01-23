@@ -48,7 +48,27 @@ class CollaboratorService extends BaseService {
     try {
       final response = await dio.get('/collaborator/$id');
       if (response.statusCode == 200 && response.data != null) {
-        return Collaborator.fromJson(response.data as Map<String, dynamic>);
+        dynamic payload = response.data;
+        if (payload is Map<String, dynamic>) {
+          if (payload['data'] is Map<String, dynamic>) payload = payload['data'];
+          else if (payload['collaborator'] is Map<String, dynamic>) payload = payload['collaborator'];
+          else if (payload['result'] is Map<String, dynamic>) payload = payload['result'];
+        }
+
+        if (payload is Map<String, dynamic>) {
+          if (payload['id'] == null || (payload['id'] is String && (payload['id'] as String).isEmpty)) {
+            payload['id'] = id;
+            dev.log('CollaboratorService: injected id into payload', name: 'CollaboratorService');
+          }
+          return Collaborator.fromJson(payload);
+        }
+
+        try {
+          return Collaborator.fromJson(Map<String, dynamic>.from(payload));
+        } catch (e) {
+          dev.log('CollaboratorService.getCollaboratorById parse error: $e');
+        }
+        return null;
       } else {
         return null;
       }

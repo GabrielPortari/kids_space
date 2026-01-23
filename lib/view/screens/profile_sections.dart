@@ -1,9 +1,11 @@
+import 'dart:developer' as dev;
 import 'package:flutter/material.dart';
 import 'package:kids_space/model/base_user.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/model/company.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/model/user.dart';
+import 'package:kids_space/util/date_hour_util.dart';
 import 'package:kids_space/view/widgets/profile_picture_section.dart';
 import 'package:kids_space/view/widgets/profile_header_section.dart';
 import 'package:kids_space/view/widgets/profile_info_card_section.dart';
@@ -26,6 +28,10 @@ class ProfileContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    dev.log('ProfileContent build - selectedUser: ${selectedUser?.toJson() ?? selectedUser}', name: 'ProfileContent');
+    dev.log('ProfileContent build - selectedChild: ${selectedChild?.toJson() ?? selectedChild}', name: 'ProfileContent');
+    dev.log('ProfileContent build - selectedCollaborator: ${selectedCollaborator?.toJson() ?? selectedCollaborator}', name: 'ProfileContent');
+    dev.log('ProfileContent build - selectedCompany: ${selectedCompany?.toJson() ?? selectedCompany}', name: 'ProfileContent');
     final Map<String, String> infoMap = _getProfileData();
     final profileEntries = infoMap.entries.toList();
     final Map<String, String> addressMap = _getAddressData();
@@ -43,7 +49,7 @@ class ProfileContent extends StatelessWidget {
         ProfileHeaderSection(
           name: selectedChild?.name ?? selectedUser?.name ?? selectedCollaborator?.name ?? selectedCompany?.fantasyName ?? 'name_placeholder',
           userTypeLabel: selectedUser != null ? 'Usuário' : selectedCompany != null ? 'Empresa' : selectedCollaborator != null ? (selectedCollaborator?.userType == UserType.companyAdmin ? 'Administrador' : 'Colaborador') : selectedChild != null ? 'Criança' : 'user_type_placeholder',
-          id: selectedUser?.id ?? selectedCollaborator?.id ?? selectedChild?.id ?? selectedCompany?.id ?? 'user_id_placeholder',
+          id: selectedUser?.id ?? selectedCollaborator?.id ?? selectedChild?.id ?? selectedCompany?.id,
         ),
         const SizedBox(height: 16),
         ProfileInfoCardSection(title: 'Dados pessoais', entries: profileEntries),
@@ -63,7 +69,7 @@ class ProfileContent extends StatelessWidget {
       return {
         'Nome': u.name ?? '-',
         'Email': u.email ?? '-',
-        'Data de Nascimento': dt == null ? '-' : dt.toLocal().toString(),
+        'Data de Nascimento': dt == null ? '-' : formatDate_ddMMyyyy(dt),
         'Telefone': u.phone ?? '-',
         'Documento': u.document ?? '-',
       };
@@ -73,7 +79,7 @@ class ProfileContent extends StatelessWidget {
       return {
         'Nome': c.name ?? '-',
         'Email': c.email ?? '-',
-        'Data de Nascimento': dt == null ? '-' : dt.toLocal().toString(),
+        'Data de Nascimento': dt == null ? '-' : formatDate_ddMMyyyy(dt),
         'Telefone': c.phone ?? '-',
         'Documento': c.document ?? '-',
       };
@@ -96,7 +102,7 @@ class ProfileContent extends StatelessWidget {
       return {
         'Nome': ch.name ?? '-',
         'Email': ch.email ?? '-',
-        'Data de Nascimento': dt == null ? '-' : dt.toLocal().toString(),
+        'Data de Nascimento': dt == null ? '-' : formatDate_ddMMyyyy(dt),
         'Telefone': ch.phone ?? '-',
         'Documento': ch.document ?? '-',
         'Status': (ch.checkedIn ?? false) ? 'Ativa' : 'Inativa',

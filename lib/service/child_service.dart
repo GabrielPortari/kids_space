@@ -10,13 +10,32 @@ class ChildService extends BaseService {
   Future<Child?> getChildById(String? childId) async {
     try {
       final response = await dio.get('/children/$childId');
+
       if (response.statusCode == 200 && response.data != null) {
-        return Child.fromJson(response.data as Map<String, dynamic>);
-      } else {
-        return null;
+        dynamic payload = response.data;
+
+        if (payload is Map<String, dynamic>) {
+          if (payload['data'] is Map<String, dynamic>) payload = payload['data'];
+          else if (payload['child'] is Map<String, dynamic>) payload = payload['child'];
+          else if (payload['result'] is Map<String, dynamic>) payload = payload['result'];
+        }
+
+        if (payload is Map<String, dynamic>) {
+          if (payload['id'] == null || (payload['id'] is String && (payload['id'] as String).isEmpty)) {
+            payload['id'] = childId;
+            dev.log('ChildService: injected id into payload', name: 'ChildService');
+          }
+          return Child.fromJson(payload);
+        }
+
+        try {
+          return Child.fromJson(Map<String, dynamic>.from(payload));
+        } catch (e) {
+          dev.log('ChildService.getChildById parse error: $e');
+        }
       }
+      return null;
     } catch (e) {
-      // log error for diagnostics
       dev.log('ChildService.getChildById error: $e');
       return null;
     }
@@ -40,7 +59,6 @@ class ChildService extends BaseService {
       final hasAddress = addressKeys.any((k) => payload.containsKey(k));
       if (!hasAddress) payload['inheritAddress'] = true;
 
-      dev.log('ChildService.addChild payload: $payload');
       // If parentId is expected as part of the route, send to /users/{parentId}/child
       final response = await dio.post('/users/$parentId/child', data: payload);
       return response.statusCode == 200 || response.statusCode == 201;

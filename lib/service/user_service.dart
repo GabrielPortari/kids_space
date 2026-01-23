@@ -34,10 +34,33 @@ class UserService extends BaseService {
   Future<User?> fetchUserById(String id) async {
     try {
       final response = await dio.get('/users/$id');
+      // response payload inspected only when necessary; avoid noisy logs
+
       if (response.statusCode == 200 && response.data != null) {
-        final data = response.data;
-        if (data is Map<String, dynamic>) return User.fromJson(data);
-        return User.fromJson(Map<String, dynamic>.from(data));
+        dynamic payload = response.data;
+
+        // Unwrap common envelopes
+        if (payload is Map<String, dynamic>) {
+          if (payload['data'] is Map<String, dynamic>) payload = payload['data'];
+          else if (payload['user'] is Map<String, dynamic>) payload = payload['user'];
+          else if (payload['result'] is Map<String, dynamic>) payload = payload['result'];
+        }
+
+        if (payload is Map<String, dynamic>) {
+          // If backend doesn't include the id in the payload, inject the id from the request URL.
+          if (payload['id'] == null || (payload['id'] is String && (payload['id'] as String).isEmpty)) {
+            payload['id'] = id;
+            dev.log('UserService: injected id into payload', name: 'UserService');
+          }
+
+          return User.fromJson(payload);
+        }
+
+        try {
+          return User.fromJson(Map<String, dynamic>.from(payload));
+        } catch (e) {
+          dev.log('UserService.fetchUserById - failed to convert payload to Map: $e', name: 'UserService');
+        }
       }
       return null;
     } catch (e) {
