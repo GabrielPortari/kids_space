@@ -5,8 +5,8 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/child_controller.dart';
-import 'package:kids_space/controller/user_controller.dart';
-import 'package:kids_space/model/user.dart';
+import 'package:kids_space/controller/parent_controller.dart';
+import 'package:kids_space/model/parent.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
@@ -27,13 +27,13 @@ class ChildrensScreen extends StatefulWidget {
 class _ChildrensScreenState extends State<ChildrensScreen> {
   final CompanyController _companyController = GetIt.I.get<CompanyController>();
   final ChildController _childController = GetIt.I.get<ChildController>();
-  final UserController _userController = GetIt.I.get<UserController>();
+  final ParentController _userController = GetIt.I.get<ParentController>();
 
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   List<Child> _allChildren = [];
   List<Child> _filteredChildren = [];
-  Map<String, List<User>> _childrenResponsibles = {};
+  Map<String, List<Parent>> _childrenResponsibles = {};
 
   @override
   void initState() {
@@ -64,7 +64,9 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
           _filteredChildren = _allChildren.where((child) {
             final name = child.name?.toLowerCase() ?? '';
             final responsibles = _childrenResponsibles[child.id] ?? [];
-            final responsibleName = responsibles.isNotEmpty ? responsibles.first.name?.toLowerCase() ?? '' : '';
+            final responsibleName = responsibles.isNotEmpty
+                ? responsibles.first.name?.toLowerCase() ?? ''
+                : '';
             return name.contains(q) || responsibleName.contains(q);
           }).toList();
         });
@@ -107,10 +109,17 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   @override
   Widget build(BuildContext context) {
     final bool showAppBar = Navigator.canPop(context);
-    final double topSpacing = showAppBar ? 8.0 : 8 + MediaQuery.of(context).padding.top;
+    final double topSpacing = showAppBar
+        ? 8.0
+        : 8 + MediaQuery.of(context).padding.top;
 
     return Scaffold(
-      appBar: showAppBar ? AppBar(title: Text(widget.onlyActive ? 'Crianças ativas' : 'Crianças'), leading: Navigator.canPop(context) ? const BackButton() : null,) : null,
+      appBar: showAppBar
+          ? AppBar(
+              title: Text(widget.onlyActive ? 'Crianças ativas' : 'Crianças'),
+              leading: Navigator.canPop(context) ? const BackButton() : null,
+            )
+          : null,
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -163,28 +172,46 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
       return Expanded(
         child: RefreshIndicator(
           onRefresh: () async => await _loadActiveChildrenWithResponsibles(),
-          child: Observer(builder: (_) {
-            if (_childController.refreshLoading) {
-                      return const SkeletonList(itemCount: 6);
-            }
+          child: Observer(
+            builder: (_) {
+              if (_childController.refreshLoading) {
+                return const SkeletonList(itemCount: 6);
+              }
 
-            if (_allChildren.isEmpty) {
-              return ListView(padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0), children: [
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24.0),
-                    child: Text(_searchController.text.isEmpty ? 'Nenhuma criança ativa' : 'Nenhuma criança encontrada', style: const TextStyle(color: Colors.grey, fontSize: 16)),
+              if (_allChildren.isEmpty) {
+                return ListView(
+                  padding: const EdgeInsets.only(
+                    top: 8.0,
+                    left: 8.0,
+                    right: 8.0,
                   ),
-                )
-              ]);
-            }
+                  children: [
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24.0),
+                        child: Text(
+                          _searchController.text.isEmpty
+                              ? 'Nenhuma criança ativa'
+                              : 'Nenhuma criança encontrada',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
 
-            return ListView.builder(
-              padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-              itemCount: _filteredChildren.length,
-              itemBuilder: (context, index) => _childTile(_filteredChildren[index]),
-            );
-          }),
+              return ListView.builder(
+                padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+                itemCount: _filteredChildren.length,
+                itemBuilder: (context, index) =>
+                    _childTile(_filteredChildren[index]),
+              );
+            },
+          ),
         ),
       );
     }
@@ -192,29 +219,43 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
     return Expanded(
       child: RefreshIndicator(
         onRefresh: () async => await _onRefresh(),
-        child: Observer(builder: (_) {
-          final filtered = _childController.filteredChildren;
+        child: Observer(
+          builder: (_) {
+            final filtered = _childController.filteredChildren;
 
-          if (_childController.refreshLoading) {
-            return _buildSkeletonList();
-          }
+            if (_childController.refreshLoading) {
+              return _buildSkeletonList();
+            }
 
-          if (filtered.isEmpty) {
-            return ListView(padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0), children: [
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24.0),
-                  child: Text(_searchController.text.isEmpty ? 'Nenhuma criança cadastrada' : 'Nenhuma criança encontrada', style: const TextStyle(color: Colors.grey, fontSize: 16)),
-                ),
-              )
-            ]);
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-            itemCount: _childController.filteredChildren.length,
-            itemBuilder: (context, index) => _childTile(_childController.filteredChildren[index]),
-          );
-        }),
+            if (filtered.isEmpty) {
+              return ListView(
+                padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+                children: [
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24.0),
+                      child: Text(
+                        _searchController.text.isEmpty
+                            ? 'Nenhuma criança cadastrada'
+                            : 'Nenhuma criança encontrada',
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+            return ListView.builder(
+              padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+              itemCount: _childController.filteredChildren.length,
+              itemBuilder: (context, index) =>
+                  _childTile(_childController.filteredChildren[index]),
+            );
+          },
+        ),
       ),
     );
   }
@@ -224,7 +265,8 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   }
 
   Widget _childTile(Child child) {
-    final firstResponsible = child.responsibleUserIds != null && child.responsibleUserIds!.isNotEmpty
+    final firstResponsible =
+        child.responsibleUserIds != null && child.responsibleUserIds!.isNotEmpty
         ? _userController.getUserById(child.responsibleUserIds!.first)
         : null;
 
@@ -236,8 +278,9 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
       child: InkWell(
         onTap: () {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => 
-            ProfileScreen(selectedChild: child))
+            MaterialPageRoute(
+              builder: (_) => ProfileScreen(selectedChild: child),
+            ),
           );
         },
         child: Padding(
@@ -250,7 +293,9 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
                 child: Center(
                   child: CircleAvatar(
                     radius: 20,
-                    backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.2),
                     child: TextBodyMedium(getInitials(child.name)),
                   ),
                 ),
@@ -264,7 +309,10 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
                       children: [
                         Text(
                           child.name ?? '',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                         if (child.checkedIn ?? false)
@@ -280,8 +328,14 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text('Responsável: ${firstResponsible?.name ?? '-'}', style: const TextStyle(fontSize: 15)),
-                    Text('Telefone: ${firstResponsible?.phone ?? '-'}', style: const TextStyle(fontSize: 15, color: Colors.grey)),
+                    Text(
+                      'Responsável: ${firstResponsible?.name ?? '-'}',
+                      style: const TextStyle(fontSize: 15),
+                    ),
+                    Text(
+                      'Telefone: ${firstResponsible?.phone ?? '-'}',
+                      style: const TextStyle(fontSize: 15, color: Colors.grey),
+                    ),
                   ],
                 ),
               ),

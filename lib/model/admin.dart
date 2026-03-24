@@ -1,49 +1,49 @@
 import 'base_model.dart';
 import 'address.dart';
 
-class Collaborator extends BaseModel {
-  final String? companyId;
+class Admin extends BaseModel {
   final String? name;
-  final String? document;
-  final Address? address;
   final String? email;
+  final String? document;
   final String? contact;
+  final Address? address;
+  final bool? active;
 
-  Collaborator({
+  Admin({
     super.id,
     super.createdAt,
     super.updatedAt,
-    this.companyId,
     this.name,
-    this.document,
-    this.address,
     this.email,
+    this.document,
     this.contact,
+    this.address,
+    this.active,
   });
 
-  factory Collaborator.fromJson(Map<String, dynamic> json) => Collaborator(
+  factory Admin.fromJson(Map<String, dynamic> json) => Admin(
     id: json['id'] as String?,
     createdAt: BaseModel.tryParseTimestamp(json['createdAt']),
     updatedAt: BaseModel.tryParseTimestamp(json['updatedAt']),
-    companyId: json['companyId'] as String?,
     name: json['name'] as String?,
+    email: json['email'] as String?,
     document: json['document'] as String?,
+    contact: json['contact'] as String?,
     address: json['address'] is Map
         ? Address.fromJson(Map<String, dynamic>.from(json['address']))
         : null,
-    email: json['email'] as String?,
-    contact: json['contact'] as String?,
+    active: json['active'] as bool?,
   );
 
   Map<String, dynamic> toJson() => {
     'id': id,
     'createdAt': createdAt?.toIso8601String(),
     'updatedAt': updatedAt?.toIso8601String(),
-    'companyId': companyId,
     'name': name,
-    'document': document,
-    'address': address?.toJson(),
     'email': email,
+    'document': document,
     'contact': contact,
+    'address': address?.toJson(),
+    'active': active,
   };
 }

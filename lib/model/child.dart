@@ -1,64 +1,53 @@
-import 'package:kids_space/model/base_user.dart';
+import 'base_model.dart';
+import 'address.dart';
 
-class Child extends BaseUser{
-
-  final List<String>? responsibleUserIds;
-  final bool? checkedIn;
+class Child extends BaseModel {
+  final String? name;
+  final List<String>? parents;
+  final String? document;
+  final Address? address;
+  final String? email;
+  final String? contact;
+  final String? companyId;
 
   Child({
-    super.userType,
-    super.name,
-    super.email,
-    super.birthDate,
-    super.document,
-    super.phone,
-    super.photoUrl,
-    super.address,
-    super.addressNumber,
-    super.addressComplement,
-    super.neighborhood,
-    super.city,
-    super.state,
-    super.zipCode,
-    super.companyId,
     super.id,
     super.createdAt,
     super.updatedAt,
-    required this.responsibleUserIds, 
-    required this.checkedIn
-    });
+    this.name,
+    this.parents,
+    this.document,
+    this.address,
+    this.email,
+    this.contact,
+    this.companyId,
+  });
 
-    @override
-  Map<String, dynamic> toJson() {
-    final base = super.toJson();
-    base['responsibleUserIds'] = responsibleUserIds;
-    base['checkedIn'] = checkedIn;
-    return base;
-  }
+  factory Child.fromJson(Map<String, dynamic> json) => Child(
+    id: json['id'] as String?,
+    createdAt: BaseModel.tryParseTimestamp(json['createdAt']),
+    updatedAt: BaseModel.tryParseTimestamp(json['updatedAt']),
+    name: json['name'] as String?,
+    parents: (json['parents'] as List<dynamic>?)?.cast<String>(),
+    document: json['document'] as String?,
+    address: json['address'] is Map
+        ? Address.fromJson(Map<String, dynamic>.from(json['address']))
+        : null,
+    email: json['email'] as String?,
+    contact: json['contact'] as String?,
+    companyId: json['companyId'] as String?,
+  );
 
-  factory Child.fromJson(Map<String, dynamic> json) {
-    final base = BaseUser.fromJson(json);
-    return Child(
-      responsibleUserIds: (json['responsibleUserIds'] as List<dynamic>?)?.cast<String>(),
-      checkedIn: json['checkedIn'] == true,
-      userType: base.userType,
-      name: base.name,
-      email: base.email,
-      birthDate: base.birthDate,
-      document: base.document,
-      phone: base.phone,
-      address: base.address,
-      addressNumber: base.addressNumber,
-      addressComplement: base.addressComplement,
-      neighborhood: base.neighborhood,
-      city: base.city,
-      state: base.state,
-      zipCode: base.zipCode,
-      companyId: base.companyId,
-      id: base.id,
-      createdAt: base.createdAt,
-      updatedAt: base.updatedAt,
-    );
-  }
-
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'createdAt': createdAt?.toIso8601String(),
+    'updatedAt': updatedAt?.toIso8601String(),
+    'name': name,
+    'parents': parents,
+    'document': document,
+    'address': address?.toJson(),
+    'email': email,
+    'contact': contact,
+    'companyId': companyId,
+  };
 }
