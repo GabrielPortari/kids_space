@@ -16,4 +16,29 @@ class ChildService {
     if (res.statusCode == 200) return jsonDecode(res.body) as List<dynamic>;
     throw Exception('Failed to list children: \\${res.statusCode}');
   }
+
+  Future<Map<String, dynamic>?> getById(String id) async {
+    final res = await _api.get('/v2/children/\$id');
+    if (res.statusCode == 200)
+      return jsonDecode(res.body) as Map<String, dynamic>;
+    if (res.statusCode == 404) return null;
+    throw Exception('Failed to get child: \\${res.statusCode}');
+  }
+
+  Future<Map<String, dynamic>> update(
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
+    final res = await _api.patch('/v2/children/\$id', payload);
+    if (res.statusCode == 200)
+      return jsonDecode(res.body) as Map<String, dynamic>;
+    throw Exception('Failed to update child: \\${res.statusCode}');
+  }
+
+  Future<bool> delete(String id) async {
+    final res = await _api.delete('/v2/children/\$id');
+    if (res.statusCode == 204) return true;
+    if (res.statusCode == 404) return false;
+    throw Exception('Failed to delete child: \\${res.statusCode}');
+  }
 }

@@ -16,8 +16,14 @@ class CollaboratorController extends ChangeNotifier {
   }
 
   Future<Collaborator?> getCollaboratorById(String id) async {
-    // backend endpoint missing; implement later
-    return _loggedCollaborator?.id == id ? _loggedCollaborator : null;
+    final cached = _loggedCollaborator?.id == id ? _loggedCollaborator : null;
+    if (cached != null) return cached;
+    final res = await _service.getById(id);
+    if (res == null) return null;
+    final c = Collaborator.fromJson(res);
+    _loggedCollaborator = c;
+    notifyListeners();
+    return c;
   }
 
   Future<void> setLoggedCollaborator(Collaborator c) async {
