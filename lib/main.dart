@@ -23,19 +23,19 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
   await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: "AIzaSyA4RtVJ-NiwG2kfLsBjX1rrZQ70FBEzEao",
-      authDomain: "kids-space-c6f80.firebaseapp.com",
-      projectId: "kids-space-c6f80",
-      storageBucket: "kids-space-c6f80.firebasestorage.app",
-      messagingSenderId: "1047788973580",
-      appId: "1:1047788973580:web:de3a74c693e8a07ba84829",
-      measurementId: "G-RL3V0TXE45"
-    )
+    options: FirebaseOptions(
+      apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '',
+      authDomain: dotenv.env['FIREBASE_AUTH_DOMAIN'] ?? '',
+      projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? '',
+      storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? '',
+      messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '',
+      appId: dotenv.env['FIREBASE_APP_ID'] ?? '',
+      measurementId: dotenv.env['FIREBASE_MEASUREMENT_ID'] ?? null,
+    ),
   );
   setup(GetIt.I);
   ApiClient().init(
-    baseUrl: 'http://10.0.2.2:3000',
+    baseUrl: dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:3000',
     tokenProvider: () async {
       final authController = GetIt.I<AuthController>();
       return await authController.getIdToken();
