@@ -44,6 +44,20 @@ class AuthController extends ChangeNotifier {
     return res;
   }
 
+  Future<bool> signupCompany(Map<String, dynamic> payload) async {
+    try {
+      final res = await _service.signup(payload);
+      final token = res['idToken'] as String?;
+      final refresh = res['refreshToken'] as String?;
+      if (token != null && refresh != null) {
+        await saveTokens(token, refresh);
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     try {
       await _service.logout();

@@ -13,9 +13,10 @@ import 'package:kids_space/view/screens/childrens_screen.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/view/screens/reports_screen.dart';
 import 'package:kids_space/view/widgets/app_bottom_nav.dart';
-import 'package:kids_space/view/screens/company_selection_screen.dart';
+// Company selection screen removed; navigation now goes to /login
 import 'package:kids_space/view/screens/home_screen.dart';
 import 'package:kids_space/view/screens/login_screen.dart';
+import 'package:kids_space/view/screens/register_company_screen.dart';
 import 'package:kids_space/view/screens/splash_screen.dart';
 import 'package:kids_space/view/screens/users_screen.dart';
 import 'package:kids_space/view/screens/collaborators_screen.dart';
@@ -106,10 +107,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               TextButton(
                 onPressed: () {
                   Navigator.of(c).pop();
-                  Navigator.of(ctx).pushNamedAndRemoveUntil(
-                    '/company_selection',
-                    (route) => false,
-                  );
+                  Navigator.of(
+                    ctx,
+                  ).pushNamedAndRemoveUntil('/login', (route) => false);
                 },
                 child: const Text('OK'),
               ),
@@ -140,8 +140,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       routes: {
         '/splash': (context) => const SplashScreen(),
         '/home': (context) => const HomeScreen(),
-        '/company_selection': (context) => const CompanySelectionScreen(),
+        // '/company_selection' removed: navigation now uses '/login'
         '/login': (context) => const LoginScreen(),
+        '/register_company': (context) => const RegisterCompanyScreen(),
         '/users': (context) => const UsersScreen(),
         '/collaborators': (context) => const CollaboratorsScreen(),
         '/childrens': (context) => const ChildrensScreen(),

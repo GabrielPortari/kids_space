@@ -30,16 +30,18 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     AdminTileModel(type: AdminTileType.reports, icon: Icons.bar_chart),
   ];
   final CompanyController _companyController = GetIt.I.get<CompanyController>();
-  final CollaboratorController _collaboratorController = GetIt.I.get<CollaboratorController>();
+  final CollaboratorController _collaboratorController = GetIt.I
+      .get<CollaboratorController>();
 
-  Company? get company => _companyController.getCompanyById(_collaboratorController.loggedCollaborator?.companyId ?? '');
+  Company? get company => _companyController.getCompanyById(
+    _collaboratorController.loggedCollaborator?.companyId ?? '',
+  );
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +68,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   ),
                   onPressed: () async {
                     await _authController.logout();
-                    Navigator.of(context).pushNamedAndRemoveUntil('/company_selection', (route) => false);
+                    Navigator.of(
+                      context,
+                    ).pushNamedAndRemoveUntil('/login', (route) => false);
                   },
                   child: Text(translate('admin.logout')),
                 ),
@@ -92,23 +96,33 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     return AdminTile(
                       model: model,
                       onTap: () {
-                        if(model.type == AdminTileType.company){
+                        if (model.type == AdminTileType.company) {
                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => 
-                            ProfileScreen(selectedCompany: company))
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  ProfileScreen(selectedCompany: company),
+                            ),
                           );
-                        } else if(model.type == AdminTileType.responsible){
-                          Navigator.pushNamed(context, getNavigationRoute(model.type));
-                          
-                        } else if(model.type == AdminTileType.child){
-                          Navigator.pushNamed(context, getNavigationRoute(model.type));
-                          
-                        } else if(model.type == AdminTileType.collaborator){
-                          Navigator.pushNamed(context, getNavigationRoute(model.type));
-                          
-                        } else if(model.type == AdminTileType.reports){
-                          Navigator.pushNamed(context, getNavigationRoute(model.type));
-                          
+                        } else if (model.type == AdminTileType.responsible) {
+                          Navigator.pushNamed(
+                            context,
+                            getNavigationRoute(model.type),
+                          );
+                        } else if (model.type == AdminTileType.child) {
+                          Navigator.pushNamed(
+                            context,
+                            getNavigationRoute(model.type),
+                          );
+                        } else if (model.type == AdminTileType.collaborator) {
+                          Navigator.pushNamed(
+                            context,
+                            getNavigationRoute(model.type),
+                          );
+                        } else if (model.type == AdminTileType.reports) {
+                          Navigator.pushNamed(
+                            context,
+                            getNavigationRoute(model.type),
+                          );
                         }
                       },
                     );
@@ -121,5 +135,4 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       ),
     );
   }
- 
 }

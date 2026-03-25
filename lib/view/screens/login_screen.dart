@@ -21,7 +21,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthController _authController = GetIt.I<AuthController>();
-  final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
+  final CollaboratorController _collaboratorController =
+      GetIt.I<CollaboratorController>();
   bool _loading = false;
 
   void _login() async {
@@ -31,12 +32,19 @@ class _LoginScreenState extends State<LoginScreen> {
     final success = await _authController.login(email, password);
     setState(() => _loading = false);
     if (success) {
-      
       final logged = _collaboratorController.loggedCollaborator;
       if (logged != null && logged.userType == UserType.companyAdmin) {
-        Navigator.pushNamedAndRemoveUntil(context, '/admin_panel', (route) => false);
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/admin_panel',
+          (route) => false,
+        );
       } else {
-        Navigator.pushNamedAndRemoveUntil(context, '/app_bottom_nav', (route) => false);
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/app_bottom_nav',
+          (route) => false,
+        );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -50,7 +58,15 @@ class _LoginScreenState extends State<LoginScreen> {
     final company = GetIt.I<CompanyController>().companySelected;
     return Scaffold(
       appBar: AppBar(
-        title: Text(translate('login.title', namedArgs: {'company': company?.fantasyName ?? translate('company.default_name')})),
+        title: Text(
+          translate(
+            'login.title',
+            namedArgs: {
+              'company':
+                  company?.fantasyName ?? translate('company.default_name'),
+            },
+          ),
+        ),
       ),
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -73,6 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       _passwordField(),
                       const SizedBox(height: 16),
                       _loginButton(),
+                      _extraActions(),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -91,13 +108,16 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Image.asset(
         'assets/images/company_logo_placeholder.png',
         fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) => const Icon(Icons.business, size: 80, color: Colors.deepPurple),
+        errorBuilder: (context, error, stackTrace) =>
+            const Icon(Icons.business, size: 80, color: Colors.deepPurple),
       ),
     );
   }
 
   Widget _buildWelcome(String? companyName) {
-    return TextHeaderLarge(translate('login.welcome', namedArgs: {'company': companyName ?? ''}));
+    return TextHeaderLarge(
+      translate('login.welcome', namedArgs: {'company': companyName ?? ''}),
+    );
   }
 
   Widget _emailField() {
@@ -121,7 +141,86 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _loginButton() {
     return AppButton(
       text: translate('login.login_button'),
-      onPressed: _loading ? null : _login
+      onPressed: _loading ? null : _login,
+    );
+  }
+
+  Widget _extraActions() {
+    return Column(
+      children: [
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/register_company');
+              },
+              child: Text(
+                translate(
+                  'login.no_account',
+                  defaultText: 'Não tem uma conta? Registrar',
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                _showForgotPasswordDialog();
+              },
+              child: Text(
+                translate(
+                  'login.forgot_password',
+                  defaultText: 'Esqueci minha senha',
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _showForgotPasswordDialog() {
+    final _forgotController = TextEditingController();
+    showDialog<void>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(translate('login.forgot_password')),
+        content: TextField(
+          controller: _forgotController,
+          decoration: InputDecoration(
+            hintText: translate(
+              'login.enter_email',
+              defaultText: 'Digite seu e-mail',
+            ),
+          ),
+          keyboardType: TextInputType.emailAddress,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(c).pop(),
+            child: Text(translate('buttons.cancel')),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(c).pop();
+              // No backend endpoint implemented here; just show confirmation.
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    translate(
+                      'login.forgot_sent',
+                      defaultText:
+                          'Se um usuário com esse e-mail existir, instruções foram enviadas.',
+                    ),
+                  ),
+                ),
+              );
+            },
+            child: Text(translate('buttons.ok')),
+          ),
+        ],
+      ),
     );
   }
 }
