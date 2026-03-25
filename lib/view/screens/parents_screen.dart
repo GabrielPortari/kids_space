@@ -5,24 +5,24 @@ import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/parent_controller.dart';
 import 'package:kids_space/model/parent.dart';
+import 'package:kids_space/model/address.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
-import 'package:kids_space/util/date_hour_util.dart';
 import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
 import 'package:kids_space/view/widgets/skeleton_list.dart';
 import 'package:kids_space/util/localization_service.dart';
 
-class UsersScreen extends StatefulWidget {
-  const UsersScreen({super.key});
+class ParentsScreen extends StatefulWidget {
+  const ParentsScreen({super.key});
 
   @override
-  State<UsersScreen> createState() => _UsersScreenState();
+  State<ParentsScreen> createState() => _ParentsScreenState();
 }
 
-class _UsersScreenState extends State<UsersScreen> {
+class _ParentsScreenState extends State<ParentsScreen> {
   final CompanyController _companyController = GetIt.I.get<CompanyController>();
-  final ParentController _userController = GetIt.I.get<ParentController>();
+  final ParentController _parentController = GetIt.I.get<ParentController>();
 
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
@@ -45,114 +45,118 @@ class _UsersScreenState extends State<UsersScreen> {
   void _onSearchChanged() {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
-      _userController.userFilter = _searchController.text
-          .trim(); // This line remains unchanged
+      _parentController.userFilter = _searchController.text.trim();
       if (mounted) setState(() {});
     });
   }
 
   Future<void> _onRefresh() async {
     final companyId = _companyController.company?.id;
-    await _userController.refreshUsersForCompany(
-      companyId,
-    ); // This line remains unchanged
+    await _parentController.refreshUsersForCompany(companyId);
   }
 
   Future<void> _onAddUser() async {
-    // Step 1: personal data
+    // Personal data fields aligned with Parent model and Address
     final dataFields = [
       FieldDefinition(
         key: 'name',
         initialValue: null,
-        label: translate('profile.name'),
+        label: translate('profile.name', defaultText: 'Name'),
         required: true,
-      ),
-      FieldDefinition(
-        key: 'birthDate',
-        initialValue: null,
-        label: translate('profile.birth_date'),
-        type: FieldType.date,
       ),
       FieldDefinition(
         key: 'email',
         initialValue: null,
-        label: translate('profile.email'),
+        label: translate('profile.email', defaultText: 'Email'),
         type: FieldType.email,
       ),
       FieldDefinition(
         key: 'phone',
         initialValue: null,
-        label: translate('profile.phone'),
+        label: translate('profile.phone', defaultText: 'Phone'),
         type: FieldType.phone,
         required: true,
       ),
       FieldDefinition(
         key: 'document',
         initialValue: null,
-        label: translate('profile.document'),
+        label: translate('profile.document', defaultText: 'Document'),
         type: FieldType.number,
         required: true,
       ),
       FieldDefinition(
         key: 'address',
         initialValue: null,
-        label: translate('profile.address'),
+        label: translate('profile.address', defaultText: 'Address'),
       ),
       FieldDefinition(
         key: 'addressNumber',
         initialValue: null,
-        label: translate('profile.address_number'),
+        label: translate(
+          'profile.address_number',
+          defaultText: 'Address Number',
+        ),
       ),
       FieldDefinition(
         key: 'addressComplement',
         initialValue: null,
-        label: translate('profile.address_complement'),
+        label: translate(
+          'profile.address_complement',
+          defaultText: 'Address Complement',
+        ),
       ),
       FieldDefinition(
         key: 'neighborhood',
         initialValue: null,
-        label: translate('profile.neighborhood'),
+        label: translate('profile.neighborhood', defaultText: 'Neighborhood'),
       ),
       FieldDefinition(
         key: 'city',
         initialValue: null,
-        label: translate('profile.city'),
+        label: translate('profile.city', defaultText: 'City'),
       ),
       FieldDefinition(
         key: 'state',
         initialValue: null,
-        label: translate('profile.state'),
+        label: translate('profile.state', defaultText: 'State'),
       ),
       FieldDefinition(
         key: 'zipCode',
         initialValue: null,
-        label: translate('profile.zip_code'),
+        label: translate('profile.zip_code', defaultText: 'Zip Code'),
       ),
     ];
 
     final personalData = await showEditEntityBottomSheet(
       context: context,
-      title: translate('profile.personal_title'),
+      title: translate(
+        'profile.personal_title',
+        defaultText: 'Personal Information',
+      ),
       fields: dataFields,
     );
     if (personalData == null) return; // cancelled
 
-    final newUser = Parent(
-      name: personalData['name']?.toString(),
-      email: personalData['email']?.toString(),
-      birthDate: personalData['birthDate']?.toString(),
-      document: personalData['document']?.toString(),
-      phone: personalData['phone']?.toString(),
-      address: formatDateToIsoString(personalData['address']?.toString() ?? ''),
-      addressNumber: personalData['addressNumber']?.toString(),
-      addressComplement: personalData['addressComplement']?.toString(),
+    final addr = Address(
+      address: personalData['address']?.toString(),
+      number: personalData['addressNumber']?.toString(),
+      complement: personalData['addressComplement']?.toString(),
       neighborhood: personalData['neighborhood']?.toString(),
       city: personalData['city']?.toString(),
       state: personalData['state']?.toString(),
-      zipCode: personalData['zipCode']?.toString(),
+      zipcode: personalData['zipCode']?.toString(),
     );
 
-    _userController.createUser(newUser); // This line remains unchanged
+    final newParent = Parent(
+      name: personalData['name']?.toString(),
+      email: personalData['email']?.toString(),
+      document: personalData['document']?.toString(),
+      contact: personalData['phone']?.toString(),
+      address: addr,
+      companyId: _companyController.company?.id,
+    );
+
+    await _parentController.createUser(newParent);
   }
 
   @override
@@ -165,7 +169,7 @@ class _UsersScreenState extends State<UsersScreen> {
     return Scaffold(
       appBar: showAppBar
           ? AppBar(
-              title: Text(translate('users.title')),
+              title: Text(translate('parents.title', defaultText: 'Parents')),
               leading: Navigator.canPop(context) ? const BackButton() : null,
             )
           : null,
@@ -202,7 +206,7 @@ class _UsersScreenState extends State<UsersScreen> {
     return TextField(
       controller: _searchController,
       decoration: InputDecoration(
-        labelText: translate('users.search'),
+        labelText: translate('parents.search', defaultText: 'Search Parents'),
         prefixIcon: const Icon(Icons.search),
         border: const OutlineInputBorder(),
         suffixIcon: _searchController.text.isEmpty
@@ -211,7 +215,7 @@ class _UsersScreenState extends State<UsersScreen> {
                 icon: const Icon(Icons.clear),
                 onPressed: () {
                   _searchController.clear();
-                  _userController.userFilter = '';
+                  _parentController.userFilter = '';
                 },
               ),
       ),
@@ -224,9 +228,9 @@ class _UsersScreenState extends State<UsersScreen> {
         onRefresh: () async => await _onRefresh(),
         child: Observer(
           builder: (_) {
-            final filtered = _userController.filteredUsers;
+            final filtered = _parentController.filteredUsers;
 
-            if (_userController.refreshLoading) {
+            if (_parentController.refreshLoading) {
               return _buildSkeletonList();
             }
 
@@ -239,8 +243,14 @@ class _UsersScreenState extends State<UsersScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 24.0),
                       child: Text(
                         _searchController.text.isEmpty
-                            ? translate('users.empty')
-                            : translate('users.not_found'),
+                            ? translate(
+                                'parents.empty',
+                                defaultText: 'No parents found',
+                              )
+                            : translate(
+                                'parents.not_found',
+                                defaultText: 'No parents match your search',
+                              ),
                         style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 16,
@@ -255,8 +265,7 @@ class _UsersScreenState extends State<UsersScreen> {
             return ListView.builder(
               padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
               itemCount: filtered.length,
-              itemBuilder: (context, index) =>
-                  _userTile(filtered[index]), // This line remains unchanged
+              itemBuilder: (context, index) => _userTile(filtered[index]),
             );
           },
         ),
@@ -282,7 +291,7 @@ class _UsersScreenState extends State<UsersScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          _userController.selectedUserId = user.id;
+          _parentController.selectedUserId = user.id;
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => ProfileScreen(selectedUser: user),

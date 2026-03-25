@@ -58,6 +58,22 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _onRefresh() async {
     final String? companyId = _companyController.company?.id;
 
+    // Ensure company is loaded: try collaborator's company if available.
+    if (_companyController.company == null) {
+      final collId = _collaboratorController.loggedCollaborator?.companyId;
+      if (collId != null && collId.isNotEmpty) {
+        try {
+          await _companyController.loadCompanyById(collId);
+        } catch (e) {
+          // ignore - fallback to loadMyCompany
+        }
+      } else {
+        try {
+          await _companyController.loadMyCompany();
+        } catch (_) {}
+      }
+    }
+
     // Always try to refresh children for the current company and
     // pull attendance data when a company is selected.
     final futures = <Future>[];
@@ -77,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       await Future.wait(futures);
-    } catch (e, st) {
+    } catch (e) {
       // Surface a user-friendly error and keep the UI responsive.
       _showError(e);
     }
@@ -181,7 +197,12 @@ class _HomeScreenState extends State<HomeScreen> {
         child: SizedBox(
           height: listHeight,
           child: Center(
-            child: TextBodyMedium(translate('home.no_presence_records')),
+            child: TextBodyMedium(
+              translate(
+                'home.no_presence_records',
+                defaultText: 'Sem registro de presença',
+              ),
+            ),
           ),
         ),
       );
@@ -219,13 +240,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 subtitle: TextBodySmall(
-                  formatDate_ddMM_HHmm(event.checkinTime ?? event.checkoutTime),
+                  formatDate_ddMM_HHmm(event.checkInTime ?? event.checkOutTime),
                 ),
                 trailing: Chip(
                   label: TextBodySmall(
                     isCheckin
-                        ? translate('home.check_in')
-                        : translate('home.check_out'),
+                        ? translate('home.check_in', defaultText: 'Entrada')
+                        : translate('home.check_out', defaultText: 'Saída'),
                     style: TextStyle(color: isCheckin ? successBg : dangerBg),
                   ),
                   backgroundColor: isCheckin ? success : danger,
@@ -273,13 +294,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextHeaderMedium(
-                      _companyController.company?.fantasyName ?? '-',
-                    ),
+                    TextHeaderMedium(_companyController.company?.name ?? '-'),
                     const SizedBox(height: 2),
                     TextBodyMedium(
                       translate(
                         'home.collaborator_name',
+                        defaultText: 'Nome do colaborador',
                         namedArgs: {
                           'name_placeholder':
                               _collaboratorController
@@ -307,7 +327,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           AppButton(
             enabled: !globalLoading,
-            text: translate('home.check_in'),
+            text: translate('home.check_in', defaultText: 'Entrada'),
             icon: const Icon(Icons.login_rounded, color: Colors.white),
             onPressed: globalLoading
                 ? null
@@ -315,7 +335,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           AppButton(
             enabled: !globalLoading,
-            text: translate('home.check_out'),
+            text: translate('home.check_out', defaultText: 'Saída'),
             icon: const Icon(Icons.logout_rounded, color: Colors.white),
             onPressed: globalLoading
                 ? null
@@ -345,11 +365,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      TextTitle(translate('home.actives')),
+                      TextTitle(
+                        translate('home.actives', defaultText: 'Ativos'),
+                      ),
                       TextHeaderLarge(
                         '${_attendanceController.activeCheckins.length}',
                       ),
-                      TextBodyMedium(translate('home.see_more')),
+                      TextBodyMedium(
+                        translate('home.see_more', defaultText: 'Ver mais'),
+                      ),
                     ],
                   ),
                 ),
@@ -363,7 +387,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Icon(Icons.login, color: success, size: 20),
                         const SizedBox(width: 6),
-                        TextHeaderSmall(translate('home.last_check_in')),
+                        TextHeaderSmall(
+                          translate(
+                            'home.last_check_in',
+                            defaultText: 'Última Entrada',
+                          ),
+                        ),
                       ],
                     ),
                     Padding(
@@ -376,10 +405,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ?.name !=
                               null
                           ? TextBodyMedium(
-                              '${_childController.getChildById(_attendanceController.lastCheckIn?.childId)!.name} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckIn?.checkinTime)}',
+                              '${_childController.getChildById(_attendanceController.lastCheckIn?.childId)!.name} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckIn?.checkInTime)}',
                             )
                           : TextBodyMedium(
-                              translate('home.no_checkins_registered'),
+                              translate(
+                                'home.no_checkins_registered',
+                                defaultText: 'Nenhuma entrada registrada',
+                              ),
                             ),
                     ),
                     const Divider(height: 20),
@@ -387,7 +419,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Icon(Icons.logout, color: danger, size: 20),
                         const SizedBox(width: 6),
-                        TextHeaderSmall(translate('home.last_check_out')),
+                        TextHeaderSmall(
+                          translate(
+                            'home.last_check_out',
+                            defaultText: 'Última Saída',
+                          ),
+                        ),
                       ],
                     ),
                     Padding(
@@ -400,10 +437,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ?.name !=
                               null
                           ? TextBodyMedium(
-                              '${_childController.getChildById(_attendanceController.lastCheckOut?.childId)!.name} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckOut?.checkoutTime)}',
+                              '${_childController.getChildById(_attendanceController.lastCheckOut?.childId)!.name} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckOut?.checkOutTime)}',
                             )
                           : TextBodyMedium(
-                              translate('home.no_checkouts_registered'),
+                              translate(
+                                'home.no_checkouts_registered',
+                                defaultText: 'Nenhuma saída registrada',
+                              ),
                             ),
                     ),
                   ],

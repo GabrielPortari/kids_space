@@ -6,15 +6,14 @@ import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/controller/parent_controller.dart';
+import 'package:kids_space/controller/attendance_controller.dart';
 import 'package:kids_space/model/parent.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:kids_space/view/widgets/skeleton_list.dart';
-import 'package:kids_space/util/localization_service.dart';
 
 class ChildrensScreen extends StatefulWidget {
   final bool onlyActive;
@@ -27,7 +26,9 @@ class ChildrensScreen extends StatefulWidget {
 class _ChildrensScreenState extends State<ChildrensScreen> {
   final CompanyController _companyController = GetIt.I.get<CompanyController>();
   final ChildController _childController = GetIt.I.get<ChildController>();
-  final ParentController _userController = GetIt.I.get<ParentController>();
+  final ParentController _parentController = GetIt.I.get<ParentController>();
+  final AttendanceController _attendanceController = GetIt.I
+      .get<AttendanceController>();
 
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
@@ -41,6 +42,7 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
     _searchController.addListener(_onSearchChanged);
     if (widget.onlyActive) {
       _loadActiveChildrenWithResponsibles();
+      _attendanceController.addListener(_attendanceListener);
     } else {
       _onRefresh();
     }
@@ -48,10 +50,18 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
 
   @override
   void dispose() {
+    _attendanceController.removeListener(_attendanceListener);
     _debounce?.cancel();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _attendanceListener() {
+    if (!mounted) return;
+    if (widget.onlyActive) {
+      _loadActiveChildrenWithResponsibles();
+    }
   }
 
   void _onSearchChanged() {
@@ -92,8 +102,12 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
       });
       return;
     }
-
+    // ensure children cache is fresh
     await _childController.refreshChildrenForCompany(companyId);
+    // ensure attendance active list is loaded from API
+    try {
+      await _attendanceController.loadActiveCheckinsForCompany(companyId);
+    } catch (_) {}
 
     final actives = _childController.activeCheckedInChildren(companyId);
     actives.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
@@ -265,9 +279,8 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   }
 
   Widget _childTile(Child child) {
-    final firstResponsible =
-        child.responsibleUserIds != null && child.responsibleUserIds!.isNotEmpty
-        ? _userController.getUserById(child.responsibleUserIds!.first)
+    final firstResponsible = child.parents != null && child.parents!.isNotEmpty
+        ? _parentController.getUserById(child.parents!.first)
         : null;
 
     return Card(
@@ -333,7 +346,7 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
                       style: const TextStyle(fontSize: 15),
                     ),
                     Text(
-                      'Telefone: ${firstResponsible?.phone ?? '-'}',
+                      'Telefone: ${firstResponsible?.contact ?? '-'}',
                       style: const TextStyle(fontSize: 15, color: Colors.grey),
                     ),
                   ],

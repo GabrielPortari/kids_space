@@ -42,10 +42,21 @@ class ChildController extends ChangeNotifier {
       final list = data
           .map((e) => Child.fromJson(Map<String, dynamic>.from(e)))
           .toList();
+      // mark checkedIn based on attendance active checkins
+      final attendance = GetIt.I<AttendanceController>();
+      final activeIds = attendance.activeCheckins
+          .where((a) => a.childId != null)
+          .map((a) => a.childId!)
+          .toSet();
+
+      final enriched = list
+          .map((c) => c.copyWith(checkedIn: activeIds.contains(c.id)))
+          .toList();
+
       if (companyId != null && companyId.isNotEmpty) {
-        _children = list.where((c) => c.companyId == companyId).toList();
+        _children = enriched.where((c) => c.companyId == companyId).toList();
       } else {
-        _children = list;
+        _children = enriched;
       }
     } finally {
       refreshLoading = false;
@@ -65,6 +76,19 @@ class ChildController extends ChangeNotifier {
     notifyListeners();
     return c;
   }
+
+  /// Synchronous cached lookup for a child by id. Returns null if not cached.
+  Child? getChildById(String? id) {
+    if (id == null) return null;
+    try {
+      return _children.firstWhere((c) => c.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Async lookup that fetches from server if not present in cache.
+  Future<Child?> getChildByIdAsync(String id) async => await fetchChildById(id);
 
   Future<Child> createChild(Map<String, dynamic> payload) async {
     final data = await _service.create(payload);
@@ -98,7 +122,7 @@ class ChildController extends ChangeNotifier {
   List<Child> activeCheckedInChildren(String? companyId) {
     if (companyId == null) return [];
     final attendance = GetIt.I<AttendanceController>();
-    final active = attendance.events
+    final active = attendance.activeCheckins
         .where((e) => e.checkOutTime == null && e.childId != null)
         .map((e) => e.childId!)
         .toSet();

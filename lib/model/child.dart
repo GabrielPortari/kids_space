@@ -9,6 +9,7 @@ class Child extends BaseModel {
   final String? email;
   final String? contact;
   final String? companyId;
+  final bool? checkedIn;
 
   Child({
     super.id,
@@ -21,6 +22,7 @@ class Child extends BaseModel {
     this.email,
     this.contact,
     this.companyId,
+    this.checkedIn,
   });
 
   factory Child.fromJson(Map<String, dynamic> json) => Child(
@@ -36,6 +38,7 @@ class Child extends BaseModel {
     email: json['email'] as String?,
     contact: json['contact'] as String?,
     companyId: json['companyId'] as String?,
+    checkedIn: json['checkedIn'] is bool ? json['checkedIn'] as bool : null,
   );
 
   Map<String, dynamic> toJson() => {
@@ -49,5 +52,34 @@ class Child extends BaseModel {
     'email': email,
     'contact': contact,
     'companyId': companyId,
+    'checkedIn': checkedIn,
   };
+
+  Child copyWith({
+    String? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? name,
+    List<String>? parents,
+    String? document,
+    Address? address,
+    String? email,
+    String? contact,
+    String? companyId,
+    bool? checkedIn,
+  }) {
+    return Child(
+      id: id ?? this.id,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      name: name ?? this.name,
+      parents: parents ?? this.parents,
+      document: document ?? this.document,
+      address: address ?? this.address,
+      email: email ?? this.email,
+      contact: contact ?? this.contact,
+      companyId: companyId ?? this.companyId,
+      checkedIn: checkedIn ?? this.checkedIn,
+    );
+  }
 }
