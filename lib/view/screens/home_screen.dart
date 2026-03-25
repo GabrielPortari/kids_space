@@ -38,24 +38,31 @@ class _HomeScreenState extends State<HomeScreen> {
     _scrollController = ScrollController();
     _logListController = ScrollController();
     _onRefresh();
+    // Listen to AttendanceController (ChangeNotifier) to refresh UI
+    _attendanceController.addListener(_attendanceListener);
   }
 
   @override
   void dispose() {
+    _attendanceController.removeListener(_attendanceListener);
     _scrollController.dispose();
     _logListController.dispose();
     super.dispose();
   }
 
+  void _attendanceListener() {
+    if (!mounted) return;
+    setState(() {});
+  }
+
   Future<void> _onRefresh() async {
     final String? companyId = _companyController.company?.id;
 
+    // Always try to refresh children for the current company and
+    // pull attendance data when a company is selected.
     final futures = <Future>[];
-    if (_companyController.companies.isEmpty) {
-      futures.add(_companyController.loadCompanies());
-    }
-
     futures.add(_childController.refreshChildrenForCompany(companyId));
+
     if (companyId != null && companyId.isNotEmpty) {
       futures.add(
         _attendanceController.loadActiveCheckinsForCompany(companyId),
@@ -67,7 +74,19 @@ class _HomeScreenState extends State<HomeScreen> {
         _attendanceController.loadLastCheckinAndCheckoutForCompany(companyId),
       );
     }
-    await Future.wait(futures);
+
+    try {
+      await Future.wait(futures);
+    } catch (e, st) {
+      // Surface a user-friendly error and keep the UI responsive.
+      _showError(e);
+    }
+  }
+
+  void _showError(Object e) {
+    if (!mounted) return;
+    final msg = e is Exception ? e.toString() : 'Erro interno';
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -328,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       TextTitle(translate('home.actives')),
                       TextHeaderLarge(
-                        '${_attendanceController.activeCheckins?.length ?? 0}',
+                        '${_attendanceController.activeCheckins.length}',
                       ),
                       TextBodyMedium(translate('home.see_more')),
                     ],

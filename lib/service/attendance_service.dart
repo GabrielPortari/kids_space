@@ -25,4 +25,35 @@ class AttendanceService {
     if (res.statusCode == 200) return jsonDecode(res.body) as List<dynamic>;
     throw Exception('Failed to list attendance: \\${res.statusCode}');
   }
+
+  Future<List<dynamic>> getActiveCheckinsForCompany({String? companyId}) async {
+    final path = companyId != null && companyId.isNotEmpty
+        ? '/v2/attendance/company/active-checkins?companyId=\$companyId'
+        : '/v2/attendance/company/active-checkins';
+    final res = await _api.get(path);
+    if (res.statusCode == 200) return jsonDecode(res.body) as List<dynamic>;
+    throw Exception('Failed to get active checkins: \\${res.statusCode}');
+  }
+
+  Future<List<dynamic>> getLast10ForCompany({String? companyId}) async {
+    final path = companyId != null && companyId.isNotEmpty
+        ? '/v2/attendance/company/last10?companyId=\$companyId'
+        : '/v2/attendance/company/last10';
+    final res = await _api.get(path);
+    if (res.statusCode == 200) return jsonDecode(res.body) as List<dynamic>;
+    throw Exception('Failed to get last10 attendances: \\${res.statusCode}');
+  }
+
+  Future<Map<String, dynamic>> getLastCheckinAndCheckoutForCompany({
+    String? companyId,
+  }) async {
+    final path = companyId != null && companyId.isNotEmpty
+        ? '/v2/attendance/company/last-checkin-and-checkout?companyId=\$companyId'
+        : '/v2/attendance/company/last-checkin-and-checkout';
+    final res = await _api.get(path);
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
+    }
+    throw Exception('Failed to get last checkin/checkout: \\${res.statusCode}');
+  }
 }
