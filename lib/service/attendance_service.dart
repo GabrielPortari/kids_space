@@ -6,15 +6,17 @@ class AttendanceService {
 
   Future<Map<String, dynamic>> checkin(Map<String, dynamic> payload) async {
     final res = await _api.post('/v2/attendance/checkin', payload);
-    if (res.statusCode == 201)
+    if (res.statusCode == 201) {
       return jsonDecode(res.body) as Map<String, dynamic>;
+    }
     throw Exception('Failed to checkin: \\${res.statusCode}');
   }
 
   Future<Map<String, dynamic>> checkout(Map<String, dynamic> payload) async {
     final res = await _api.post('/v2/attendance/checkout', payload);
-    if (res.statusCode == 200)
+    if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
+    }
     throw Exception('Failed to checkout: \\${res.statusCode}');
   }
 

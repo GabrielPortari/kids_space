@@ -63,8 +63,9 @@ class ApiClient {
     final token = tokenProvider == null ? null : await tokenProvider!();
     final allHeaders = <String, String>{'Content-Type': 'application/json'};
     if (headers != null) allHeaders.addAll(headers);
-    if (token != null && token.isNotEmpty)
+    if (token != null && token.isNotEmpty) {
       allHeaders['Authorization'] = 'Bearer \$token';
+    }
 
     http.Response res;
     try {

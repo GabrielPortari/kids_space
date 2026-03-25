@@ -17,8 +17,9 @@ class AuthService {
 
   Future<Map<String, dynamic>> signup(Map<String, dynamic> payload) async {
     final res = await _api.post('/auth/signup', payload);
-    if (res.statusCode == 201)
+    if (res.statusCode == 201) {
       return jsonDecode(res.body) as Map<String, dynamic>;
+    }
     throw Exception('Signup failed: \\${res.statusCode}');
   }
 
@@ -26,8 +27,9 @@ class AuthService {
     final res = await _api.post('/auth/refresh-auth', {
       'refreshToken': refreshToken,
     });
-    if (res.statusCode == 200)
+    if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
+    }
     throw Exception('Refresh failed: \\${res.statusCode}');
   }
 
