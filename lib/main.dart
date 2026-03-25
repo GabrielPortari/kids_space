@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kids_space/controller/auth_controller.dart';
 import 'package:kids_space/service/api_client.dart';
 import 'package:kids_space/util/getit_factory.dart';
@@ -22,20 +23,21 @@ import 'package:kids_space/view/screens/collaborators_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+  await dotenv.load(fileName: '.env');
   await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: "AIzaSyA4RtVJ-NiwG2kfLsBjX1rrZQ70FBEzEao",
-      authDomain: "kids-space-c6f80.firebaseapp.com",
-      projectId: "kids-space-c6f80",
-      storageBucket: "kids-space-c6f80.firebasestorage.app",
-      messagingSenderId: "1047788973580",
-      appId: "1:1047788973580:web:de3a74c693e8a07ba84829",
-      measurementId: "G-RL3V0TXE45"
-    )
+    options: FirebaseOptions(
+      apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '',
+      authDomain: dotenv.env['FIREBASE_AUTH_DOMAIN'] ?? '',
+      projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? '',
+      storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? '',
+      messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '',
+      appId: dotenv.env['FIREBASE_APP_ID'] ?? '',
+      measurementId: dotenv.env['FIREBASE_MEASUREMENT_ID'] ?? null,
+    ),
   );
   setup(GetIt.I);
   ApiClient().init(
-    baseUrl: 'http://10.0.2.2:3000',
+    baseUrl: dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:3000',
     tokenProvider: () async {
       final authController = GetIt.I<AuthController>();
       return await authController.getIdToken();
@@ -50,7 +52,7 @@ Future<void> main() async {
       supportedLocales: const [Locale('pt', 'BR'), Locale('en', 'US')],
       path: 'assets/langs',
       fallbackLocale: const Locale('pt', 'BR'),
-        child: Builder(builder: (context) => const MyApp()),
+      child: Builder(builder: (context) => const MyApp()),
     ),
   );
 }
@@ -89,7 +91,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void _checkSessionOnResume() async {
     final valid = await _authController.ensureSessionValid();
     if (!valid) {
-      try { await _authController.logout(); } catch (_) {}
+      try {
+        await _authController.logout();
+      } catch (_) {}
       final ctx = navigatorKey.currentContext;
       if (ctx != null) {
         showDialog<void>(
@@ -102,10 +106,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               TextButton(
                 onPressed: () {
                   Navigator.of(c).pop();
-                  Navigator.of(ctx).pushNamedAndRemoveUntil('/company_selection', (route) => false);
+                  Navigator.of(ctx).pushNamedAndRemoveUntil(
+                    '/company_selection',
+                    (route) => false,
+                  );
                 },
                 child: const Text('OK'),
-              )
+              ),
             ],
           ),
         );
@@ -157,7 +164,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
