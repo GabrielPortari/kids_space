@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/auth_controller.dart';
-import 'package:kids_space/controller/collaborator_controller.dart';
-import 'package:kids_space/model/base_user.dart';
 import 'package:kids_space/view/design_system/app_button.dart';
 import 'package:kids_space/view/design_system/app_card.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
@@ -21,8 +18,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthController _authController = GetIt.I<AuthController>();
-  final CollaboratorController _collaboratorController =
-      GetIt.I<CollaboratorController>();
   bool _loading = false;
 
   void _login() async {
@@ -32,41 +27,50 @@ class _LoginScreenState extends State<LoginScreen> {
     final success = await _authController.login(email, password);
     setState(() => _loading = false);
     if (success) {
-      final logged = _collaboratorController.loggedCollaborator;
-      if (logged != null && logged.userType == UserType.companyAdmin) {
+      final role = _authController.role;
+      if (role == UserRole.company) {
         Navigator.pushNamedAndRemoveUntil(
           context,
           '/admin_panel',
           (route) => false,
         );
-      } else {
+      } else if (role == UserRole.collaborator) {
         Navigator.pushNamedAndRemoveUntil(
           context,
           '/app_bottom_nav',
           (route) => false,
         );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              translate(
+                'login.unknown_role',
+                defaultText: 'Tipo de usuário desconhecido.',
+              ),
+            ),
+          ),
+        );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(translate('login.invalid_credentials'))),
+        SnackBar(
+          content: Text(
+            translate(
+              'login.invalid_credentials',
+              defaultText: 'Credenciais inválidas',
+            ),
+          ),
+        ),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final company = GetIt.I<CompanyController>().companySelected;
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          translate(
-            'login.title',
-            namedArgs: {
-              'company':
-                  company?.fantasyName ?? translate('company.default_name'),
-            },
-          ),
-        ),
+        title: Text(translate('login.title', defaultText: 'Login')),
       ),
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -82,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       _buildLogo(),
                       const SizedBox(height: 24),
-                      _buildWelcome(company?.fantasyName ?? ''),
+                      _buildWelcome(),
                       const SizedBox(height: 24),
                       _emailField(),
                       const SizedBox(height: 16),
@@ -114,17 +118,17 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildWelcome(String? companyName) {
+  Widget _buildWelcome() {
     return TextHeaderLarge(
-      translate('login.welcome', namedArgs: {'company': companyName ?? ''}),
+      translate('login.welcome', defaultText: 'Bem-vindo!'),
     );
   }
 
   Widget _emailField() {
     return AppTextField(
       controller: _emailController,
-      labelText: translate('login.email_label'),
-      hintText: translate('login.email_hint'),
+      labelText: translate('login.email_label', defaultText: 'Email'),
+      hintText: translate('login.email_hint', defaultText: 'Digite seu e-mail'),
       keyboardType: TextInputType.emailAddress,
     );
   }
@@ -133,14 +137,17 @@ class _LoginScreenState extends State<LoginScreen> {
     return AppTextField(
       controller: _passwordController,
       obscureText: true,
-      labelText: translate('login.password_label'),
-      hintText: translate('login.password_hint'),
+      labelText: translate('login.password_label', defaultText: 'Senha'),
+      hintText: translate(
+        'login.password_hint',
+        defaultText: 'Digite sua senha',
+      ),
     );
   }
 
   Widget _loginButton() {
     return AppButton(
-      text: translate('login.login_button'),
+      text: translate('login.login_button', defaultText: 'Entrar'),
       onPressed: _loading ? null : _login,
     );
   }
@@ -185,7 +192,12 @@ class _LoginScreenState extends State<LoginScreen> {
     showDialog<void>(
       context: context,
       builder: (c) => AlertDialog(
-        title: Text(translate('login.forgot_password')),
+        title: Text(
+          translate(
+            'login.forgot_password',
+            defaultText: 'Esqueci minha senha',
+          ),
+        ),
         content: TextField(
           controller: _forgotController,
           decoration: InputDecoration(
@@ -199,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(c).pop(),
-            child: Text(translate('buttons.cancel')),
+            child: Text(translate('buttons.cancel', defaultText: 'Cancelar')),
           ),
           TextButton(
             onPressed: () async {
@@ -217,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               );
             },
-            child: Text(translate('buttons.ok')),
+            child: Text(translate('buttons.ok', defaultText: 'OK')),
           ),
         ],
       ),

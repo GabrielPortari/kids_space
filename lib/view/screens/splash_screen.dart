@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kids_space/controller/collaborator_controller.dart';
-import 'package:kids_space/model/base_user.dart';
 import '../../controller/auth_controller.dart';
-import '../../controller/company_controller.dart';
 import 'package:kids_space/util/localization_service.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -15,9 +12,6 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   final AuthController _authController = GetIt.I<AuthController>();
-  final CompanyController _companyController = GetIt.I<CompanyController>();
-  final CollaboratorController _collaboratorController =
-      GetIt.I<CollaboratorController>();
 
   @override
   void initState() {
@@ -26,7 +20,6 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _startSplashFlow() async {
-    await _loadCompanies();
     // Verifica sessão ao iniciar: se inválida, desloga e direciona para seleção de company
     final valid = await _authController.ensureSessionValid();
     if (!valid) {
@@ -38,8 +31,19 @@ class _SplashScreenState extends State<SplashScreen> {
         context: context,
         barrierDismissible: false,
         builder: (c) => AlertDialog(
-          title: Text(translate('splash.session_expired_title')),
-          content: Text(translate('splash.session_expired_message')),
+          title: Text(
+            translate(
+              'splash.session_expired_title',
+              defaultText: 'Sessão Expirada',
+            ),
+          ),
+          content: Text(
+            translate(
+              'splash.session_expired_message',
+              defaultText:
+                  'Sua sessão expirou. Por favor, faça login novamente.',
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -48,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   context,
                 ).pushNamedAndRemoveUntil('/login', (route) => false);
               },
-              child: Text(translate('buttons.ok')),
+              child: Text(translate('buttons.ok', defaultText: 'OK')),
             ),
           ],
         ),
@@ -76,42 +80,16 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
-  Future<void> _loadCompanies() async {
-    await _companyController.loadCompanies();
-  }
-
   Future<void> _checkLoggedUser() async {
     await _authController.checkLoggedUser();
-    // refresh collaborator from API to ensure latest fields (roles/userType, companyId, etc.)
-    var loggedCollaborator = _collaboratorController.loggedCollaborator;
-    try {
-      if (loggedCollaborator != null && loggedCollaborator.id != null) {
-        final refreshed = await _collaboratorController.getCollaboratorById(
-          loggedCollaborator.id!,
-        );
-        if (refreshed != null) {
-          await _collaboratorController.setLoggedCollaborator(refreshed);
-          loggedCollaborator = refreshed;
-        }
-      }
-    } catch (e) {
-      // ignore: avoid_print
-    }
     if (!mounted) return;
-    if (loggedCollaborator != null) {
-      final companyId = loggedCollaborator.companyId;
-      if (companyId != null) {
-        final company = _companyController.getCompanyById(companyId);
-        if (company != null) {
-          _companyController.selectCompany(company);
-          if (!mounted) return;
-          loggedCollaborator.userType == UserType.companyAdmin
-              ? Navigator.pushReplacementNamed(context, '/admin_panel')
-              : Navigator.pushReplacementNamed(context, '/app_bottom_nav');
-          return;
-        }
-      }
-      Navigator.pushReplacementNamed(context, '/login');
+    final role = _authController.role;
+    if (role == UserRole.company) {
+      Navigator.pushReplacementNamed(context, '/admin_panel');
+      return;
+    }
+    if (role == UserRole.collaborator) {
+      Navigator.pushReplacementNamed(context, '/app_bottom_nav');
       return;
     }
     Navigator.pushReplacementNamed(context, '/login');

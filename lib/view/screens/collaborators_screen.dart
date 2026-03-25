@@ -22,7 +22,8 @@ class CollaboratorsScreen extends StatefulWidget {
 
 class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
   final CompanyController _companyController = GetIt.I.get<CompanyController>();
-  final CollaboratorController _collaboratorController = GetIt.I.get<CollaboratorController>();
+  final CollaboratorController _collaboratorController = GetIt.I
+      .get<CollaboratorController>();
 
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
@@ -45,29 +46,39 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
   void _onSearchChanged() {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
-      _collaboratorController.collaboratorFilter = _searchController.text.trim();
+      _collaboratorController.collaboratorFilter = _searchController.text
+          .trim();
       if (mounted) setState(() {});
     });
   }
 
   Future<void> _onRefresh() async {
-    final companyId = _companyController.companySelected?.id;
+    final companyId = _companyController.company?.id;
     await _collaboratorController.refreshCollaboratorsForCompany(companyId);
   }
 
   void _onTapCollaborator(Collaborator c) async {
     await _collaboratorController.setSelectedCollaborator(c);
     if (!mounted) return;
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProfileScreen(selectedCollaborator: c)));
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ProfileScreen(selectedCollaborator: c)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final bool showAppBar = Navigator.canPop(context);
-    final double topSpacing = showAppBar ? 8.0 : 8 + MediaQuery.of(context).padding.top;
+    final double topSpacing = showAppBar
+        ? 8.0
+        : 8 + MediaQuery.of(context).padding.top;
 
     return Scaffold(
-      appBar: showAppBar ? AppBar(title: const Text('Colaboradores'), leading: Navigator.canPop(context) ? const BackButton() : null,) : null,
+      appBar: showAppBar
+          ? AppBar(
+              title: const Text('Colaboradores'),
+              leading: Navigator.canPop(context) ? const BackButton() : null,
+            )
+          : null,
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -100,21 +111,60 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
   Future<void> _onAddCollaborator() async {
     // Step 1: personal data
     final dataFields = [
-      FieldDefinition(key: 'name', initialValue: null, label: 'Nome*', required: true),
-      FieldDefinition(key: 'birthDate', initialValue: null, label: 'Data de Nascimento', type: FieldType.date),
-      FieldDefinition(key: 'email', initialValue: null, label: 'Email*', type: FieldType.email, required: true),
-      FieldDefinition(key: 'phone', initialValue: null, label: 'Telefone', type: FieldType.phone),
-      FieldDefinition(key: 'document', initialValue: null, label: 'Documento*', type: FieldType.number, required: true),
+      FieldDefinition(
+        key: 'name',
+        initialValue: null,
+        label: 'Nome*',
+        required: true,
+      ),
+      FieldDefinition(
+        key: 'birthDate',
+        initialValue: null,
+        label: 'Data de Nascimento',
+        type: FieldType.date,
+      ),
+      FieldDefinition(
+        key: 'email',
+        initialValue: null,
+        label: 'Email*',
+        type: FieldType.email,
+        required: true,
+      ),
+      FieldDefinition(
+        key: 'phone',
+        initialValue: null,
+        label: 'Telefone',
+        type: FieldType.phone,
+      ),
+      FieldDefinition(
+        key: 'document',
+        initialValue: null,
+        label: 'Documento*',
+        type: FieldType.number,
+        required: true,
+      ),
       FieldDefinition(key: 'address', initialValue: null, label: 'Endereço'),
-      FieldDefinition(key: 'addressNumber', initialValue: null, label: 'Número'),
-      FieldDefinition(key: 'addressComplement', initialValue: null, label: 'Complemento'),
+      FieldDefinition(
+        key: 'addressNumber',
+        initialValue: null,
+        label: 'Número',
+      ),
+      FieldDefinition(
+        key: 'addressComplement',
+        initialValue: null,
+        label: 'Complemento',
+      ),
       FieldDefinition(key: 'neighborhood', initialValue: null, label: 'Bairro'),
       FieldDefinition(key: 'city', initialValue: null, label: 'Cidade'),
       FieldDefinition(key: 'state', initialValue: null, label: 'Estado'),
       FieldDefinition(key: 'zipCode', initialValue: null, label: 'CEP'),
     ];
 
-    final personalData = await showEditEntityBottomSheet(context: context, title: 'Dados pessoais', fields: dataFields);
+    final personalData = await showEditEntityBottomSheet(
+      context: context,
+      title: 'Dados pessoais',
+      fields: dataFields,
+    );
     if (personalData == null) return; // cancelled
 
     final newCollaborator = Collaborator(
@@ -159,27 +209,40 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
     return Expanded(
       child: RefreshIndicator(
         onRefresh: () async => await _onRefresh(),
-        child: Observer(builder: (_) {
-          if (_collaboratorController.refreshLoading) {
-            return _buildSkeleton();
-          }
-          final filtered = _collaboratorController.filteredCollaborators;
-          if (filtered.isEmpty) {
-            return ListView(padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0), children: [
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24.0),
-                  child: Text(_searchController.text.isEmpty ? 'Nenhum colaborador cadastrado' : 'Nenhum colaborador encontrado', style: const TextStyle(color: Colors.grey, fontSize: 16)),
-                ),
-              )
-            ]);
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-            itemCount: filtered.length,
-            itemBuilder: (context, index) => _tile(filtered[index]),
-          );
-        }),
+        child: Observer(
+          builder: (_) {
+            if (_collaboratorController.refreshLoading) {
+              return _buildSkeleton();
+            }
+            final filtered = _collaboratorController.filteredCollaborators;
+            if (filtered.isEmpty) {
+              return ListView(
+                padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+                children: [
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24.0),
+                      child: Text(
+                        _searchController.text.isEmpty
+                            ? 'Nenhum colaborador cadastrado'
+                            : 'Nenhum colaborador encontrado',
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+            return ListView.builder(
+              padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+              itemCount: filtered.length,
+              itemBuilder: (context, index) => _tile(filtered[index]),
+            );
+          },
+        ),
       ),
     );
   }
@@ -195,7 +258,10 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
             margin: const EdgeInsets.symmetric(vertical: 4),
             child: Center(
               child: ListTile(
-                leading: CircleAvatar(radius: 20, backgroundColor: Colors.grey.shade300),
+                leading: CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.grey.shade300,
+                ),
                 title: const SizedBox.shrink(),
                 subtitle: const SizedBox.shrink(),
               ),
@@ -224,7 +290,9 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
                 child: Center(
                   child: CircleAvatar(
                     radius: 20,
-                    backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.2),
                     child: TextBodyMedium(getInitials(c.name)),
                   ),
                 ),
@@ -236,7 +304,14 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
                   children: [
                     TextHeaderSmall(c.name ?? '', heavy: true),
                     const SizedBox(height: 4),
-                    TextBodyMedium(c.email ?? '', style:TextStyle( color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.8))),
+                    TextBodyMedium(
+                      c.email ?? '',
+                      style: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.8),
+                      ),
+                    ),
                   ],
                 ),
               ),

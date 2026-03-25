@@ -52,7 +52,7 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   Future<void> _onRefresh() async {
-    final companyId = _companyController.companySelected?.id;
+    final companyId = _companyController.company?.id;
     await _userController.refreshUsersForCompany(
       companyId,
     ); // This line remains unchanged

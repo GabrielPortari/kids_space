@@ -78,12 +78,12 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   }
 
   Future<void> _onRefresh() async {
-    final companyId = _companyController.companySelected?.id;
+    final companyId = _companyController.company?.id;
     await _childController.refreshChildrenForCompany(companyId);
   }
 
   Future<void> _loadActiveChildrenWithResponsibles() async {
-    final companyId = _companyController.companySelected?.id;
+    final companyId = _companyController.company?.id;
     if (companyId == null) {
       setState(() {
         _allChildren = [];

@@ -63,7 +63,7 @@ class _ReportsChartsState extends State<ReportsCharts> {
       effFrom = effTo.subtract(const Duration(days: 7));
     }
 
-    final companyId = GetIt.I<CompanyController>().companySelected?.id;
+    final companyId = GetIt.I<CompanyController>().company?.id;
     if (companyId != null && companyId.isNotEmpty) {
       final list = await _attendanceController.getAttendancesBetween(
         companyId,

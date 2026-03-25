@@ -72,7 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (widget.selectedUser != null) {
       return SelectedProfileType.user;
     } else if (widget.selectedCollaborator != null) {
-      return widget.selectedCollaborator!.userType == UserType.companyAdmin
+      return widget.selectedCollaborator!.userType == UserType.company
           ? SelectedProfileType.admin
           : SelectedProfileType.collaborator;
     } else if (widget.selectedCompany != null) {
@@ -231,7 +231,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final loggedUserType = loggedCollaborator?.userType;
 
     final bool canEdit =
-        (loggedUserType == UserType.companyAdmin &&
+        (loggedUserType == UserType.company &&
             selectedProfileType != null &&
             selectedProfileType != SelectedProfileType.company) ||
         (loggedUserType == UserType.collaborator &&
@@ -239,7 +239,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 selectedProfileType == SelectedProfileType.child));
 
     final bool canAddChild =
-        (loggedUserType == UserType.companyAdmin ||
+        (loggedUserType == UserType.company ||
             loggedUserType == UserType.collaborator) &&
         (selectedProfileType != null &&
             selectedProfileType == SelectedProfileType.user);
@@ -250,7 +250,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             widget.selectedCollaborator?.id == loggedCollaborator?.id);
 
     final bool canDelete =
-        (loggedUserType == UserType.companyAdmin) &&
+        (loggedUserType == UserType.company) &&
         (selectedProfileType != null &&
             selectedProfileType != SelectedProfileType.company &&
             selectedProfileType != SelectedProfileType.admin);

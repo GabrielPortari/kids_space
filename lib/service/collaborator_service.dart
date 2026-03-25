@@ -20,4 +20,13 @@ class CollaboratorService {
     if (res.statusCode == 404) return null;
     throw Exception('Failed to get collaborator: \\${res.statusCode}');
   }
+
+  Future<Map<String, dynamic>?> getMe() async {
+    final res = await _api.get('/v2/collaborators/me');
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
+    }
+    if (res.statusCode == 404) return null;
+    return null;
+  }
 }

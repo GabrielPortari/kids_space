@@ -48,8 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _onRefresh() async {
-
-    final String? companyId = _companyController.companySelected?.id;
+    final String? companyId = _companyController.company?.id;
 
     final futures = <Future>[];
     if (_companyController.companies.isEmpty) {
@@ -58,9 +57,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
     futures.add(_childController.refreshChildrenForCompany(companyId));
     if (companyId != null && companyId.isNotEmpty) {
-      futures.add(_attendanceController.loadActiveCheckinsForCompany(companyId));
-      futures.add(_attendanceController.loadLast10AttendancesForCompany(companyId));
-      futures.add(_attendanceController.loadLastCheckinAndCheckoutForCompany(companyId));
+      futures.add(
+        _attendanceController.loadActiveCheckinsForCompany(companyId),
+      );
+      futures.add(
+        _attendanceController.loadLast10AttendancesForCompany(companyId),
+      );
+      futures.add(
+        _attendanceController.loadLastCheckinAndCheckoutForCompany(companyId),
+      );
     }
     await Future.wait(futures);
   }
@@ -70,64 +75,74 @@ class _HomeScreenState extends State<HomeScreen> {
     final mq = MediaQuery.of(context);
     final screenHeight = mq.size.height - mq.padding.top - kToolbarHeight;
     final listHeight = (screenHeight * 0.36).clamp(180.0, 520.0).toDouble();
-    return Observer(builder: (_) {
-      final globalLoading = _companyController.isLoading ||
-          _childController.refreshLoading ||
-          _attendanceController.isLoadingActiveCheckins ||
-          _attendanceController.isLoadingLogs ||
-          _attendanceController.isLoadingLastCheck;
+    return Observer(
+      builder: (_) {
+        final globalLoading =
+            _companyController.isLoading ||
+            _childController.refreshLoading ||
+            _attendanceController.isLoadingActiveCheckins ||
+            _attendanceController.isLoadingLogs ||
+            _attendanceController.isLoadingLastCheck;
 
-      return SafeArea(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 720),
-                child: RefreshIndicator(
-                  onRefresh: _onRefresh,
-                  child: SingleChildScrollView(
-                    controller: _scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: _infoCompanyCard(globalLoading),
-                          ),
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: _checkInAndOutButtons(globalLoading),
-                          ),
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: _activeChildrenInfoCard(globalLoading),
-                          ),
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0,
-                              vertical: 8.0,
+        return SafeArea(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 720),
+                  child: RefreshIndicator(
+                    onRefresh: _onRefresh,
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: _infoCompanyCard(globalLoading),
                             ),
-                            child: _presenceLogCard(listHeight, globalLoading),
-                          ),
-                          const SizedBox(height: 48),
-                        ],
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0,
+                              ),
+                              child: _checkInAndOutButtons(globalLoading),
+                            ),
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0,
+                              ),
+                              child: _activeChildrenInfoCard(globalLoading),
+                            ),
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                                vertical: 8.0,
+                              ),
+                              child: _presenceLogCard(
+                                listHeight,
+                                globalLoading,
+                              ),
+                            ),
+                            const SizedBox(height: 48),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-      );
-    });
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget _presenceLogCard(double listHeight, bool globalLoading) {
@@ -170,12 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
               final childName = child?.name ?? '';
 
               return ListTile(
-                contentPadding: const EdgeInsets.fromLTRB(
-                  4.0,
-                  0.0,
-                  8.0,
-                  0.0,
-                ),
+                contentPadding: const EdgeInsets.fromLTRB(4.0, 0.0, 8.0, 0.0),
                 leading: CircleAvatar(
                   radius: 20,
                   backgroundColor: isCheckin ? successBg : dangerBg,
@@ -190,16 +200,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 subtitle: TextBodySmall(
-                  formatDate_ddMM_HHmm(
-                    event.checkinTime ?? event.checkoutTime,
-                  ),
+                  formatDate_ddMM_HHmm(event.checkinTime ?? event.checkoutTime),
                 ),
                 trailing: Chip(
                   label: TextBodySmall(
-                    isCheckin ? translate('home.check_in') : translate('home.check_out'),
-                    style: TextStyle(
-                      color: isCheckin ? successBg : dangerBg,
-                    ),
+                    isCheckin
+                        ? translate('home.check_in')
+                        : translate('home.check_out'),
+                    style: TextStyle(color: isCheckin ? successBg : dangerBg),
                   ),
                   backgroundColor: isCheckin ? success : danger,
                 ),
@@ -233,11 +241,12 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               CircleAvatar(
                 radius: 32,
-                backgroundImage: _companyController.companySelected?.logoUrl != null
-                  ? NetworkImage(_companyController.companySelected!.logoUrl!)
-                  : const AssetImage(
-                      'assets/images/company_logo_placeholder.png',
-                    ) as ImageProvider,
+                backgroundImage: _companyController.company?.logoUrl != null
+                    ? NetworkImage(_companyController.company!.logoUrl!)
+                    : const AssetImage(
+                            'assets/images/company_logo_placeholder.png',
+                          )
+                          as ImageProvider,
               ),
               const SizedBox(width: 20),
               Expanded(
@@ -245,12 +254,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextHeaderMedium(_companyController.companySelected?.fantasyName ?? '-'),
+                    TextHeaderMedium(
+                      _companyController.company?.fantasyName ?? '-',
+                    ),
                     const SizedBox(height: 2),
                     TextBodyMedium(
                       translate(
                         'home.collaborator_name',
-                        namedArgs: {'name_placeholder': _collaboratorController.loggedCollaborator?.name ?? '-'},
+                        namedArgs: {
+                          'name_placeholder':
+                              _collaboratorController
+                                  .loggedCollaborator
+                                  ?.name ??
+                              '-',
+                        },
                       ),
                     ),
                   ],
@@ -273,13 +290,17 @@ class _HomeScreenState extends State<HomeScreen> {
             enabled: !globalLoading,
             text: translate('home.check_in'),
             icon: const Icon(Icons.login_rounded, color: Colors.white),
-            onPressed: globalLoading ? null : () => showAttendanceModal(context, AttendanceType.checkin),
+            onPressed: globalLoading
+                ? null
+                : () => showAttendanceModal(context, AttendanceType.checkin),
           ),
           AppButton(
             enabled: !globalLoading,
             text: translate('home.check_out'),
             icon: const Icon(Icons.logout_rounded, color: Colors.white),
-            onPressed: globalLoading ? null : () => showAttendanceModal(context, AttendanceType.checkout),
+            onPressed: globalLoading
+                ? null
+                : () => showAttendanceModal(context, AttendanceType.checkout),
           ),
         ],
       ),
@@ -289,83 +310,87 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _activeChildrenInfoCard(bool globalLoading) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: AppCard(
+      child: AppCard(
         child: Skeletonizer(
           enabled: globalLoading,
           child: Row(
             children: [
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const ChildrensScreen(onlyActive: true),
-                      ),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          TextTitle(translate('home.actives')),
-                          TextHeaderLarge('${_attendanceController.activeCheckins?.length ?? 0}'),
-                          TextBodyMedium(translate('home.see_more')),
-                        ],
-                      ),
-                    ),
+              GestureDetector(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const ChildrensScreen(onlyActive: true),
                   ),
-                  const SizedBox(width: 32),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      TextTitle(translate('home.actives')),
+                      TextHeaderLarge(
+                        '${_attendanceController.activeCheckins?.length ?? 0}',
+                      ),
+                      TextBodyMedium(translate('home.see_more')),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 32),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Row(
-                          children: [
-                            Icon(Icons.login, color: success, size: 20),
-                            const SizedBox(width: 6),
-                            TextHeaderSmall(
-                              translate('home.last_check_in'),
-                            ),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 32.0,
-                            top: 2.0,
-                          ),
-                          child: _childController.getChildById(_attendanceController.lastCheckIn?.childId)?.name != null
-                              ? TextBodyMedium(
-                                  '${_childController.getChildById(_attendanceController.lastCheckIn?.childId)!.name} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckIn?.checkinTime)}',
-                                )
-                              : TextBodyMedium(
-                                  translate('home.no_checkins_registered'),
-                                ),
-                        ),
-                        const Divider(height: 20),
-                        Row(
-                          children: [
-                            Icon(Icons.logout, color: danger, size: 20),
-                            const SizedBox(width: 6),
-                            TextHeaderSmall(
-                              translate('home.last_check_out'),
-                            ),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 32.0,
-                            top: 2.0,
-                          ),
-                          child: _childController.getChildById(_attendanceController.lastCheckOut?.childId)?.name != null
-                              ? TextBodyMedium(
-                                  '${_childController.getChildById(_attendanceController.lastCheckOut?.childId)!.name} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckOut?.checkoutTime)}',
-                                )
-                              : TextBodyMedium(
-                                  translate('home.no_checkouts_registered'),
-                                ),
-                        ),
+                        Icon(Icons.login, color: success, size: 20),
+                        const SizedBox(width: 6),
+                        TextHeaderSmall(translate('home.last_check_in')),
                       ],
                     ),
-                  ),
-                ],
+                    Padding(
+                      padding: const EdgeInsets.only(left: 32.0, top: 2.0),
+                      child:
+                          _childController
+                                  .getChildById(
+                                    _attendanceController.lastCheckIn?.childId,
+                                  )
+                                  ?.name !=
+                              null
+                          ? TextBodyMedium(
+                              '${_childController.getChildById(_attendanceController.lastCheckIn?.childId)!.name} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckIn?.checkinTime)}',
+                            )
+                          : TextBodyMedium(
+                              translate('home.no_checkins_registered'),
+                            ),
+                    ),
+                    const Divider(height: 20),
+                    Row(
+                      children: [
+                        Icon(Icons.logout, color: danger, size: 20),
+                        const SizedBox(width: 6),
+                        TextHeaderSmall(translate('home.last_check_out')),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 32.0, top: 2.0),
+                      child:
+                          _childController
+                                  .getChildById(
+                                    _attendanceController.lastCheckOut?.childId,
+                                  )
+                                  ?.name !=
+                              null
+                          ? TextBodyMedium(
+                              '${_childController.getChildById(_attendanceController.lastCheckOut?.childId)!.name} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckOut?.checkoutTime)}',
+                            )
+                          : TextBodyMedium(
+                              translate('home.no_checkouts_registered'),
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

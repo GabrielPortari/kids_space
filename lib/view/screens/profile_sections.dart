@@ -76,7 +76,7 @@ class ProfileContent extends StatelessWidget {
               : selectedCompany != null
               ? translate('profile.user_type.company')
               : selectedCollaborator != null
-              ? (selectedCollaborator?.userType == UserType.companyAdmin
+              ? (selectedCollaborator?.userType == UserType.company
                     ? translate('profile.user_type.admin')
                     : translate('profile.user_type.collaborator'))
               : selectedChild != null

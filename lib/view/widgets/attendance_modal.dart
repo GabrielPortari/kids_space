@@ -20,7 +20,7 @@ Future<void> showAttendanceModal(
   final collaboratorController = GetIt.I<CollaboratorController>();
   final companyController = GetIt.I<CompanyController>();
 
-  final companyId = companyController.companySelected?.id;
+  final companyId = companyController.company?.id;
   if (companyId != null) {
     // trigger load of active checkins so UI can react when data arrives
     attendanceController.loadActiveCheckinsForCompany(companyId);
@@ -35,7 +35,7 @@ Future<void> showAttendanceModal(
       return StatefulBuilder(
         builder: (innerCtx, setState) {
           final filter = childController.childFilter.toLowerCase();
-          final companyId = companyController.companySelected?.id;
+          final companyId = companyController.company?.id;
           // Use computed active checked-in children from controller when available
           final List<Child> activeChildren = companyId != null
               ? childController.activeCheckedInChildrenComputed(companyId)

@@ -4,7 +4,7 @@
     "users": "Usuários",
     "reports": "Relatórios"
   },
-  "home":{
+  "home": {
     "company": "Empresa",
     "company_name": "Nome da Empresa",
     "collaborator": "Colaborador",
@@ -22,17 +22,20 @@
     "no_checkouts_registered": "Nenhum check-out registrado",
     "30_last_presence_log": "30 últimos registros de presença",
     "no_presence_records": "Nenhum registro de presença"
-  }
-  ,
+  },
   "profile": {
     "name_placeholder": "-",
     "user_type": {
-      "user": "Usuário",
       "company": "Empresa",
       "admin": "Administrador",
       "collaborator": "Colaborador",
       "child": "Criança",
-      "unknown": "Desconhecido"
+      "unknown": "Desconhecido",
+      "screen_title": "Perfil",
+      "profile_of": "Perfil de {name_placeholder}",
+      "delete": "Excluir",
+      "delete_success": "Operação concluída: {name} excluído.",
+      "delete_error": "Falha ao excluir {name}."
     },
     "personal_title": "Dados pessoais",
     "address_title": "Endereço",
@@ -75,25 +78,17 @@
     "zip_code": "CEP",
     "id_label": "Id:"
   },
-  "profile": {
-    "screen_title": "Perfil",
-    "profile_of": "Perfil de {name_placeholder}",
-    "delete": "Excluir",
-    "delete_success": "Operação concluída: {name} excluído.",
-    "delete_error": "Falha ao excluir {name}."
-  },
   "buttons": {
     "confirm": "Confirmar",
     "ok": "OK",
     "cancel": "Cancelar",
-    "save": "Salvar"
-    ,"next": "Próximo"
+    "save": "Salvar",
+    "next": "Próximo"
   },
   "common": {
     "success": "Sucesso",
     "error": "Erro"
-  }
-  ,
+  },
   "attendance": {
     "search_child": "Buscar criança",
     "no_children_found": "Nenhuma criança encontrada",
@@ -108,13 +103,11 @@
     "notes_label": "Observações",
     "operation_success": "Operação concluída",
     "operation_error": "Operação cancelada/erro"
-  }
-  ,
+  },
   "splash": {
     "session_expired_title": "Sessão expirada",
     "session_expired_message": "Sua sessão expirou. Faça login novamente."
-  }
-,
+  },
   "users": {
     "title": "Usuários",
     "search": "Buscar usuário",
@@ -128,8 +121,7 @@
     "date_initial": "Data inicial",
     "date_final": "Data final",
     "type": "Tipo:",
-    "no_data": "Sem dados"
-    ,
+    "no_data": "Sem dados",
     "type_checkins_7d": "Check-ins (7d)",
     "type_checkins_period": "Check-ins por período",
     "type_distribution_by_collaborator": "Distribuição por colaborador",
@@ -139,8 +131,8 @@
   },
   "login": {
     "invalid_credentials": "Usuário ou senha inválidos!",
-    "title": "Login - {company}",
-    "welcome": "Bem-vindo {company}",
+    "title": "Login",
+    "welcome": "Bem-vindo",
     "email_label": "E-mail",
     "email_hint": "Digite seu e-mail",
     "password_label": "Senha",
