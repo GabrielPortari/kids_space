@@ -29,4 +29,11 @@ class CollaboratorService {
     if (res.statusCode == 404) return null;
     return null;
   }
+
+  Future<bool> delete(String id) async {
+    final res = await _api.delete('/v2/collaborators/$id');
+    if (res.statusCode == 204) return true;
+    if (res.statusCode == 404) return false;
+    throw Exception('Failed to delete collaborator: \\${res.statusCode}');
+  }
 }

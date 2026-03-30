@@ -30,4 +30,15 @@ class CollaboratorController extends ChangeNotifier {
     _loggedCollaborator = c;
     notifyListeners();
   }
+
+  Future<bool> deleteCollaborator(String id) async {
+    final ok = await _service.delete(id);
+    if (ok) {
+      if (_loggedCollaborator?.id == id) {
+        _loggedCollaborator = null;
+      }
+      notifyListeners();
+    }
+    return ok;
+  }
 }

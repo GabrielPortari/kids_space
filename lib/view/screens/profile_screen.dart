@@ -7,7 +7,6 @@ import 'package:kids_space/controller/parent_controller.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
 import 'package:kids_space/view/widgets/profile_edit_helper.dart';
-import 'package:kids_space/model/base_user.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/model/company.dart';
 import 'package:kids_space/controller/company_controller.dart';
@@ -213,8 +212,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           defaultText: 'Perfil de {name_placeholder}',
           namedArgs: {
             'name_placeholder':
-                _effectiveCompany?.fantasyName ??
-                _effectiveCompany?.corporateName ??
+                _effectiveCompany?.name ??
+                _effectiveCompany?.legalName ??
                 translate('profile.name_placeholder', defaultText: 'Nome'),
           },
         );
