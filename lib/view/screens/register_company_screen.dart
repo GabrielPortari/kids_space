@@ -71,22 +71,40 @@ class _RegisterCompanyScreenState extends State<RegisterCompanyScreen> {
     setState(() => _loading = false);
     if (ok) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(translate('register.success'))));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            translate(
+              'register.success',
+              defaultText: 'Company registered successfully!',
+            ),
+          ),
+        ),
+      );
       Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
     } else {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(translate('register.failed'))));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            translate(
+              'register.failed',
+              defaultText: 'Failed to register company. Please try again.',
+            ),
+          ),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(translate('register.title'))),
+      appBar: AppBar(
+        title: Text(
+          translate('register.title', defaultText: 'Register Company'),
+        ),
+      ),
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -103,31 +121,46 @@ class _RegisterCompanyScreenState extends State<RegisterCompanyScreen> {
                       TextFormField(
                         controller: _nameController,
                         decoration: InputDecoration(
-                          labelText: translate('company.name'),
+                          labelText: translate(
+                            'company.name',
+                            defaultText: 'Company Name',
+                          ),
                         ),
                         validator: (v) => (v == null || v.isEmpty)
-                            ? translate('validation.required')
+                            ? translate(
+                                'validation.required',
+                                defaultText: 'This field is required',
+                              )
                             : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _legalNameController,
                         decoration: InputDecoration(
-                          labelText: translate('company.legal_name'),
+                          labelText: translate(
+                            'company.legal_name',
+                            defaultText: 'Legal Name',
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _cnpjController,
                         decoration: InputDecoration(
-                          labelText: translate('company.cnpj'),
+                          labelText: translate(
+                            'company.cnpj',
+                            defaultText: 'CNPJ',
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _addressController,
                         decoration: InputDecoration(
-                          labelText: translate('company.address'),
+                          labelText: translate(
+                            'company.address',
+                            defaultText: 'Address',
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -138,7 +171,10 @@ class _RegisterCompanyScreenState extends State<RegisterCompanyScreen> {
                             child: TextFormField(
                               controller: _numberController,
                               decoration: InputDecoration(
-                                labelText: translate('company.number'),
+                                labelText: translate(
+                                  'company.number',
+                                  defaultText: 'Number',
+                                ),
                               ),
                             ),
                           ),
@@ -148,7 +184,10 @@ class _RegisterCompanyScreenState extends State<RegisterCompanyScreen> {
                             child: TextFormField(
                               controller: _complementController,
                               decoration: InputDecoration(
-                                labelText: translate('company.complement'),
+                                labelText: translate(
+                                  'company.complement',
+                                  defaultText: 'Complement',
+                                ),
                               ),
                             ),
                           ),
@@ -158,7 +197,10 @@ class _RegisterCompanyScreenState extends State<RegisterCompanyScreen> {
                       TextFormField(
                         controller: _neighborhoodController,
                         decoration: InputDecoration(
-                          labelText: translate('company.neighborhood'),
+                          labelText: translate(
+                            'company.neighborhood',
+                            defaultText: 'Neighborhood',
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -169,7 +211,10 @@ class _RegisterCompanyScreenState extends State<RegisterCompanyScreen> {
                             child: TextFormField(
                               controller: _cityController,
                               decoration: InputDecoration(
-                                labelText: translate('company.city'),
+                                labelText: translate(
+                                  'company.city',
+                                  defaultText: 'City',
+                                ),
                               ),
                             ),
                           ),
@@ -179,7 +224,10 @@ class _RegisterCompanyScreenState extends State<RegisterCompanyScreen> {
                             child: TextFormField(
                               controller: _stateController,
                               decoration: InputDecoration(
-                                labelText: translate('company.state'),
+                                labelText: translate(
+                                  'company.state',
+                                  defaultText: 'State',
+                                ),
                               ),
                             ),
                           ),
@@ -189,7 +237,10 @@ class _RegisterCompanyScreenState extends State<RegisterCompanyScreen> {
                       TextFormField(
                         controller: _zipcodeController,
                         decoration: InputDecoration(
-                          labelText: translate('company.zipcode'),
+                          labelText: translate(
+                            'company.zipcode',
+                            defaultText: 'Zip Code',
+                          ),
                         ),
                         keyboardType: TextInputType.number,
                       ),
@@ -197,29 +248,45 @@ class _RegisterCompanyScreenState extends State<RegisterCompanyScreen> {
                       TextFormField(
                         controller: _contactController,
                         decoration: InputDecoration(
-                          labelText: translate('company.contact'),
+                          labelText: translate(
+                            'company.contact',
+                            defaultText: 'Contact',
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _emailController,
                         decoration: InputDecoration(
-                          labelText: translate('company.email'),
+                          labelText: translate(
+                            'company.email',
+                            defaultText: 'Email',
+                          ),
                         ),
                         keyboardType: TextInputType.emailAddress,
                         validator: (v) => (v == null || v.isEmpty)
-                            ? translate('validation.required')
+                            ? translate(
+                                'validation.required',
+                                defaultText: 'This field is required',
+                              )
                             : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _passwordController,
                         decoration: InputDecoration(
-                          labelText: translate('register.password'),
+                          labelText: translate(
+                            'register.password',
+                            defaultText: 'Password',
+                          ),
                         ),
                         obscureText: true,
                         validator: (v) => (v == null || v.length < 6)
-                            ? translate('validation.password_length')
+                            ? translate(
+                                'validation.password_length',
+                                defaultText:
+                                    'Password must be at least 6 characters',
+                              )
                             : null,
                       ),
                       const SizedBox(height: 20),
@@ -233,7 +300,12 @@ class _RegisterCompanyScreenState extends State<RegisterCompanyScreen> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : Text(translate('register.submit')),
+                            : Text(
+                                translate(
+                                  'register.submit',
+                                  defaultText: 'Submit',
+                                ),
+                              ),
                       ),
                     ],
                   ),
