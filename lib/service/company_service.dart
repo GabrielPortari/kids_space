@@ -13,7 +13,7 @@ class CompanyService {
   }
 
   Future<Map<String, dynamic>?> getById(String companyId) async {
-    final res = await _api.get('/v2/companies/\$companyId');
+    final res = await _api.get('/v2/companies/$companyId');
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }

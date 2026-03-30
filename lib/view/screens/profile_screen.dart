@@ -95,7 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _isLoading = true;
       });
       _companyController
-          .fetchCompanyById(widget.selectedCompany!.id!)
+          .loadCompanyById(widget.selectedCompany!.id!)
           .then((fetched) {
             if (fetched != null && mounted) {
               setState(() {
@@ -184,44 +184,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   _AppBarConfig _computeAppBarConfig() {
-    String title = translate('profile.screen_title');
+    String title = translate('profile.screen_title', defaultText: 'Perfil');
     if (selectedProfileType != null) {
       if (selectedProfileType == SelectedProfileType.user) {
         title = translate(
           'profile.profile_of',
+          defaultText: 'Perfil de {name_placeholder}',
           namedArgs: {
             'name_placeholder':
                 widget.selectedUser?.name ??
-                translate('profile.name_placeholder'),
+                translate('profile.name_placeholder', defaultText: 'Nome'),
           },
         );
       } else if (selectedProfileType == SelectedProfileType.collaborator ||
           selectedProfileType == SelectedProfileType.admin) {
         title = translate(
           'profile.profile_of',
+          defaultText: 'Perfil de {name_placeholder}',
           namedArgs: {
             'name_placeholder':
                 widget.selectedCollaborator?.name ??
-                translate('profile.name_placeholder'),
+                translate('profile.name_placeholder', defaultText: 'Nome'),
           },
         );
       } else if (selectedProfileType == SelectedProfileType.company) {
         title = translate(
           'profile.profile_of',
+          defaultText: 'Perfil de {name_placeholder}',
           namedArgs: {
             'name_placeholder':
                 _effectiveCompany?.fantasyName ??
                 _effectiveCompany?.corporateName ??
-                translate('profile.name_placeholder'),
+                translate('profile.name_placeholder', defaultText: 'Nome'),
           },
         );
       } else if (selectedProfileType == SelectedProfileType.child) {
         title = translate(
           'profile.profile_of',
+          defaultText: 'Perfil de {name_placeholder}',
           namedArgs: {
             'name_placeholder':
                 widget.selectedChild?.name ??
-                translate('profile.name_placeholder'),
+                translate('profile.name_placeholder', defaultText: 'Nome'),
           },
         );
       }
@@ -334,21 +338,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(translate('ui.confirm_delete_title')),
+        title: Text(
+          translate(
+            'ui.confirm_delete_title',
+            defaultText: 'Confirmar exclusão',
+          ),
+        ),
         content: Text(
           translate(
             'ui.confirm_delete_message',
             namedArgs: {'name': targetName},
+            defaultText: 'Tem certeza que deseja excluir {name}?',
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(translate('buttons.cancel')),
+            child: Text(translate('buttons.cancel', defaultText: 'Cancelar')),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(translate('profile.delete')),
+            child: Text(translate('profile.delete', defaultText: 'Excluir')),
           ),
         ],
       ),
@@ -362,9 +372,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
     if (type == SelectedProfileType.collaborator &&
         widget.selectedCollaborator != null) {
-      success = await _collaboratorController.deleteCollaborator(
-        widget.selectedCollaborator?.id ?? '',
-      );
+      // Deleting collaborators isn't provided by the current v2 controller/service.
+      // Keep as not-supported here to avoid calling a missing API.
+      success = false;
     }
     if (type == SelectedProfileType.child && widget.selectedChild != null) {
       success = await _childController.deleteChild(
@@ -376,23 +386,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(
-          success ? translate('common.success') : translate('common.error'),
+          success
+              ? translate('common.success', defaultText: 'Sucesso')
+              : translate('common.error', defaultText: 'Erro'),
         ),
         content: Text(
           success
               ? translate(
                   'profile.delete_success',
                   namedArgs: {'name': targetName},
+                  defaultText: 'Excluído com sucesso: {name}',
                 )
               : translate(
                   'profile.delete_error',
                   namedArgs: {'name': targetName},
+                  defaultText: 'Falha ao excluir: {name}',
                 ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(translate('buttons.ok')),
+            child: Text(translate('buttons.ok', defaultText: 'OK')),
           ),
         ],
       ),
@@ -460,16 +474,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(translate('ui.logout_confirm_title')),
-        content: Text(translate('ui.logout_confirm_message')),
+        title: Text(
+          translate('ui.logout_confirm_title', defaultText: 'Confirmar logout'),
+        ),
+        content: Text(
+          translate(
+            'ui.logout_confirm_message',
+            defaultText: 'Deseja realmente sair do aplicativo?',
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(translate('buttons.cancel')),
+            child: Text(translate('buttons.cancel', defaultText: 'Cancelar')),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(translate('ui.logout_button')),
+            child: Text(translate('ui.logout_button', defaultText: 'Sair')),
           ),
         ],
       ),
@@ -489,31 +510,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final personalFields = [
       FieldDefinition(
         key: 'name',
-        label: translate('profile.name'),
+        label: translate('profile.name', defaultText: 'Nome'),
         initialValue: null,
         required: true,
       ),
       FieldDefinition(
         key: 'email',
-        label: translate('profile.email'),
+        label: translate('profile.email', defaultText: 'Email'),
         type: FieldType.email,
         initialValue: null,
       ),
       FieldDefinition(
         key: 'birthDate',
-        label: translate('profile.birth_date'),
+        label: translate(
+          'profile.birth_date',
+          defaultText: 'Data de nascimento',
+        ),
         type: FieldType.date,
         initialValue: null,
       ),
       FieldDefinition(
         key: 'phone',
-        label: translate('profile.phone'),
+        label: translate('profile.phone', defaultText: 'Telefone'),
         type: FieldType.phone,
         initialValue: null,
       ),
       FieldDefinition(
         key: 'document',
-        label: translate('profile.document'),
+        label: translate('profile.document', defaultText: 'Documento'),
         initialValue: null,
       ),
     ];
@@ -529,16 +553,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final inherit = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(translate('profile.address_title')),
-        content: Text(translate('ui.inherit_address_question')),
+        title: Text(
+          translate('profile.address_title', defaultText: 'Endereço'),
+        ),
+        content: Text(
+          translate(
+            'ui.inherit_address_question',
+            defaultText: 'Deseja herdar o endereço?',
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(translate('ui.yes')),
+            child: Text(translate('ui.yes', defaultText: 'Sim')),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(translate('ui.no')),
+            child: Text(translate('ui.no', defaultText: 'Não')),
           ),
         ],
       ),
@@ -550,7 +581,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final addressFields = [
         FieldDefinition(
           key: 'address',
-          label: translate('profile.address'),
+          label: translate('profile.address', defaultText: 'Endereço'),
           initialValue: null,
         ),
         FieldDefinition(
@@ -568,7 +599,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         FieldDefinition(key: 'state', label: 'Estado', initialValue: null),
         FieldDefinition(
           key: 'zipCode',
-          label: translate('profile.zip_code'),
+          label: translate('profile.zip_code', defaultText: 'CEP'),
           initialValue: null,
         ),
       ];
@@ -580,33 +611,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (addressRes == null) return;
     }
 
-    // Build Child model
-    final child = Child(
-      responsibleUserIds: [parent.id!],
-      checkedIn: false,
-      userType: UserType.user,
-      name: personalRes['name']?.toString(),
-      email: personalRes['email']?.toString(),
-      birthDate: personalRes['birthDate']?.toString(),
-      document: personalRes['document']?.toString(),
-      phone: personalRes['phone']?.toString(),
-      address: inherit ? null : addressRes?['address']?.toString(),
-      addressNumber: inherit ? null : addressRes?['addressNumber']?.toString(),
-      addressComplement: inherit
-          ? null
-          : addressRes?['addressComplement']?.toString(),
-      neighborhood: inherit ? null : addressRes?['neighborhood']?.toString(),
-      city: inherit ? null : addressRes?['city']?.toString(),
-      state: inherit ? null : addressRes?['state']?.toString(),
-      zipCode: inherit ? null : addressRes?['zipCode']?.toString(),
-      companyId: parent.companyId,
-      id: null,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
+    // Build payload for v2 API
+    final Map<String, dynamic> payload = {
+      'name': personalRes['name']?.toString(),
+      'email': personalRes['email']?.toString(),
+      'document': personalRes['document']?.toString(),
+      'contact': personalRes['phone']?.toString(),
+      'parents': [parent.id],
+      'companyId': parent.companyId,
+    };
 
-    // Call controller to create
-    final success = await _childController.registerChild(parent.id!, child);
+    if (inherit == false && addressRes != null) {
+      payload['address'] = {
+        'address': addressRes['address']?.toString(),
+        'number': addressRes['addressNumber']?.toString(),
+        'complement': addressRes['addressComplement']?.toString(),
+        'neighborhood': addressRes['neighborhood']?.toString(),
+        'city': addressRes['city']?.toString(),
+        'state': addressRes['state']?.toString(),
+        'zipcode': addressRes['zipCode']?.toString(),
+      };
+    }
+
+    bool success = false;
+    try {
+      final created = await _childController.createChild(payload);
+      success = created.id != null;
+    } catch (_) {
+      success = false;
+    }
+
     await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(

@@ -13,7 +13,7 @@ class CollaboratorService {
   }
 
   Future<Map<String, dynamic>?> getById(String id) async {
-    final res = await _api.get('/v2/collaborators/\$id');
+    final res = await _api.get('/v2/collaborators/$id');
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }

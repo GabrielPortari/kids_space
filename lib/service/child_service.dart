@@ -19,7 +19,7 @@ class ChildService {
   }
 
   Future<Map<String, dynamic>?> getById(String id) async {
-    final res = await _api.get('/v2/children/\$id');
+    final res = await _api.get('/v2/children/$id');
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
@@ -31,7 +31,7 @@ class ChildService {
     String id,
     Map<String, dynamic> payload,
   ) async {
-    final res = await _api.patch('/v2/children/\$id', payload);
+    final res = await _api.patch('/v2/children/$id', payload);
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
