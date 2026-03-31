@@ -42,18 +42,12 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(translate('login.unknown_role')),
-            ),
-          ),
+          SnackBar(content: Text(translate('login.unknown_role'))),
         );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(translate('login.invalid_credentials')),
-          ),
-        ),
+        SnackBar(content: Text(translate('login.invalid_credentials'))),
       );
     }
   }
@@ -61,9 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(translate('login.title')),
-      ),
+      appBar: AppBar(title: Text(translate('login.title'))),
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -150,7 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: () {
                 Navigator.pushNamed(context, '/register_company');
               },
-                child: Text(translate('login.no_account')),
+              child: Text(translate('login.no_account')),
             ),
             TextButton(
               onPressed: () {
@@ -172,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
         title: Text(translate('login.forgot_password')),
         content: TextField(
           controller: _forgotController,
-            decoration: InputDecoration(hintText: translate('login.enter_email')),
+          decoration: InputDecoration(hintText: translate('login.enter_email')),
           keyboardType: TextInputType.emailAddress,
         ),
         actions: [
@@ -185,9 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Navigator.of(c).pop();
               // No backend endpoint implemented here; just show confirmation.
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(translate('login.forgot_sent')),
-                ),
+                SnackBar(content: Text(translate('login.forgot_sent'))),
               );
             },
             child: Text(translate('buttons.ok')),

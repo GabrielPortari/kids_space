@@ -28,7 +28,6 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
 
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
-  bool _isCreating = false;
 
   @override
   void initState() {
@@ -236,7 +235,6 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
     if (addr.isNotEmpty) payload['address'] = addr;
 
     // show loading dialog
-    _isCreating = true;
     if (mounted) setState(() {});
     showDialog<void>(
       context: context,
@@ -249,7 +247,6 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
     } finally {
       // dismiss loading
       Navigator.of(context, rootNavigator: true).pop();
-      _isCreating = false;
       if (mounted) setState(() {});
     }
 

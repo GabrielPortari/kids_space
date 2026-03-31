@@ -1,4 +1,4 @@
-enum AdminTileType { company, responsible, child, collaborator, reports }
+import 'package:kids_space/model/admin_tile_model.dart';
 
 String titleForType(AdminTileType type) {
   switch (type) {

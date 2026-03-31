@@ -9,7 +9,7 @@ class LocalizationService {
   }) {
     try {
       final res = key.tr(args: args, namedArgs: namedArgs);
-      if (res == null || res.isEmpty) return defaultText ?? key;
+      if (res.isEmpty) return defaultText ?? key;
       return res;
     } catch (_) {
       return defaultText ?? key;

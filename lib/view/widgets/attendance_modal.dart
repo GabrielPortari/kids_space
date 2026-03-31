@@ -93,7 +93,7 @@ Future<void> showAttendanceModal(
                       builder: (_) {
                         // compute active children from attendanceController.activeCheckins
                         final activeAttendances =
-                            attendanceController.activeCheckins ?? [];
+                            attendanceController.activeCheckins;
                         final activeIds = activeAttendances
                             .map((a) => a.childId)
                             .whereType<String>()
@@ -120,12 +120,13 @@ Future<void> showAttendanceModal(
                                   )
                                   .toList();
 
-                        if (source.isEmpty)
+                        if (source.isEmpty) {
                           return Center(
                             child: Text(
                               translate('attendance.no_children_found'),
                             ),
                           );
+                        }
 
                         return Scrollbar(
                           child: ListView.separated(
@@ -169,7 +170,7 @@ Future<void> showAttendanceModal(
 
                         // Recompute the current source to match the list shown inside the Observer
                         final activeAttendances =
-                            attendanceController.activeCheckins ?? [];
+                            attendanceController.activeCheckins;
                         final activeIds = activeAttendances
                             .map((a) => a.childId)
                             .whereType<String>()
@@ -213,14 +214,13 @@ Future<void> showAttendanceModal(
                           if (type == AttendanceType.checkin) {
                             parents = child.parents ?? [];
                           } else {
-                            final active =
-                                attendanceController.activeCheckins ?? [];
+                            final active = attendanceController.activeCheckins;
                             parents = active
-                              .where((a) => a.childId == child.id)
-                              .map((a) => a.parentIdWhoCheckedInId)
-                              .whereType<String>()
-                              .toSet()
-                              .toList();
+                                .where((a) => a.childId == child.id)
+                                .map((a) => a.parentIdWhoCheckedInId)
+                                .whereType<String>()
+                                .toSet()
+                                .toList();
                             if (parents.isEmpty) {
                               parents = child.parents ?? [];
                             }
@@ -404,8 +404,7 @@ Future<void> showAttendanceModal(
                                 : null;
                           } else {
                             // checkout: try to find existing active checkin note for this child
-                            final active =
-                                attendanceController.activeCheckins ?? [];
+                            final active = attendanceController.activeCheckins;
                             Attendance? existing;
                             try {
                               existing = active.firstWhere(
@@ -468,7 +467,7 @@ Future<void> showAttendanceModal(
                               final res = await attendanceController.checkin(
                                 attendance.toJson(),
                               );
-                              ok = res != null && (res.id != null);
+                              ok = (res.id != null);
                             } else {
                               final res = await attendanceController.checkout(
                                 attendance.toJson(),

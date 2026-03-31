@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/model/parent.dart';
-import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/util/localization_service.dart';
 
@@ -18,7 +16,6 @@ class ProfileChildrenCardSection extends StatefulWidget {
 
 class _ProfileChildrenCardSectionState
     extends State<ProfileChildrenCardSection> {
-  final ChildController _childController = GetIt.I.get<ChildController>();
   final List<Child> _children = [];
   bool _collapsed = false;
 
