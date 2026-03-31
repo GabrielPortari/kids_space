@@ -43,11 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              translate(
-                'login.unknown_role',
-                defaultText: 'Tipo de usuário desconhecido.',
-              ),
+              content: Text(translate('login.unknown_role')),
             ),
           ),
         );
@@ -55,11 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            translate(
-              'login.invalid_credentials',
-              defaultText: 'Credenciais inválidas',
-            ),
+            content: Text(translate('login.invalid_credentials')),
           ),
         ),
       );
@@ -70,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(translate('login.title', defaultText: 'Login')),
+        title: Text(translate('login.title')),
       ),
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -119,16 +111,14 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildWelcome() {
-    return TextHeaderLarge(
-      translate('login.welcome', defaultText: 'Bem-vindo!'),
-    );
+    return TextHeaderLarge(translate('login.welcome'));
   }
 
   Widget _emailField() {
     return AppTextField(
       controller: _emailController,
-      labelText: translate('login.email_label', defaultText: 'Email'),
-      hintText: translate('login.email_hint', defaultText: 'Digite seu e-mail'),
+      labelText: translate('login.email_label'),
+      hintText: translate('login.email_hint'),
       keyboardType: TextInputType.emailAddress,
     );
   }
@@ -137,17 +127,14 @@ class _LoginScreenState extends State<LoginScreen> {
     return AppTextField(
       controller: _passwordController,
       obscureText: true,
-      labelText: translate('login.password_label', defaultText: 'Senha'),
-      hintText: translate(
-        'login.password_hint',
-        defaultText: 'Digite sua senha',
-      ),
+      labelText: translate('login.password_label'),
+      hintText: translate('login.password_hint'),
     );
   }
 
   Widget _loginButton() {
     return AppButton(
-      text: translate('login.login_button', defaultText: 'Entrar'),
+      text: translate('login.login_button'),
       onPressed: _loading ? null : _login,
     );
   }
@@ -163,23 +150,13 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: () {
                 Navigator.pushNamed(context, '/register_company');
               },
-              child: Text(
-                translate(
-                  'login.no_account',
-                  defaultText: 'Não tem uma conta? Registrar',
-                ),
-              ),
+                child: Text(translate('login.no_account')),
             ),
             TextButton(
               onPressed: () {
                 _showForgotPasswordDialog();
               },
-              child: Text(
-                translate(
-                  'login.forgot_password',
-                  defaultText: 'Esqueci minha senha',
-                ),
-              ),
+              child: Text(translate('login.forgot_password')),
             ),
           ],
         ),
@@ -192,26 +169,16 @@ class _LoginScreenState extends State<LoginScreen> {
     showDialog<void>(
       context: context,
       builder: (c) => AlertDialog(
-        title: Text(
-          translate(
-            'login.forgot_password',
-            defaultText: 'Esqueci minha senha',
-          ),
-        ),
+        title: Text(translate('login.forgot_password')),
         content: TextField(
           controller: _forgotController,
-          decoration: InputDecoration(
-            hintText: translate(
-              'login.enter_email',
-              defaultText: 'Digite seu e-mail',
-            ),
-          ),
+            decoration: InputDecoration(hintText: translate('login.enter_email')),
           keyboardType: TextInputType.emailAddress,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(c).pop(),
-            child: Text(translate('buttons.cancel', defaultText: 'Cancelar')),
+            child: Text(translate('buttons.cancel')),
           ),
           TextButton(
             onPressed: () async {
@@ -219,17 +186,11 @@ class _LoginScreenState extends State<LoginScreen> {
               // No backend endpoint implemented here; just show confirmation.
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(
-                    translate(
-                      'login.forgot_sent',
-                      defaultText:
-                          'Se um usuário com esse e-mail existir, instruções foram enviadas.',
-                    ),
-                  ),
+                  content: Text(translate('login.forgot_sent')),
                 ),
               );
             },
-            child: Text(translate('buttons.ok', defaultText: 'OK')),
+            child: Text(translate('buttons.ok')),
           ),
         ],
       ),

@@ -8,8 +8,8 @@ class Attendance extends BaseModel {
   final String? companyId;
   final String? collaboratorWhoCheckedInId;
   final String? collaboratorWhoCheckedOutId;
-  final String? responsibleIdWhoCheckedInId;
-  final String? responsibleIdWhoCheckedOutId;
+  final String? parentIdWhoCheckedInId;
+  final String? parentIdWhoCheckedOutId;
   final String? childId;
   final DateTime? checkInTime;
   final DateTime? checkOutTime;
@@ -24,8 +24,8 @@ class Attendance extends BaseModel {
     this.companyId,
     this.collaboratorWhoCheckedInId,
     this.collaboratorWhoCheckedOutId,
-    this.responsibleIdWhoCheckedInId,
-    this.responsibleIdWhoCheckedOutId,
+    this.parentIdWhoCheckedInId,
+    this.parentIdWhoCheckedOutId,
     this.childId,
     this.checkInTime,
     this.checkOutTime,
@@ -61,11 +61,10 @@ class Attendance extends BaseModel {
       collaboratorWhoCheckedOutId:
           json['collaboratorWhoCheckedOutId'] as String? ??
           json['collaboratorCheckedOutId'] as String?,
-      responsibleIdWhoCheckedInId:
-          json['responsibleIdWhoCheckedInId'] as String? ??
-          json['responsibleId'] as String?,
-      responsibleIdWhoCheckedOutId:
-          json['responsibleIdWhoCheckedOutId'] as String?,
+      parentIdWhoCheckedInId:
+          json['parentIdWhoCheckedInId'] as String? ??
+          json['parentId'] as String?,
+      parentIdWhoCheckedOutId: json['parentIdWhoCheckedOutId'] as String?,
       childId: json['childId'] as String?,
       checkInTime: inTime,
       checkOutTime: outTime,
@@ -90,9 +89,9 @@ class Attendance extends BaseModel {
     'collaboratorCheckedInId': collaboratorWhoCheckedInId,
     'collaboratorWhoCheckedOutId': collaboratorWhoCheckedOutId,
     'collaboratorCheckedOutId': collaboratorWhoCheckedOutId,
-    'responsibleIdWhoCheckedInId': responsibleIdWhoCheckedInId,
-    'responsibleId': responsibleIdWhoCheckedInId,
-    'responsibleIdWhoCheckedOutId': responsibleIdWhoCheckedOutId,
+    'parentIdWhoCheckedInId': parentIdWhoCheckedInId,
+    'parentId': parentIdWhoCheckedInId,
+    'parentIdWhoCheckedOutId': parentIdWhoCheckedOutId,
     'childId': childId,
     'checkInTime': checkInTime?.toIso8601String(),
     'checkOutTime': checkOutTime?.toIso8601String(),

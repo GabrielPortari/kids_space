@@ -211,7 +211,7 @@ Future<void> showAttendanceModal(
                           // For checkout, prefer responsibleIds from active checkins for this child
                           List<String> responsibles = [];
                           if (type == AttendanceType.checkin) {
-                            responsibles = child.responsibleUserIds ?? [];
+                            responsibles = child.parents ?? [];
                           } else {
                             final active =
                                 attendanceController.activeCheckins ?? [];
@@ -222,7 +222,7 @@ Future<void> showAttendanceModal(
                                 .toSet()
                                 .toList();
                             if (responsibles.isEmpty) {
-                              responsibles = child.responsibleUserIds ?? [];
+                              responsibles = child.parents ?? [];
                             }
                           }
 
@@ -440,16 +440,23 @@ Future<void> showAttendanceModal(
                             companyId: collaboratorController
                                 .loggedCollaborator
                                 ?.companyId,
-                            collaboratorCheckedInId:
+                            collaboratorWhoCheckedInId:
                                 type == AttendanceType.checkin
                                 ? collaboratorController.loggedCollaborator?.id
                                 : null,
-                            collaboratorCheckedOutId:
+                            collaboratorWhoCheckedOutId:
                                 type == AttendanceType.checkout
                                 ? collaboratorController.loggedCollaborator?.id
                                 : null,
                             childId: selectedChildId,
-                            responsibleId: selectedResponsibleId,
+                            parentIdWhoCheckedInId:
+                                type == AttendanceType.checkin
+                                ? collaboratorController.loggedCollaborator?.id
+                                : null,
+                            parentIdWhoCheckedOutId:
+                                type == AttendanceType.checkout
+                                ? collaboratorController.loggedCollaborator?.id
+                                : null,
                             notes: notesPayload,
                           );
 

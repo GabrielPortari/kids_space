@@ -197,12 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: SizedBox(
           height: listHeight,
           child: Center(
-            child: TextBodyMedium(
-              translate(
-                'home.no_presence_records',
-                defaultText: 'Sem registro de presença',
-              ),
-            ),
+            child: TextBodyMedium(translate('home.no_presence_records')),
           ),
         ),
       );
@@ -245,8 +240,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 trailing: Chip(
                   label: TextBodySmall(
                     isCheckin
-                        ? translate('home.check_in', defaultText: 'Entrada')
-                        : translate('home.check_out', defaultText: 'Saída'),
+                        ? translate('home.check_in')
+                        : translate('home.check_out'),
                     style: TextStyle(color: isCheckin ? successBg : dangerBg),
                   ),
                   backgroundColor: isCheckin ? success : danger,
@@ -299,7 +294,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     TextBodyMedium(
                       translate(
                         'home.collaborator_name',
-                        defaultText: 'Nome do colaborador',
                         namedArgs: {
                           'name_placeholder':
                               _collaboratorController
@@ -327,7 +321,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           AppButton(
             enabled: !globalLoading,
-            text: translate('home.check_in', defaultText: 'Entrada'),
+            text: translate('home.check_in'),
             icon: const Icon(Icons.login_rounded, color: Colors.white),
             onPressed: globalLoading
                 ? null
@@ -335,7 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           AppButton(
             enabled: !globalLoading,
-            text: translate('home.check_out', defaultText: 'Saída'),
+            text: translate('home.check_out'),
             icon: const Icon(Icons.logout_rounded, color: Colors.white),
             onPressed: globalLoading
                 ? null
@@ -365,15 +359,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      TextTitle(
-                        translate('home.actives', defaultText: 'Ativos'),
-                      ),
+                      TextTitle(translate('home.actives')),
                       TextHeaderLarge(
                         '${_attendanceController.activeCheckins.length}',
                       ),
-                      TextBodyMedium(
-                        translate('home.see_more', defaultText: 'Ver mais'),
-                      ),
+                      TextBodyMedium(translate('home.see_more')),
                     ],
                   ),
                 ),
@@ -387,12 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Icon(Icons.login, color: success, size: 20),
                         const SizedBox(width: 6),
-                        TextHeaderSmall(
-                          translate(
-                            'home.last_check_in',
-                            defaultText: 'Última Entrada',
-                          ),
-                        ),
+                        TextHeaderSmall(translate('home.last_check_in')),
                       ],
                     ),
                     Padding(
@@ -408,10 +393,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               '${_childController.getChildById(_attendanceController.lastCheckIn?.childId)!.name} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckIn?.checkInTime)}',
                             )
                           : TextBodyMedium(
-                              translate(
-                                'home.no_checkins_registered',
-                                defaultText: 'Nenhuma entrada registrada',
-                              ),
+                              translate('home.no_checkins_registered'),
                             ),
                     ),
                     const Divider(height: 20),
@@ -419,12 +401,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Icon(Icons.logout, color: danger, size: 20),
                         const SizedBox(width: 6),
-                        TextHeaderSmall(
-                          translate(
-                            'home.last_check_out',
-                            defaultText: 'Última Saída',
-                          ),
-                        ),
+                        TextHeaderSmall(translate('home.last_check_out')),
                       ],
                     ),
                     Padding(
@@ -440,10 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               '${_childController.getChildById(_attendanceController.lastCheckOut?.childId)!.name} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckOut?.checkOutTime)}',
                             )
                           : TextBodyMedium(
-                              translate(
-                                'home.no_checkouts_registered',
-                                defaultText: 'Nenhuma saída registrada',
-                              ),
+                              translate('home.no_checkouts_registered'),
                             ),
                     ),
                   ],

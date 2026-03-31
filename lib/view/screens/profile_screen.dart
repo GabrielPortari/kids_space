@@ -191,48 +191,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   _AppBarConfig _computeAppBarConfig() {
-    String title = translate('profile.screen_title', defaultText: 'Perfil');
+    String title = translate('profile.screen_title');
     if (selectedProfileType != null) {
       if (selectedProfileType == SelectedProfileType.user) {
         title = translate(
           'profile.profile_of',
-          defaultText: 'Perfil de {name_placeholder}',
           namedArgs: {
             'name_placeholder':
                 widget.selectedUser?.name ??
-                translate('profile.name_placeholder', defaultText: 'Nome'),
+                translate('profile.name_placeholder'),
           },
         );
       } else if (selectedProfileType == SelectedProfileType.collaborator ||
           selectedProfileType == SelectedProfileType.admin) {
         title = translate(
           'profile.profile_of',
-          defaultText: 'Perfil de {name_placeholder}',
           namedArgs: {
             'name_placeholder':
                 widget.selectedCollaborator?.name ??
-                translate('profile.name_placeholder', defaultText: 'Nome'),
+                translate('profile.name_placeholder'),
           },
         );
       } else if (selectedProfileType == SelectedProfileType.company) {
         title = translate(
           'profile.profile_of',
-          defaultText: 'Perfil de {name_placeholder}',
           namedArgs: {
             'name_placeholder':
                 _effectiveCompany?.name ??
                 _effectiveCompany?.legalName ??
-                translate('profile.name_placeholder', defaultText: 'Nome'),
+                translate('profile.name_placeholder'),
           },
         );
       } else if (selectedProfileType == SelectedProfileType.child) {
         title = translate(
           'profile.profile_of',
-          defaultText: 'Perfil de {name_placeholder}',
           namedArgs: {
             'name_placeholder':
                 widget.selectedChild?.name ??
-                translate('profile.name_placeholder', defaultText: 'Nome'),
+                translate('profile.name_placeholder'),
           },
         );
       }
@@ -345,27 +341,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(
-          translate(
-            'ui.confirm_delete_title',
-            defaultText: 'Confirmar exclusão',
-          ),
-        ),
+        title: Text(translate('ui.confirm_delete_title')),
         content: Text(
           translate(
             'ui.confirm_delete_message',
             namedArgs: {'name': targetName},
-            defaultText: 'Tem certeza que deseja excluir {name}?',
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(translate('buttons.cancel', defaultText: 'Cancelar')),
+            child: Text(translate('buttons.cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(translate('profile.delete', defaultText: 'Excluir')),
+            child: Text(translate('profile.delete')),
           ),
         ],
       ),
@@ -393,27 +383,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(
-          success
-              ? translate('common.success', defaultText: 'Sucesso')
-              : translate('common.error', defaultText: 'Erro'),
+          success ? translate('common.success') : translate('common.error'),
         ),
         content: Text(
           success
               ? translate(
                   'profile.delete_success',
                   namedArgs: {'name': targetName},
-                  defaultText: 'Excluído com sucesso: {name}',
                 )
               : translate(
                   'profile.delete_error',
                   namedArgs: {'name': targetName},
-                  defaultText: 'Falha ao excluir: {name}',
                 ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(translate('buttons.ok', defaultText: 'OK')),
+            child: Text(translate('buttons.ok')),
           ),
         ],
       ),
@@ -481,23 +467,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(
-          translate('ui.logout_confirm_title', defaultText: 'Confirmar logout'),
-        ),
-        content: Text(
-          translate(
-            'ui.logout_confirm_message',
-            defaultText: 'Deseja realmente sair do aplicativo?',
-          ),
-        ),
+        title: Text(translate('ui.logout_confirm_title')),
+        content: Text(translate('ui.logout_confirm_message')),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(translate('buttons.cancel', defaultText: 'Cancelar')),
+            child: Text(translate('buttons.cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(translate('ui.logout_button', defaultText: 'Sair')),
+            child: Text(translate('ui.logout_button')),
           ),
         ],
       ),
@@ -517,34 +496,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final personalFields = [
       FieldDefinition(
         key: 'name',
-        label: translate('profile.name', defaultText: 'Nome'),
+        label: translate('profile.name'),
         initialValue: null,
         required: true,
       ),
       FieldDefinition(
         key: 'email',
-        label: translate('profile.email', defaultText: 'Email'),
+        label: translate('profile.email'),
         type: FieldType.email,
         initialValue: null,
       ),
       FieldDefinition(
         key: 'birthDate',
-        label: translate(
-          'profile.birth_date',
-          defaultText: 'Data de nascimento',
-        ),
+        label: translate('profile.birth_date'),
         type: FieldType.date,
         initialValue: null,
       ),
       FieldDefinition(
         key: 'phone',
-        label: translate('profile.phone', defaultText: 'Telefone'),
+        label: translate('profile.phone'),
         type: FieldType.phone,
         initialValue: null,
       ),
       FieldDefinition(
         key: 'document',
-        label: translate('profile.document', defaultText: 'Documento'),
+        label: translate('profile.document'),
         initialValue: null,
       ),
     ];
@@ -560,23 +536,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final inherit = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(
-          translate('profile.address_title', defaultText: 'Endereço'),
-        ),
-        content: Text(
-          translate(
-            'ui.inherit_address_question',
-            defaultText: 'Deseja herdar o endereço?',
-          ),
-        ),
+        title: Text(translate('profile.address_title')),
+        content: Text(translate('ui.inherit_address_question')),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(translate('ui.yes', defaultText: 'Sim')),
+            child: Text(translate('ui.yes')),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(translate('ui.no', defaultText: 'Não')),
+            child: Text(translate('ui.no')),
           ),
         ],
       ),
@@ -588,7 +557,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final addressFields = [
         FieldDefinition(
           key: 'address',
-          label: translate('profile.address', defaultText: 'Endereço'),
+          label: translate('profile.address'),
           initialValue: null,
         ),
         FieldDefinition(
@@ -606,7 +575,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         FieldDefinition(key: 'state', label: 'Estado', initialValue: null),
         FieldDefinition(
           key: 'zipCode',
-          label: translate('profile.zip_code', defaultText: 'CEP'),
+          label: translate('profile.zip_code'),
           initialValue: null,
         ),
       ];

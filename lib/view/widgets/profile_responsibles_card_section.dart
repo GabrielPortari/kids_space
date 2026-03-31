@@ -36,7 +36,7 @@ class _ProfileResponsiblesCardSectionState
 
   void _loadResponsibles() {
     _responsibles.clear();
-    for (final rId in widget.child?.responsibleUserIds ?? []) {
+    for (final rId in widget.child?.parents ?? []) {
       final u = _userController.getUserById(rId);
       if (u != null) _responsibles.add(u);
     }

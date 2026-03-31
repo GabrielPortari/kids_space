@@ -5,11 +5,14 @@ class LocalizationService {
     String key, {
     List<String>? args,
     Map<String, String>? namedArgs,
+    String? defaultText,
   }) {
     try {
-      return key.tr(args: args, namedArgs: namedArgs);
+      final res = key.tr(args: args, namedArgs: namedArgs);
+      if (res == null || res.isEmpty) return defaultText ?? key;
+      return res;
     } catch (_) {
-      return key;
+      return defaultText ?? key;
     }
   }
 }
@@ -18,5 +21,10 @@ String translate(
   String key, {
   List<String>? args,
   Map<String, String>? namedArgs,
-  required String defaultText,
-}) => LocalizationService.t(key, args: args, namedArgs: namedArgs);
+  String? defaultText,
+}) => LocalizationService.t(
+  key,
+  args: args,
+  namedArgs: namedArgs,
+  defaultText: defaultText,
+);

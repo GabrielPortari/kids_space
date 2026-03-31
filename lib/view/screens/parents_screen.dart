@@ -61,78 +61,69 @@ class _ParentsScreenState extends State<ParentsScreen> {
       FieldDefinition(
         key: 'name',
         initialValue: null,
-        label: translate('profile.name', defaultText: 'Name'),
+        label: translate('profile.name'),
         required: true,
       ),
       FieldDefinition(
         key: 'email',
         initialValue: null,
-        label: translate('profile.email', defaultText: 'Email'),
+        label: translate('profile.email'),
         type: FieldType.email,
       ),
       FieldDefinition(
         key: 'phone',
         initialValue: null,
-        label: translate('profile.phone', defaultText: 'Phone'),
+        label: translate('profile.phone'),
         type: FieldType.phone,
         required: true,
       ),
       FieldDefinition(
         key: 'document',
         initialValue: null,
-        label: translate('profile.document', defaultText: 'Document'),
+        label: translate('profile.document'),
         type: FieldType.number,
         required: true,
       ),
       FieldDefinition(
         key: 'address',
         initialValue: null,
-        label: translate('profile.address', defaultText: 'Address'),
+        label: translate('profile.address'),
       ),
       FieldDefinition(
         key: 'addressNumber',
         initialValue: null,
-        label: translate(
-          'profile.address_number',
-          defaultText: 'Address Number',
-        ),
+        label: translate('profile.address_number'),
       ),
       FieldDefinition(
         key: 'addressComplement',
         initialValue: null,
-        label: translate(
-          'profile.address_complement',
-          defaultText: 'Address Complement',
-        ),
+        label: translate('profile.address_complement'),
       ),
       FieldDefinition(
         key: 'neighborhood',
         initialValue: null,
-        label: translate('profile.neighborhood', defaultText: 'Neighborhood'),
+        label: translate('profile.neighborhood'),
       ),
       FieldDefinition(
         key: 'city',
         initialValue: null,
-        label: translate('profile.city', defaultText: 'City'),
+        label: translate('profile.city'),
       ),
       FieldDefinition(
         key: 'state',
         initialValue: null,
-        label: translate('profile.state', defaultText: 'State'),
+        label: translate('profile.state'),
       ),
       FieldDefinition(
         key: 'zipCode',
         initialValue: null,
-        label: translate('profile.zip_code', defaultText: 'Zip Code'),
+        label: translate('profile.zip_code'),
       ),
     ];
 
     final personalData = await showEditEntityBottomSheet(
       context: context,
-      title: translate(
-        'profile.personal_title',
-        defaultText: 'Personal Information',
-      ),
+      title: translate('profile.personal_title'),
       fields: dataFields,
     );
     if (personalData == null) return; // cancelled
@@ -169,7 +160,7 @@ class _ParentsScreenState extends State<ParentsScreen> {
     return Scaffold(
       appBar: showAppBar
           ? AppBar(
-              title: Text(translate('parents.title', defaultText: 'Parents')),
+              title: Text(translate('parents.title')),
               leading: Navigator.canPop(context) ? const BackButton() : null,
             )
           : null,
@@ -206,7 +197,7 @@ class _ParentsScreenState extends State<ParentsScreen> {
     return TextField(
       controller: _searchController,
       decoration: InputDecoration(
-        labelText: translate('parents.search', defaultText: 'Search Parents'),
+        labelText: translate('parents.search'),
         prefixIcon: const Icon(Icons.search),
         border: const OutlineInputBorder(),
         suffixIcon: _searchController.text.isEmpty
@@ -243,14 +234,8 @@ class _ParentsScreenState extends State<ParentsScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 24.0),
                       child: Text(
                         _searchController.text.isEmpty
-                            ? translate(
-                                'parents.empty',
-                                defaultText: 'No parents found',
-                              )
-                            : translate(
-                                'parents.not_found',
-                                defaultText: 'No parents match your search',
-                              ),
+                            ? translate('parents.empty')
+                            : translate('parents.not_found'),
                         style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 16,

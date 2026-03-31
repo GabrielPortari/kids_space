@@ -31,19 +31,8 @@ class _SplashScreenState extends State<SplashScreen> {
         context: context,
         barrierDismissible: false,
         builder: (c) => AlertDialog(
-          title: Text(
-            translate(
-              'splash.session_expired_title',
-              defaultText: 'Sessão Expirada',
-            ),
-          ),
-          content: Text(
-            translate(
-              'splash.session_expired_message',
-              defaultText:
-                  'Sua sessão expirou. Por favor, faça login novamente.',
-            ),
-          ),
+          title: Text(translate('splash.session_expired_title')),
+          content: Text(translate('splash.session_expired_message')),
           actions: [
             TextButton(
               onPressed: () {
@@ -52,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   context,
                 ).pushNamedAndRemoveUntil('/login', (route) => false);
               },
-              child: Text(translate('buttons.ok', defaultText: 'OK')),
+              child: Text(translate('buttons.ok')),
             ),
           ],
         ),
