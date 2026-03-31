@@ -10,6 +10,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/screens/admin_panel_screen.dart';
 import 'package:kids_space/view/screens/childrens_screen.dart';
+import 'package:kids_space/view/screens/parents_screen.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/view/screens/reports_screen.dart';
 import 'package:kids_space/view/widgets/app_bottom_nav.dart';
@@ -18,7 +19,6 @@ import 'package:kids_space/view/screens/home_screen.dart';
 import 'package:kids_space/view/screens/login_screen.dart';
 import 'package:kids_space/view/screens/register_company_screen.dart';
 import 'package:kids_space/view/screens/splash_screen.dart';
-import 'package:kids_space/view/screens/users_screen.dart';
 import 'package:kids_space/view/screens/collaborators_screen.dart';
 
 Future<void> main() async {
@@ -143,7 +143,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         // '/company_selection' removed: navigation now uses '/login'
         '/login': (context) => const LoginScreen(),
         '/register_company': (context) => const RegisterCompanyScreen(),
-        '/users': (context) => const UsersScreen(),
+        '/parents': (context) => const ParentsScreen(),
         '/collaborators': (context) => const CollaboratorsScreen(),
         '/childrens': (context) => const ChildrensScreen(),
         '/app_bottom_nav': (context) => const AppBottomNav(),

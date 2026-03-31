@@ -1,10 +1,4 @@
-enum AdminTileType {
-  company,
-  responsible,
-  child,
-  collaborator,
-  reports,
-}
+enum AdminTileType { company, responsible, child, collaborator, reports }
 
 String titleForType(AdminTileType type) {
   switch (type) {
@@ -24,29 +18,29 @@ String titleForType(AdminTileType type) {
 String messageForType(AdminTileType type) {
   switch (type) {
     case AdminTileType.company:
-      return('Gerencie as informações da empresa');
+      return ('Gerencie as informações da empresa');
     case AdminTileType.responsible:
-      return('Gerencie os responsáveis');
+      return ('Gerencie os responsáveis');
     case AdminTileType.child:
-      return('Gerencie as crianças');
+      return ('Gerencie as crianças');
     case AdminTileType.collaborator:
-      return('Gerencie os collaborator');
+      return ('Gerencie os collaborator');
     case AdminTileType.reports:
-      return('Visualize os relatórios e logs');
+      return ('Visualize os relatórios e logs');
   }
 }
 
 String getNavigationRoute(AdminTileType type) {
   switch (type) {
     case AdminTileType.company:
-      return('/company_profile_screen');
+      return ('/company_profile_screen');
     case AdminTileType.responsible:
-      return('/users');
+      return ('/parents');
     case AdminTileType.child:
-      return('/childrens');
+      return ('/childrens');
     case AdminTileType.collaborator:
-      return('/collaborators');
+      return ('/collaborators');
     case AdminTileType.reports:
-      return('/reports');
+      return ('/reports');
   }
 }

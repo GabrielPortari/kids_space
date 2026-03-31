@@ -30,6 +30,12 @@ class CollaboratorService {
     return null;
   }
 
+  Future<List<dynamic>> list({Map<String, String>? query}) async {
+    final res = await _api.get('/v2/collaborators');
+    if (res.statusCode == 200) return jsonDecode(res.body) as List<dynamic>;
+    throw Exception('Failed to list collaborators: \\${res.statusCode}');
+  }
+
   Future<bool> delete(String id) async {
     final res = await _api.delete('/v2/collaborators/$id');
     if (res.statusCode == 204) return true;

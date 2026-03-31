@@ -7,6 +7,7 @@ import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/util/date_hour_util.dart';
+import 'package:kids_space/util/localization_service.dart';
 import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
@@ -27,6 +28,7 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
 
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
+  bool _isCreating = false;
 
   @override
   void initState() {
@@ -58,7 +60,6 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
   }
 
   void _onTapCollaborator(Collaborator c) async {
-    await _collaboratorController.setSelectedCollaborator(c);
     if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => ProfileScreen(selectedCollaborator: c)),
@@ -167,22 +168,105 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
     );
     if (personalData == null) return; // cancelled
 
-    final newCollaborator = Collaborator(
-      name: personalData['name']?.toString(),
-      email: personalData['email']?.toString(),
-      birthDate: personalData['birthDate']?.toString(),
-      document: personalData['document']?.toString(),
-      phone: personalData['phone']?.toString(),
-      address: formatDateToIsoString(personalData['address']?.toString() ?? ''),
-      addressNumber: personalData['addressNumber']?.toString(),
-      addressComplement: personalData['addressComplement']?.toString(),
-      neighborhood: personalData['neighborhood']?.toString(),
-      city: personalData['city']?.toString(),
-      state: personalData['state']?.toString(),
-      zipCode: personalData['zipCode']?.toString(),
-    );
+    String? normalizeBirthDate(dynamic v) {
+      if (v == null) return null;
+      final s = v.toString();
+      // dd/MM/yyyy -> ISO
+      if (s.contains('/')) {
+        final iso = formatDateToIsoString(s);
+        if (iso != null) return iso;
+      }
+      // Try parse ISO-like
+      try {
+        final dt = DateTime.parse(s);
+        return dt.toIso8601String();
+      } catch (_) {}
+      // Try dd-MM-yyyy
+      final parts = s.split('-');
+      if (parts.length == 3) {
+        try {
+          final d = int.parse(parts[0]);
+          final m = int.parse(parts[1]);
+          final y = int.parse(parts[2]);
+          return DateTime(y, m, d).toIso8601String();
+        } catch (_) {}
+      }
+      return s;
+    }
 
-    _collaboratorController.createCollaborator(newCollaborator);
+    final Map<String, dynamic> payload = {
+      'name': personalData['name']?.toString(),
+      'email': personalData['email']?.toString(),
+      'birthDate': normalizeBirthDate(personalData['birthDate']),
+      'document': personalData['document']?.toString(),
+      'contact': personalData['phone']?.toString(),
+    };
+
+    // build nested address object when any address field is provided
+    final addr = <String, dynamic>{};
+    if (personalData['address'] != null &&
+        personalData['address'].toString().isNotEmpty) {
+      addr['address'] = personalData['address']?.toString();
+    }
+    if (personalData['addressNumber'] != null &&
+        personalData['addressNumber'].toString().isNotEmpty) {
+      addr['number'] = personalData['addressNumber']?.toString();
+    }
+    if (personalData['addressComplement'] != null &&
+        personalData['addressComplement'].toString().isNotEmpty) {
+      addr['complement'] = personalData['addressComplement']?.toString();
+    }
+    if (personalData['neighborhood'] != null &&
+        personalData['neighborhood'].toString().isNotEmpty) {
+      addr['neighborhood'] = personalData['neighborhood']?.toString();
+    }
+    if (personalData['city'] != null &&
+        personalData['city'].toString().isNotEmpty) {
+      addr['city'] = personalData['city']?.toString();
+    }
+    if (personalData['state'] != null &&
+        personalData['state'].toString().isNotEmpty) {
+      addr['state'] = personalData['state']?.toString();
+    }
+    if (personalData['zipCode'] != null &&
+        personalData['zipCode'].toString().isNotEmpty) {
+      addr['zipCode'] = personalData['zipCode']?.toString();
+    }
+
+    if (addr.isNotEmpty) payload['address'] = addr;
+
+    // show loading dialog
+    _isCreating = true;
+    if (mounted) setState(() {});
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(child: CircularProgressIndicator()),
+    );
+    Collaborator? created;
+    try {
+      created = await _collaboratorController.create(payload);
+    } finally {
+      // dismiss loading
+      Navigator.of(context, rootNavigator: true).pop();
+      _isCreating = false;
+      if (mounted) setState(() {});
+    }
+
+    if (created != null) {
+      await _onRefresh();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(translate('collaborators.created'))),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(translate('collaborators.create_error'))),
+        );
+      }
+    }
   }
 
   Widget _searchField() {
