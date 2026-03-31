@@ -18,6 +18,7 @@ class Collaborator extends BaseModel {
     super.updatedAt,
     this.companyId,
     this.name,
+    this.birthDate,
     this.document,
     this.address,
     this.email,

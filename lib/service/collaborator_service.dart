@@ -36,4 +36,15 @@ class CollaboratorService {
     if (res.statusCode == 404) return false;
     throw Exception('Failed to delete collaborator: \\${res.statusCode}');
   }
+
+  Future<Map<String, dynamic>> update(
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
+    final res = await _api.patch('/v2/collaborators/$id', payload);
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
+    }
+    throw Exception('Failed to update collaborator: \\${res.statusCode}');
+  }
 }

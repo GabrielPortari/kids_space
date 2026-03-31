@@ -5,6 +5,7 @@ import 'package:kids_space/model/base_model.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/model/parent.dart';
 import 'package:kids_space/model/child.dart';
+import 'package:kids_space/model/address.dart';
 import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
@@ -179,7 +180,7 @@ Future<void> _editPersonal(
         key: 'phone',
         label: translate('profile.phone'),
         type: FieldType.phone,
-        initialValue: u.phone ?? '',
+        initialValue: u.contact ?? '',
       ),
       FieldDefinition(
         key: 'document',
@@ -202,7 +203,7 @@ Future<void> _editPersonal(
       if (confirmed != true) return;
 
       final updated = Parent(
-        childrenIds: u.childrenIds,
+        children: u.children,
         userType: u.userType,
         name: res['name']?.toString() ?? u.name,
         email: res['email']?.toString() ?? u.email,
@@ -213,14 +214,8 @@ Future<void> _editPersonal(
           return u.birthDate;
         })(),
         document: res['document']?.toString() ?? u.document,
-        phone: res['phone']?.toString() ?? u.phone,
+        contact: res['phone']?.toString() ?? u.contact,
         address: u.address,
-        addressNumber: u.addressNumber,
-        addressComplement: u.addressComplement,
-        neighborhood: u.neighborhood,
-        city: u.city,
-        state: u.state,
-        zipCode: u.zipCode,
         companyId: u.companyId,
         id: u.id,
         createdAt: u.createdAt,
@@ -261,7 +256,7 @@ Future<void> _editPersonal(
         key: 'phone',
         label: translate('profile.phone'),
         type: FieldType.phone,
-        initialValue: c.phone ?? '',
+        initialValue: c.contact ?? '',
       ),
       FieldDefinition(
         key: 'document',
@@ -294,14 +289,8 @@ Future<void> _editPersonal(
           return c.birthDate;
         })(),
         document: res['document']?.toString() ?? c.document,
-        phone: res['phone']?.toString() ?? c.phone,
+        contact: res['phone']?.toString() ?? c.contact,
         address: c.address,
-        addressNumber: c.addressNumber,
-        addressComplement: c.addressComplement,
-        neighborhood: c.neighborhood,
-        city: c.city,
-        state: c.state,
-        zipCode: c.zipCode,
         companyId: c.companyId,
         id: c.id,
         createdAt: c.createdAt,
@@ -331,37 +320,37 @@ Future<void> _editAddress(
       FieldDefinition(
         key: 'address',
         label: translate('profile.address'),
-        initialValue: u.address ?? '',
+        initialValue: u.address?.address ?? '',
       ),
       FieldDefinition(
         key: 'addressNumber',
         label: translate('profile.address_number'),
-        initialValue: u.addressNumber ?? '',
+        initialValue: u.address?.number ?? '',
       ),
       FieldDefinition(
         key: 'addressComplement',
         label: translate('profile.address_complement'),
-        initialValue: u.addressComplement ?? '',
+        initialValue: u.address?.complement ?? '',
       ),
       FieldDefinition(
         key: 'neighborhood',
         label: translate('profile.neighborhood'),
-        initialValue: u.neighborhood ?? '',
+        initialValue: u.address?.neighborhood ?? '',
       ),
       FieldDefinition(
         key: 'city',
         label: translate('profile.city'),
-        initialValue: u.city ?? '',
+        initialValue: u.address?.city ?? '',
       ),
       FieldDefinition(
         key: 'state',
         label: translate('profile.state'),
-        initialValue: u.state ?? '',
+        initialValue: u.address?.state ?? '',
       ),
       FieldDefinition(
         key: 'zipCode',
         label: translate('profile.zip_code'),
-        initialValue: u.zipCode ?? '',
+        initialValue: u.address?.zipcode ?? '',
       ),
     ];
 
@@ -379,21 +368,35 @@ Future<void> _editAddress(
       if (confirmed != true) return;
 
       final updated = Parent(
-        childrenIds: u.childrenIds,
+        children: u.children,
         userType: u.userType,
         name: u.name,
         email: u.email,
         birthDate: u.birthDate,
         document: u.document,
-        phone: u.phone,
-        address: res['address']?.toString() ?? u.address,
-        addressNumber: res['addressNumber']?.toString() ?? u.addressNumber,
-        addressComplement:
-            res['addressComplement']?.toString() ?? u.addressComplement,
-        neighborhood: res['neighborhood']?.toString() ?? u.neighborhood,
-        city: res['city']?.toString() ?? u.city,
-        state: res['state']?.toString() ?? u.state,
-        zipCode: res['zipCode']?.toString() ?? u.zipCode,
+        contact: u.contact,
+        address: (() {
+          final any =
+              res['address'] != null ||
+              res['addressNumber'] != null ||
+              res['addressComplement'] != null ||
+              res['neighborhood'] != null ||
+              res['city'] != null ||
+              res['state'] != null ||
+              res['zipCode'] != null;
+          if (!any) return u.address;
+          return Address(
+            address: res['address']?.toString() ?? u.address?.address,
+            number: res['addressNumber']?.toString() ?? u.address?.number,
+            complement:
+                res['addressComplement']?.toString() ?? u.address?.complement,
+            neighborhood:
+                res['neighborhood']?.toString() ?? u.address?.neighborhood,
+            city: res['city']?.toString() ?? u.address?.city,
+            state: res['state']?.toString() ?? u.address?.state,
+            zipcode: res['zipCode']?.toString() ?? u.address?.zipcode,
+          );
+        })(),
         companyId: u.companyId,
         id: u.id,
         createdAt: u.createdAt,
@@ -413,37 +416,37 @@ Future<void> _editAddress(
       FieldDefinition(
         key: 'address',
         label: translate('profile.address'),
-        initialValue: c.address ?? '',
+        initialValue: c.address?.address ?? '',
       ),
       FieldDefinition(
         key: 'addressNumber',
         label: translate('profile.address_number'),
-        initialValue: c.addressNumber ?? '',
+        initialValue: c.address?.number ?? '',
       ),
       FieldDefinition(
         key: 'addressComplement',
         label: translate('profile.address_complement'),
-        initialValue: c.addressComplement ?? '',
+        initialValue: c.address?.complement ?? '',
       ),
       FieldDefinition(
         key: 'neighborhood',
         label: translate('profile.neighborhood'),
-        initialValue: c.neighborhood ?? '',
+        initialValue: c.address?.neighborhood ?? '',
       ),
       FieldDefinition(
         key: 'city',
         label: translate('profile.city'),
-        initialValue: c.city ?? '',
+        initialValue: c.address?.city ?? '',
       ),
       FieldDefinition(
         key: 'state',
         label: translate('profile.state'),
-        initialValue: c.state ?? '',
+        initialValue: c.address?.state ?? '',
       ),
       FieldDefinition(
         key: 'zipCode',
         label: translate('profile.zip_code'),
-        initialValue: c.zipCode ?? '',
+        initialValue: c.address?.zipcode ?? '',
       ),
     ];
 
@@ -466,15 +469,29 @@ Future<void> _editAddress(
         email: c.email,
         birthDate: c.birthDate,
         document: c.document,
-        phone: c.phone,
-        address: res['address']?.toString() ?? c.address,
-        addressNumber: res['addressNumber']?.toString() ?? c.addressNumber,
-        addressComplement:
-            res['addressComplement']?.toString() ?? c.addressComplement,
-        neighborhood: res['neighborhood']?.toString() ?? c.neighborhood,
-        city: res['city']?.toString() ?? c.city,
-        state: res['state']?.toString() ?? c.state,
-        zipCode: res['zipCode']?.toString() ?? c.zipCode,
+        contact: c.contact,
+        address: (() {
+          final any =
+              res['address'] != null ||
+              res['addressNumber'] != null ||
+              res['addressComplement'] != null ||
+              res['neighborhood'] != null ||
+              res['city'] != null ||
+              res['state'] != null ||
+              res['zipCode'] != null;
+          if (!any) return c.address;
+          return Address(
+            address: res['address']?.toString() ?? c.address?.address,
+            number: res['addressNumber']?.toString() ?? c.address?.number,
+            complement:
+                res['addressComplement']?.toString() ?? c.address?.complement,
+            neighborhood:
+                res['neighborhood']?.toString() ?? c.address?.neighborhood,
+            city: res['city']?.toString() ?? c.address?.city,
+            state: res['state']?.toString() ?? c.address?.state,
+            zipcode: res['zipCode']?.toString() ?? c.address?.zipcode,
+          );
+        })(),
         companyId: c.companyId,
         id: c.id,
         createdAt: c.createdAt,
@@ -586,7 +603,7 @@ Future<bool?> _editChildPersonal(
       key: 'phone',
       label: 'Telefone',
       type: FieldType.phone,
-      initialValue: c.phone ?? '',
+      initialValue: c.contact ?? '',
     ),
     FieldDefinition(
       key: 'document',
@@ -610,8 +627,9 @@ Future<bool?> _editChildPersonal(
   if (confirmed != true) return null;
 
   final updated = Child(
-    responsibleUserIds: c.responsibleUserIds,
+    parents: c.parents,
     checkedIn: c.checkedIn,
+    // userType remains
     userType: c.userType,
     name: res['name']?.toString() ?? c.name,
     email: res['email']?.toString() ?? c.email,
@@ -622,14 +640,8 @@ Future<bool?> _editChildPersonal(
       return c.birthDate;
     })(),
     document: res['document']?.toString() ?? c.document,
-    phone: res['phone']?.toString() ?? c.phone,
+    contact: res['contact']?.toString() ?? c.contact,
     address: c.address,
-    addressNumber: c.addressNumber,
-    addressComplement: c.addressComplement,
-    neighborhood: c.neighborhood,
-    city: c.city,
-    state: c.state,
-    zipCode: c.zipCode,
     companyId: c.companyId,
     id: c.id,
     createdAt: c.createdAt,
@@ -657,29 +669,37 @@ Future<bool?> _editChildAddress(
     FieldDefinition(
       key: 'address',
       label: 'Endereço',
-      initialValue: c.address ?? '',
+      initialValue: c.address?.address ?? '',
     ),
     FieldDefinition(
       key: 'addressNumber',
       label: 'Número',
-      initialValue: c.addressNumber ?? '',
+      initialValue: c.address?.number ?? '',
     ),
     FieldDefinition(
       key: 'addressComplement',
       label: 'Complemento',
-      initialValue: c.addressComplement ?? '',
+      initialValue: c.address?.complement ?? '',
     ),
     FieldDefinition(
       key: 'neighborhood',
       label: 'Bairro',
-      initialValue: c.neighborhood ?? '',
+      initialValue: c.address?.neighborhood ?? '',
     ),
-    FieldDefinition(key: 'city', label: 'Cidade', initialValue: c.city ?? ''),
-    FieldDefinition(key: 'state', label: 'Estado', initialValue: c.state ?? ''),
+    FieldDefinition(
+      key: 'city',
+      label: 'Cidade',
+      initialValue: c.address?.city ?? '',
+    ),
+    FieldDefinition(
+      key: 'state',
+      label: 'Estado',
+      initialValue: c.address?.state ?? '',
+    ),
     FieldDefinition(
       key: 'zipCode',
       label: 'CEP',
-      initialValue: c.zipCode ?? '',
+      initialValue: c.address?.zipcode ?? '',
     ),
   ];
 
@@ -698,22 +718,36 @@ Future<bool?> _editChildAddress(
   if (confirmed != true) return null;
 
   final updated = Child(
-    responsibleUserIds: c.responsibleUserIds,
+    parents: c.parents,
     checkedIn: c.checkedIn,
     userType: c.userType,
     name: c.name,
     email: c.email,
     birthDate: c.birthDate,
     document: c.document,
-    phone: c.phone,
-    address: res['address']?.toString() ?? c.address,
-    addressNumber: res['addressNumber']?.toString() ?? c.addressNumber,
-    addressComplement:
-        res['addressComplement']?.toString() ?? c.addressComplement,
-    neighborhood: res['neighborhood']?.toString() ?? c.neighborhood,
-    city: res['city']?.toString() ?? c.city,
-    state: res['state']?.toString() ?? c.state,
-    zipCode: res['zipCode']?.toString() ?? c.zipCode,
+    contact: c.contact,
+    address: (() {
+      final any =
+          res['address'] != null ||
+          res['addressNumber'] != null ||
+          res['addressComplement'] != null ||
+          res['neighborhood'] != null ||
+          res['city'] != null ||
+          res['state'] != null ||
+          res['zipCode'] != null;
+      if (!any) return c.address;
+      return Address(
+        address: res['address']?.toString() ?? c.address?.address,
+        number: res['addressNumber']?.toString() ?? c.address?.number,
+        complement:
+            res['addressComplement']?.toString() ?? c.address?.complement,
+        neighborhood:
+            res['neighborhood']?.toString() ?? c.address?.neighborhood,
+        city: res['city']?.toString() ?? c.address?.city,
+        state: res['state']?.toString() ?? c.address?.state,
+        zipcode: res['zipCode']?.toString() ?? c.address?.zipcode,
+      );
+    })(),
     companyId: c.companyId,
     id: c.id,
     createdAt: c.createdAt,

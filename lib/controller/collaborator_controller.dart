@@ -41,4 +41,16 @@ class CollaboratorController extends ChangeNotifier {
     }
     return ok;
   }
+
+  Future<bool> updateCollaborator(Collaborator c) async {
+    if (c.id == null) return false;
+    final payload = c.toJson();
+    final res = await _service.update(c.id!, payload);
+    final updated = Collaborator.fromJson(Map<String, dynamic>.from(res));
+    if (_loggedCollaborator?.id == updated.id) {
+      _loggedCollaborator = updated;
+    }
+    notifyListeners();
+    return true;
+  }
 }

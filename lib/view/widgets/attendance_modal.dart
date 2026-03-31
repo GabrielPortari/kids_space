@@ -209,20 +209,20 @@ Future<void> showAttendanceModal(
                         if (type == AttendanceType.checkin ||
                             type == AttendanceType.checkout) {
                           // For checkout, prefer responsibleIds from active checkins for this child
-                          List<String> responsibles = [];
+                          List<String> parents = [];
                           if (type == AttendanceType.checkin) {
-                            responsibles = child.parents ?? [];
+                            parents = child.parents ?? [];
                           } else {
                             final active =
                                 attendanceController.activeCheckins ?? [];
-                            responsibles = active
-                                .where((a) => a.childId == child.id)
-                                .map((a) => a.responsibleId)
-                                .whereType<String>()
-                                .toSet()
-                                .toList();
-                            if (responsibles.isEmpty) {
-                              responsibles = child.parents ?? [];
+                            parents = active
+                              .where((a) => a.childId == child.id)
+                              .map((a) => a.parentIdWhoCheckedInId)
+                              .whereType<String>()
+                              .toSet()
+                              .toList();
+                            if (parents.isEmpty) {
+                              parents = child.parents ?? [];
                             }
                           }
 
@@ -230,8 +230,8 @@ Future<void> showAttendanceModal(
                           final result = await showDialog<Map<String, String?>>(
                             context: innerCtx,
                             builder: (rc) {
-                              String? chosen = responsibles.length == 1
-                                  ? responsibles.first
+                              String? chosen = parents.length == 1
+                                  ? parents.first
                                   : null;
                               String localNotes = '';
                               return StatefulBuilder(
@@ -247,7 +247,7 @@ Future<void> showAttendanceModal(
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          if (responsibles.isNotEmpty) ...[
+                                          if (parents.isNotEmpty) ...[
                                             Align(
                                               alignment: Alignment.centerLeft,
                                               child: Text(
@@ -267,9 +267,9 @@ Future<void> showAttendanceModal(
                                               ),
                                               child: ListView.builder(
                                                 shrinkWrap: true,
-                                                itemCount: responsibles.length,
+                                                itemCount: parents.length,
                                                 itemBuilder: (_, idx) {
-                                                  final rid = responsibles[idx];
+                                                  final rid = parents[idx];
                                                   final name =
                                                       userController
                                                           .getUserById(rid)
@@ -437,6 +437,9 @@ Future<void> showAttendanceModal(
                           }
 
                           final attendance = Attendance(
+                            attendanceType: type == AttendanceType.checkin
+                                ? AttendanceType.checkin
+                                : AttendanceType.checkout,
                             companyId: collaboratorController
                                 .loggedCollaborator
                                 ?.companyId,
@@ -451,24 +454,26 @@ Future<void> showAttendanceModal(
                             childId: selectedChildId,
                             parentIdWhoCheckedInId:
                                 type == AttendanceType.checkin
-                                ? collaboratorController.loggedCollaborator?.id
+                                ? selectedResponsibleId
                                 : null,
                             parentIdWhoCheckedOutId:
                                 type == AttendanceType.checkout
-                                ? collaboratorController.loggedCollaborator?.id
+                                ? selectedResponsibleId
                                 : null,
                             notes: notesPayload,
                           );
 
                           try {
                             if (type == AttendanceType.checkin) {
-                              ok = await attendanceController.doCheckin(
-                                attendance,
+                              final res = await attendanceController.checkin(
+                                attendance.toJson(),
                               );
+                              ok = res != null && (res.id != null);
                             } else {
-                              ok = await attendanceController.doCheckout(
-                                attendance,
+                              final res = await attendanceController.checkout(
+                                attendance.toJson(),
                               );
+                              ok = (res.id != null || res.checkOutTime != null);
                             }
                           } catch (_) {
                             ok = false;

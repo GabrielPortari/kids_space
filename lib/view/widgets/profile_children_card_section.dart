@@ -38,8 +38,7 @@ class _ProfileChildrenCardSectionState
 
   void _loadChildren() {
     _children.clear();
-    for (final cId in widget.user?.childrenIds ?? []) {
-      final child = _childController.getChildById(cId);
+    for (final child in widget.user?.children ?? []) {
       if (child != null) _children.add(child);
     }
     setState(() {});
