@@ -4,6 +4,7 @@ import 'address.dart';
 class Child extends BaseModel {
   final String? name;
   final List<String>? parents;
+  final String? birthDate;
   final String? document;
   final Address? address;
   final String? email;
@@ -17,6 +18,7 @@ class Child extends BaseModel {
     super.updatedAt,
     this.name,
     this.parents,
+    this.birthDate,
     this.document,
     this.address,
     this.email,
@@ -30,6 +32,7 @@ class Child extends BaseModel {
     createdAt: BaseModel.tryParseTimestamp(json['createdAt']),
     updatedAt: BaseModel.tryParseTimestamp(json['updatedAt']),
     name: json['name'] as String?,
+    birthDate: json['birthDate'] as String?,
     parents: (json['parents'] as List<dynamic>?)?.cast<String>(),
     document: json['document'] as String?,
     address: json['address'] is Map
@@ -46,6 +49,7 @@ class Child extends BaseModel {
     'createdAt': createdAt?.toIso8601String(),
     'updatedAt': updatedAt?.toIso8601String(),
     'name': name,
+    'birthDate': birthDate,
     'parents': parents,
     'document': document,
     'address': address?.toJson(),
@@ -61,6 +65,7 @@ class Child extends BaseModel {
     DateTime? updatedAt,
     String? name,
     List<String>? parents,
+    String? birthDate,
     String? document,
     Address? address,
     String? email,
@@ -74,6 +79,7 @@ class Child extends BaseModel {
       updatedAt: updatedAt ?? this.updatedAt,
       name: name ?? this.name,
       parents: parents ?? this.parents,
+      birthDate: birthDate ?? this.birthDate,
       document: document ?? this.document,
       address: address ?? this.address,
       email: email ?? this.email,

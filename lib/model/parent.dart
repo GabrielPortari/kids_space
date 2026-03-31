@@ -1,14 +1,17 @@
 import 'base_model.dart';
 import 'address.dart';
+import 'user_type.dart';
 
 class Parent extends BaseModel {
   final String? name;
   final List<String>? children;
+  final String? birthDate;
   final String? document;
   final Address? address;
   final String? email;
   final String? contact;
   final String? companyId;
+  final UserType? userType;
 
   Parent({
     super.id,
@@ -16,11 +19,13 @@ class Parent extends BaseModel {
     super.updatedAt,
     this.name,
     this.children,
+    this.birthDate,
     this.document,
     this.address,
     this.email,
     this.contact,
     this.companyId,
+    this.userType,
   });
 
   factory Parent.fromJson(Map<String, dynamic> json) => Parent(
@@ -28,6 +33,7 @@ class Parent extends BaseModel {
     createdAt: BaseModel.tryParseTimestamp(json['createdAt']),
     updatedAt: BaseModel.tryParseTimestamp(json['updatedAt']),
     name: json['name'] as String?,
+    birthDate: json['birthDate'] as String?,
     children: (json['children'] as List<dynamic>?)?.cast<String>(),
     document: json['document'] as String?,
     address: json['address'] is Map
@@ -36,6 +42,9 @@ class Parent extends BaseModel {
     email: json['email'] as String?,
     contact: json['contact'] as String?,
     companyId: json['companyId'] as String?,
+    userType: userTypeFromString(
+      json['userType'] as String? ?? json['role'] as String?,
+    ),
   );
 
   Map<String, dynamic> toJson() => {
@@ -44,10 +53,12 @@ class Parent extends BaseModel {
     'updatedAt': updatedAt?.toIso8601String(),
     'name': name,
     'children': children,
+    'birthDate': birthDate,
     'document': document,
     'address': address?.toJson(),
     'email': email,
     'contact': contact,
     'companyId': companyId,
+    'userType': userTypeToString(userType),
   };
 }

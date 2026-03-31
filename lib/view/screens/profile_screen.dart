@@ -5,6 +5,7 @@ import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/parent_controller.dart';
 import 'package:kids_space/model/child.dart';
+import 'package:kids_space/model/user_type.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
 import 'package:kids_space/view/widgets/profile_edit_helper.dart';
 import 'package:kids_space/model/collaborator.dart';
@@ -95,7 +96,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
       _companyController
           .loadCompanyById(widget.selectedCompany!.id!)
-          .then((fetched) {
+          .then((_) {
+            final fetched = _companyController.getCompanyById(
+              widget.selectedCompany!.id!,
+            );
             if (fetched != null && mounted) {
               setState(() {
                 _company = fetched;
@@ -103,10 +107,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             }
           })
           .whenComplete(() {
-            if (mounted)
+            if (mounted) {
               setState(() {
                 _isLoading = false;
               });
+            }
           });
       return;
     }
@@ -126,10 +131,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             }
           })
           .whenComplete(() {
-            if (mounted)
+            if (mounted) {
               setState(() {
                 _isLoading = false;
               });
+            }
           });
       return;
     }
@@ -150,10 +156,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             }
           })
           .whenComplete(() {
-            if (mounted)
+            if (mounted) {
               setState(() {
                 _isLoading = false;
               });
+            }
           });
       return;
     }
@@ -173,10 +180,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             }
           })
           .whenComplete(() {
-            if (mounted)
+            if (mounted) {
               setState(() {
                 _isLoading = false;
               });
+            }
           });
       return;
     }
@@ -371,9 +379,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
     if (type == SelectedProfileType.collaborator &&
         widget.selectedCollaborator != null) {
-      // Deleting collaborators isn't provided by the current v2 controller/service.
-      // Keep as not-supported here to avoid calling a missing API.
-      success = false;
+      success = await _collaboratorController.deleteCollaborator(
+        widget.selectedCollaborator?.id ?? '',
+      );
     }
     if (type == SelectedProfileType.child && widget.selectedChild != null) {
       success = await _childController.deleteChild(
