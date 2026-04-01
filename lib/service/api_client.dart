@@ -64,7 +64,7 @@ class ApiClient {
     final allHeaders = <String, String>{'Content-Type': 'application/json'};
     if (headers != null) allHeaders.addAll(headers);
     if (token != null && token.isNotEmpty) {
-      allHeaders['Authorization'] = 'Bearer \$token';
+      allHeaders['Authorization'] = 'Bearer $token';
     }
 
     http.Response res;
@@ -94,7 +94,7 @@ class ApiClient {
       // try refresh
       final newToken = await refreshTokenProvider!();
       if (newToken != null && newToken.isNotEmpty) {
-        allHeaders['Authorization'] = 'Bearer \$newToken';
+        allHeaders['Authorization'] = 'Bearer $newToken';
         if (method == 'GET') {
           res = await http.get(uri, headers: allHeaders);
         } else if (method == 'POST') {
@@ -113,6 +113,14 @@ class ApiClient {
           res = await http.delete(uri, headers: allHeaders);
         }
       }
+    }
+
+    // debug: log non-success responses to help diagnose auth failures
+    if (res.statusCode >= 400) {
+      // ignore: avoid_print
+      print(
+        'ApiClient response error: ${res.statusCode} ${res.request?.method} ${uri.toString()} body=${res.body}',
+      );
     }
 
     return res;

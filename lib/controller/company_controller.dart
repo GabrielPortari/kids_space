@@ -16,6 +16,15 @@ class CompanyController extends ChangeNotifier {
     try {
       final data = await _service.getMyCompany();
       _company = Company.fromJson(data);
+      dev.log(
+        'CompanyController.loadMyCompany: loaded id=${_company?.id} name=${_company?.name}',
+      );
+    } catch (e, st) {
+      dev.log(
+        'CompanyController.loadMyCompany error: $e',
+        error: e,
+        stackTrace: st,
+      );
     } finally {
       isLoading = false;
       notifyListeners();
