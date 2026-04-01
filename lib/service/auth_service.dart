@@ -20,7 +20,12 @@ class AuthService {
     if (res.statusCode == 201) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
-    throw Exception('Signup failed: \\${res.statusCode}');
+    // Provide diagnostic logs for failed signup
+    // ignore: avoid_print
+    print(
+      'AuthService.signup failed: status=${res.statusCode}, body=${res.body}',
+    );
+    throw Exception('Signup failed: ${res.statusCode}');
   }
 
   Future<Map<String, dynamic>> refreshToken(String refreshToken) async {

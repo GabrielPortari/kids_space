@@ -24,7 +24,7 @@ class ApiClient {
   }
 
   Uri _uri(String path) =>
-      Uri.parse(path.startsWith('http') ? path : '\$baseUrl\$path');
+      Uri.parse(path.startsWith('http') ? path : '$baseUrl$path');
 
   Future<http.Response> get(String path, {Map<String, String>? headers}) async {
     return _send('GET', path, null, headers);
@@ -85,6 +85,8 @@ class ApiClient {
         throw UnsupportedError('Method not supported');
       }
     } catch (e) {
+      // ignore: avoid_print
+      print('ApiClient._send error: method=$method uri=$uri error=$e');
       rethrow;
     }
 

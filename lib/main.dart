@@ -24,7 +24,14 @@ import 'package:kids_space/view/screens/collaborators_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
-  await dotenv.load(fileName: '.env');
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (e) {
+    // If .env is missing, continue with defaults and avoid crashing the app.
+    // This prevents a FileNotFoundError from stopping app startup in dev setups.
+    // ignore: avoid_print
+    print('dotenv: .env not found, continuing with default env values.');
+  }
   await Firebase.initializeApp(
     options: FirebaseOptions(
       apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '',
