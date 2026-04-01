@@ -1,3 +1,4 @@
+import 'dart:developer' as dev;
 import 'package:flutter/foundation.dart';
 import '../service/company_service.dart';
 import '../model/company.dart';
@@ -37,9 +38,25 @@ class CompanyController extends ChangeNotifier {
     if (companyId.isEmpty) return;
     isLoading = true;
     notifyListeners();
+    dev.log('CompanyController.loadCompanyById: start companyId=$companyId');
     try {
       final data = await _service.getById(companyId);
-      if (data != null) _company = Company.fromJson(data);
+      if (data != null) {
+        _company = Company.fromJson(data);
+        dev.log(
+          'CompanyController.loadCompanyById: loaded company id=${_company?.id} name=${_company?.name}',
+        );
+      } else {
+        dev.log(
+          'CompanyController.loadCompanyById: no data for companyId=$companyId',
+        );
+      }
+    } catch (e, st) {
+      dev.log(
+        'CompanyController.loadCompanyById error: $e',
+        error: e,
+        stackTrace: st,
+      );
     } finally {
       isLoading = false;
       notifyListeners();

@@ -135,9 +135,38 @@
     "welcome": "Bem-vindo",
     "email_label": "E-mail",
     "email_hint": "Digite seu e-mail",
+    "no_account": "Ainda não tem uma conta? Cadastre-se",
+    "forgot_password": "Esqueceu a senha?",
+    "enter_email": "Digite seu e-mail para recuperar a senha",
+    "forgot_sent": "Link de recuperação enviado (simulado)",
     "password_label": "Senha",
     "password_hint": "Digite sua senha",
     "login_button": "Entrar"
+  },
+  "register": {
+    "title": "Cadastro de Empresa",
+    "submit": "Cadastrar",
+    "success": "Empresa cadastrada com sucesso.",
+    "failed": "Falha ao cadastrar empresa.",
+    "password": "Senha"
+  },
+  "company": {
+    "name": "Nome",
+    "legal_name": "Razão social",
+    "cnpj": "CNPJ",
+    "address": "Endereço",
+    "number": "Número",
+    "complement": "Complemento",
+    "neighborhood": "Bairro",
+    "city": "Cidade",
+    "state": "Estado",
+    "zipcode": "CEP",
+    "contact": "Contato",
+    "email": "E-mail"
+  },
+  "validation": {
+    "required": "Campo obrigatório",
+    "password_length": "Senha deve ter pelo menos 6 caracteres"
   },
   "admin": {
     "exit_title": "Sair",

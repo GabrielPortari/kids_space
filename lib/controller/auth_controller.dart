@@ -83,6 +83,9 @@ class AuthController extends ChangeNotifier {
   }
 
   Future<void> saveRole(UserRole role) async {
+    // Set role immediately so UI can read it synchronously.
+    _role = role;
+    notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
       'userRole',
@@ -90,8 +93,6 @@ class AuthController extends ChangeNotifier {
           ? 'company'
           : (role == UserRole.collaborator ? 'collaborator' : 'unknown'),
     );
-    _role = role;
-    notifyListeners();
   }
 
   Future<void> clearTokens() async {
@@ -113,6 +114,9 @@ class AuthController extends ChangeNotifier {
           ? (res['user']['role'] as String? ??
                 res['user']['userType'] as String?)
           : null;
+      // Diagnostic logs to help identify unknown role issues
+      // ignore: avoid_print
+      print('AuthController.login: res.user=${res['user']} roleStr=$roleStr');
       final parsedRole = (roleStr != null && roleStr.toLowerCase() == 'company')
           ? UserRole.company
           : (roleStr != null && roleStr.toLowerCase() == 'collaborator'
@@ -121,7 +125,13 @@ class AuthController extends ChangeNotifier {
       if (token != null && refresh != null) {
         await saveTokens(token, refresh);
         // apply claims from token (if present) and fallback to response role
+        // ignore: avoid_print
+        print('AuthController.login: token payload=${_parseJwtPayload(token)}');
         _applyClaimsFromToken(token);
+        // ignore: avoid_print
+        print(
+          'AuthController.login: role after claims=$_role parsedRole=$parsedRole',
+        );
         if (_role == UserRole.unknown) await saveRole(parsedRole);
         // populate collaborator/company info after login
         await checkLoggedUser();

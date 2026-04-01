@@ -32,20 +32,39 @@ Future<void> main() async {
     // ignore: avoid_print
     print('dotenv: .env not found, continuing with default env values.');
   }
-  await Firebase.initializeApp(
-    options: FirebaseOptions(
-      apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '',
-      authDomain: dotenv.env['FIREBASE_AUTH_DOMAIN'] ?? '',
-      projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? '',
-      storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? '',
-      messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '',
-      appId: dotenv.env['FIREBASE_APP_ID'] ?? '',
-      measurementId: dotenv.env['FIREBASE_MEASUREMENT_ID'] ?? null,
-    ),
-  );
+  // helper to safely read env variables even if dotenv failed to initialize
+  String safeEnv(String key, [String? fallback]) {
+    try {
+      return dotenv.env[key] ?? (fallback ?? '');
+    } catch (_) {
+      return fallback ?? '';
+    }
+  }
+
+  try {
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: FirebaseOptions(
+          apiKey: safeEnv('FIREBASE_API_KEY', ''),
+          authDomain: safeEnv('FIREBASE_AUTH_DOMAIN', ''),
+          projectId: safeEnv('FIREBASE_PROJECT_ID', ''),
+          storageBucket: safeEnv('FIREBASE_STORAGE_BUCKET', ''),
+          messagingSenderId: safeEnv('FIREBASE_MESSAGING_SENDER_ID', ''),
+          appId: safeEnv('FIREBASE_APP_ID', ''),
+          measurementId: safeEnv('FIREBASE_MEASUREMENT_ID', null),
+        ),
+      );
+    } else {
+      // ignore: avoid_print
+      print('Firebase already initialized, skipping initializeApp');
+    }
+  } catch (e) {
+    // ignore: avoid_print
+    print('Firebase.initializeApp error: $e');
+  }
   setup(GetIt.I);
   ApiClient().init(
-    baseUrl: dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:3000',
+    baseUrl: safeEnv('API_BASE_URL', 'http://10.0.2.2:3000'),
     tokenProvider: () async {
       final authController = GetIt.I<AuthController>();
       return await authController.getIdToken();

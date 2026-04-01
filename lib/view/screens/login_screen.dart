@@ -65,21 +65,26 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: AppCard(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildLogo(),
-                      const SizedBox(height: 24),
-                      _buildWelcome(),
-                      const SizedBox(height: 24),
-                      _emailField(),
-                      const SizedBox(height: 16),
-                      _passwordField(),
-                      const SizedBox(height: 16),
-                      _loginButton(),
-                      _extraActions(),
-                      const SizedBox(height: 24),
-                    ],
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildLogo(),
+                        const SizedBox(height: 24),
+                        _buildWelcome(),
+                        const SizedBox(height: 24),
+                        _emailField(),
+                        const SizedBox(height: 16),
+                        _passwordField(),
+                        const SizedBox(height: 16),
+                        _loginButton(),
+                        _extraActions(),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
                   ),
                 ),
               ),

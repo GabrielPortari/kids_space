@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
+import 'package:get_it/get_it.dart';
 import '../service/collaborator_service.dart';
 import '../model/collaborator.dart';
+import 'company_controller.dart';
 
 class CollaboratorController extends ChangeNotifier {
   final CollaboratorService _service = CollaboratorService();
@@ -69,6 +71,16 @@ class CollaboratorController extends ChangeNotifier {
   Future<void> setLoggedCollaborator(Collaborator c) async {
     _loggedCollaborator = c;
     notifyListeners();
+    // If collaborator belongs to a company, ensure the CompanyController
+    // has the company loaded so the app can differentiate a "logged company"
+    // vs a "logged collaborator" context.
+    try {
+      final companyId = c.companyId;
+      if (companyId != null && companyId.isNotEmpty) {
+        final companyController = GetIt.I.get<CompanyController>();
+        await companyController.loadCompanyById(companyId);
+      }
+    } catch (_) {}
   }
 
   Future<bool> deleteCollaborator(String id) async {

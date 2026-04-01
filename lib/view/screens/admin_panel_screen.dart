@@ -33,9 +33,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   final CollaboratorController _collaboratorController = GetIt.I
       .get<CollaboratorController>();
 
-  Company? get company => _companyController.getCompanyById(
-    _collaboratorController.loggedCollaborator?.companyId ?? '',
-  );
+  Company? get company {
+    // Prefer company already loaded in CompanyController (e.g., when a company user is logged)
+    if (_companyController.company != null) return _companyController.company;
+    // Fallback to collaborator's company id if a collaborator is logged
+    final collCompanyId = _collaboratorController.loggedCollaborator?.companyId;
+    if (collCompanyId == null || collCompanyId.isEmpty) return null;
+    return _companyController.getCompanyById(collCompanyId);
+  }
 
   @override
   void dispose() {
@@ -95,12 +100,23 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     final model = _adminItems[index];
                     return AdminTile(
                       model: model,
-                      onTap: () {
+                      onTap: () async {
                         if (model.type == AdminTileType.company) {
+                          // ensure company is loaded before navigating
+                          final loggedColl =
+                              _collaboratorController.loggedCollaborator;
+                          final collCompanyId = loggedColl?.companyId ?? '';
+                          Company? comp = company;
+                          if (comp == null && collCompanyId.isNotEmpty) {
+                            await _companyController.loadCompanyById(
+                              collCompanyId,
+                            );
+                            comp = _companyController.company;
+                          }
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) =>
-                                  ProfileScreen(selectedCompany: company),
+                                  ProfileScreen(selectedCompany: comp),
                             ),
                           );
                         } else if (model.type == AdminTileType.responsible) {
