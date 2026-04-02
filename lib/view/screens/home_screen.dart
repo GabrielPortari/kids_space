@@ -56,23 +56,24 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _onRefresh() async {
-    final String? companyId = _companyController.company?.id;
-
-    // Ensure company is loaded: try collaborator's company if available.
+    // Ensure logged collaborator is loaded and use their companyId to load company.
     if (_companyController.company == null) {
+      if (_collaboratorController.loggedCollaborator == null) {
+        try {
+          await _collaboratorController.getMe();
+        } catch (_) {}
+      }
+
       final collId = _collaboratorController.loggedCollaborator?.companyId;
       if (collId != null && collId.isNotEmpty) {
         try {
           await _companyController.loadCompanyById(collId);
-        } catch (e) {
-          // ignore - fallback to loadMyCompany
-        }
-      } else {
-        try {
-          await _companyController.loadMyCompany();
         } catch (_) {}
       }
+      // Note: do NOT call loadMyCompany() here — company 'me' is used by admin panel only.
     }
+
+    final String? companyId = _companyController.company?.id;
 
     // Always try to refresh children for the current company and
     // pull attendance data when a company is selected.

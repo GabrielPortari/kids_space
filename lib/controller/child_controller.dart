@@ -12,6 +12,7 @@ class ChildController extends ChangeNotifier {
 
   String childFilter = '';
   bool refreshLoading = false;
+  String? lastError;
 
   List<Child> get children => _children;
 
@@ -27,10 +28,18 @@ class ChildController extends ChangeNotifier {
   }
 
   Future<void> refreshChildren() async {
-    final data = await _service.list();
-    _children = data
-        .map((e) => Child.fromJson(Map<String, dynamic>.from(e)))
-        .toList();
+    try {
+      final data = await _service.list();
+      _children = data
+          .map((e) => Child.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      lastError = null;
+    } catch (e) {
+      // ignore: avoid_print
+      print('ChildController.refreshChildren error: $e');
+      lastError = e.toString();
+      _children = [];
+    }
     notifyListeners();
   }
 
@@ -38,7 +47,11 @@ class ChildController extends ChangeNotifier {
     refreshLoading = true;
     notifyListeners();
     try {
-      final data = await _service.list();
+      final data = await _service.list(
+        query: companyId != null && companyId.isNotEmpty
+            ? {'companyId': companyId}
+            : null,
+      );
       final list = data
           .map((e) => Child.fromJson(Map<String, dynamic>.from(e)))
           .toList();
@@ -58,6 +71,13 @@ class ChildController extends ChangeNotifier {
       } else {
         _children = enriched;
       }
+      lastError = null;
+    } catch (e) {
+      // capture errors and expose to UI
+      // ignore: avoid_print
+      print('ChildController.refreshChildrenForCompany error: $e');
+      lastError = e.toString();
+      _children = [];
     } finally {
       refreshLoading = false;
       notifyListeners();

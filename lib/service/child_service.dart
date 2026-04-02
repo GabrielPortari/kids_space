@@ -13,7 +13,17 @@ class ChildService {
   }
 
   Future<List<dynamic>> list({Map<String, String>? query}) async {
-    final res = await _api.get('/v2/children');
+    var path = '/v2/children';
+    if (query != null && query.isNotEmpty) {
+      final qs = query.entries
+          .map(
+            (e) =>
+                '${Uri.encodeQueryComponent(e.key)}=${Uri.encodeQueryComponent(e.value)}',
+          )
+          .join('&');
+      path = '$path?$qs';
+    }
+    final res = await _api.get(path);
     if (res.statusCode == 200) return jsonDecode(res.body) as List<dynamic>;
     throw Exception('Failed to list children: \\${res.statusCode}');
   }
@@ -39,7 +49,7 @@ class ChildService {
   }
 
   Future<bool> delete(String id) async {
-    final res = await _api.delete('/v2/children/\$id');
+    final res = await _api.delete('/v2/children/$id');
     if (res.statusCode == 204) return true;
     if (res.statusCode == 404) return false;
     throw Exception('Failed to delete child: \\${res.statusCode}');

@@ -87,6 +87,25 @@ class CollaboratorController extends ChangeNotifier {
     return c;
   }
 
+  /// Fetch the currently authenticated collaborator from the API (`/collaborators/me`).
+  Future<Collaborator?> getMe() async {
+    try {
+      final res = await _service.getMe();
+      if (res == null) return null;
+      final c = Collaborator.fromJson(res);
+      _loggedCollaborator = c;
+      lastError = null;
+      notifyListeners();
+      return c;
+    } catch (e) {
+      // ignore: avoid_print
+      print('CollaboratorController.getMe error: $e');
+      lastError = e.toString();
+      notifyListeners();
+      return null;
+    }
+  }
+
   Future<void> setLoggedCollaborator(Collaborator c) async {
     _loggedCollaborator = c;
     notifyListeners();
