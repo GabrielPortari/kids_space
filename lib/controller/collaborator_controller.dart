@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
+import 'dart:convert';
 import '../service/collaborator_service.dart';
 import '../model/collaborator.dart';
 import 'company_controller.dart';
@@ -115,7 +116,18 @@ class CollaboratorController extends ChangeNotifier {
 
   Future<bool> updateCollaborator(Collaborator c) async {
     if (c.id == null) return false;
-    final payload = c.toJson();
+    // Build payload but remove server-managed/read-only fields that the API rejects
+    final payload = Map<String, dynamic>.from(c.toJson());
+    payload.remove('id');
+    payload.remove('createdAt');
+    payload.remove('updatedAt');
+    payload.remove('userType');
+    if (kDebugMode) {
+      // ignore: avoid_print
+      print(
+        'CollaboratorController.updateCollaborator payload=${jsonEncode(payload)}',
+      );
+    }
     final res = await _service.update(c.id!, payload);
     final updated = Collaborator.fromJson(Map<String, dynamic>.from(res));
     if (_loggedCollaborator?.id == updated.id) {

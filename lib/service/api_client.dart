@@ -1,7 +1,8 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:get_it/get_it.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/foundation.dart';
 import 'package:kids_space/controller/auth_controller.dart';
 
 typedef TokenProvider = Future<String?> Function();
@@ -72,6 +73,35 @@ class ApiClient {
 
     http.Response res;
     try {
+      // debug: log outgoing request headers and payload (masked token)
+      if (kDebugMode) {
+        String mask(String? t) {
+          if (t == null || t.isEmpty) {
+            return '<no-token>';
+          }
+          return t.length > 10
+              ? '${t.substring(0, 6)}...${t.substring(t.length - 4)}'
+              : t;
+        }
+
+        // show which method and uri
+        // ignore: avoid_print
+        print('ApiClient._send DEBUG -> method=$method uri=$uri');
+        // mask Authorization header
+        final tp = tokenProvider == null ? null : await tokenProvider!();
+        // ignore: avoid_print
+        print('ApiClient._send DEBUG -> Authorization=Bearer ${mask(tp)}');
+        if (body != null) {
+          final cleaned = _cleanBody(body);
+          try {
+            // ignore: avoid_print
+            print('ApiClient._send DEBUG -> body=${jsonEncode(cleaned)}');
+          } catch (_) {
+            // ignore: avoid_print
+            print('ApiClient._send DEBUG -> body (non-json)=$cleaned');
+          }
+        }
+      }
       if (method == 'GET') {
         res = await http.get(uri, headers: allHeaders);
       } else if (method == 'POST') {
@@ -132,15 +162,37 @@ class ApiClient {
       try {
         if (GetIt.I.isRegistered<AuthController>()) {
           final auth = GetIt.I.get<AuthController>();
-          await auth.clearTokens();
-          // ignore: avoid_print
-          print(
-            'ApiClient: cleared tokens after unrecoverable ${res.statusCode}',
-          );
-        }
-        if (GetIt.I.isRegistered<GlobalKey<NavigatorState>>()) {
-          final key = GetIt.I.get<GlobalKey<NavigatorState>>();
-          key.currentState?.pushNamedAndRemoveUntil('/login', (route) => false);
+          // Ask AuthController to validate session (may attempt refresh).
+          final valid = await auth.ensureSessionValid();
+          if (!valid) {
+            await auth.clearTokens();
+            // ignore: avoid_print
+            print(
+              'ApiClient: cleared tokens after unrecoverable ${res.statusCode}',
+            );
+            if (GetIt.I.isRegistered<GlobalKey<NavigatorState>>()) {
+              final key = GetIt.I.get<GlobalKey<NavigatorState>>();
+              key.currentState?.pushNamedAndRemoveUntil(
+                '/login',
+                (route) => false,
+              );
+            }
+          } else {
+            // session still valid (refresh succeeded) — do not redirect
+            // ignore: avoid_print
+            print(
+              'ApiClient: received ${res.statusCode} but session valid; no redirect',
+            );
+          }
+        } else {
+          // No AuthController available — perform redirect as fallback
+          if (GetIt.I.isRegistered<GlobalKey<NavigatorState>>()) {
+            final key = GetIt.I.get<GlobalKey<NavigatorState>>();
+            key.currentState?.pushNamedAndRemoveUntil(
+              '/login',
+              (route) => false,
+            );
+          }
         }
       } catch (e) {
         // ignore: avoid_print
