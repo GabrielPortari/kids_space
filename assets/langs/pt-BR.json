@@ -162,7 +162,9 @@
     "state": "Estado",
     "zipcode": "CEP",
     "contact": "Contato",
-    "email": "E-mail"
+    "email": "E-mail",
+    "update_success": "Dados da empresa atualizados com sucesso.",
+    "address_update_success": "Endereço da empresa atualizado com sucesso."
   },
   "validation": {
     "required": "Campo obrigatório",

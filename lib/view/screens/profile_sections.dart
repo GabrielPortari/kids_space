@@ -137,6 +137,8 @@ class ProfileContent extends StatelessWidget {
       return {
         translate('profile.fantasy_name'): co.name ?? '-',
         translate('profile.corporate_name'): co.legalName ?? '-',
+        translate('profile.email'): co.email ?? '-',
+        translate('profile.phone'): co.contact ?? '-',
         translate('profile.cnpj'): co.cnpj ?? '-',
         translate('profile.website'): co.website ?? '-',
         translate('profile.logo_url'): co.logoUrl ?? '-',

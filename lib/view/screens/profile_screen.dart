@@ -236,28 +236,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final loggedCollaborator = _collaboratorController.loggedCollaborator;
     final loggedUserType = loggedCollaborator?.userType;
+    // Consider AuthController role as authoritative for company logins
+    final loggedAsCompany =
+        _authController.role.toString().toLowerCase().contains('company') ||
+        loggedUserType == UserType.company;
+    final loggedAsCollaborator =
+        _authController.role.toString().toLowerCase().contains(
+          'collaborator',
+        ) ||
+        loggedUserType == UserType.collaborator;
 
     final bool canEdit =
-        (loggedUserType == UserType.company &&
+        // company users can edit non-company profiles
+        (loggedAsCompany &&
             selectedProfileType != null &&
             selectedProfileType != SelectedProfileType.company) ||
-        (loggedUserType == UserType.collaborator &&
+        // company should be able to edit its own company profile when viewing its company
+        (loggedAsCompany &&
+            selectedProfileType == SelectedProfileType.company &&
+            _effectiveCompany?.id != null &&
+            _effectiveCompany?.id == _companyController.company?.id) ||
+        (loggedAsCollaborator &&
             (selectedProfileType == SelectedProfileType.user ||
                 selectedProfileType == SelectedProfileType.child));
 
     final bool canAddChild =
-        (loggedUserType == UserType.company ||
-            loggedUserType == UserType.collaborator) &&
+        (loggedAsCompany || loggedAsCollaborator) &&
         (selectedProfileType != null &&
             selectedProfileType == SelectedProfileType.user);
 
     final bool canLogout =
-        (loggedUserType == UserType.collaborator) &&
-        (selectedProfileType != null &&
-            widget.selectedCollaborator?.id == loggedCollaborator?.id);
+        // collaborator can logout when viewing their own collaborator profile
+        (loggedAsCollaborator &&
+            (selectedProfileType != null &&
+                widget.selectedCollaborator?.id == loggedCollaborator?.id)) ||
+        // company can logout when viewing their own company profile
+        (loggedAsCompany &&
+            (selectedProfileType == SelectedProfileType.company) &&
+            _effectiveCompany?.id != null &&
+            _effectiveCompany?.id == _companyController.company?.id);
 
     final bool canDelete =
-        (loggedUserType == UserType.company) &&
+        (loggedAsCompany) &&
         (selectedProfileType != null &&
             selectedProfileType != SelectedProfileType.company &&
             selectedProfileType != SelectedProfileType.admin);
@@ -452,6 +472,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _showEditChoice() async {
+    // If viewing a company profile and logged as company, show company edit dialogs
+    final loggedAsCompany =
+        _authController.role.toString().toLowerCase().contains('company') ||
+        _collaboratorController.loggedCollaborator?.userType ==
+            UserType.company;
+    if (selectedProfileType == SelectedProfileType.company && loggedAsCompany) {
+      await _showCompanyEditDialogs();
+      return;
+    }
+
     await showProfileEditDialogs(
       context,
       user: widget.selectedUser,
@@ -461,6 +491,248 @@ class _ProfileScreenState extends State<ProfileScreen> {
       userController: _userController,
       collaboratorController: _collaboratorController,
     );
+  }
+
+  Future<void> _showCompanyEditDialogs() async {
+    final company = _effectiveCompany;
+    if (company == null) return;
+
+    final choice = await showModalBottomSheet<String?>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => SafeArea(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).canvasColor,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 16),
+              Text(
+                translate('profile.edit_user'),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Divider(),
+              ListTile(
+                leading: const Icon(Icons.business),
+                title: Text(translate('profile.edit_personal')),
+                onTap: () => Navigator.of(context).pop('personal'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.home),
+                title: Text(translate('profile.edit_address')),
+                onTap: () => Navigator.of(context).pop('address'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.close, color: Colors.red),
+                title: Text(translate('buttons.cancel')),
+                onTap: () => Navigator.of(context).pop(null),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (choice == 'personal') {
+      final fields = [
+        FieldDefinition(
+          key: 'name',
+          label: translate('profile.fantasy_name'),
+          initialValue: company.name ?? '',
+        ),
+        FieldDefinition(
+          key: 'contact',
+          label: translate('profile.phone'),
+          type: FieldType.phone,
+          initialValue: company.contact ?? '',
+        ),
+        FieldDefinition(
+          key: 'website',
+          label: translate('profile.website'),
+          initialValue: company.website ?? '',
+        ),
+        FieldDefinition(
+          key: 'logoUrl',
+          label: translate('profile.logo_url'),
+          initialValue: company.logoUrl ?? '',
+        ),
+      ];
+
+      final res = await showEditEntityBottomSheet(
+        context: context,
+        title: translate('profile.edit_personal'),
+        fields: fields,
+      );
+      if (res == null) return;
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(translate('profile.confirm_change_title')),
+          content: Text(translate('profile.confirm_change_personal')),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(translate('buttons.cancel')),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(translate('buttons.confirm')),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+
+      final payload = <String, dynamic>{
+        'name': res['name']?.toString(),
+        'contact': res['contact']?.toString(),
+        'website': res['website']?.toString(),
+        'logoUrl': res['logoUrl']?.toString(),
+      };
+
+      bool success = false;
+      try {
+        await _companyController.updateMyCompany(payload);
+        success = true;
+      } catch (_) {
+        success = false;
+      }
+
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(
+            success ? translate('common.success') : translate('common.error'),
+          ),
+          content: Text(
+            success
+                ? translate('company.update_success')
+                : translate('company.update_error'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(translate('buttons.ok')),
+            ),
+          ],
+        ),
+      );
+      if (success) setState(() => _company = _companyController.company);
+    } else if (choice == 'address') {
+      final fields = [
+        FieldDefinition(
+          key: 'addressStreet',
+          label: translate('profile.address'),
+          initialValue: company.address?.address ?? '',
+        ),
+        FieldDefinition(
+          key: 'addressNumber',
+          label: translate('profile.address_number'),
+          initialValue: company.address?.number ?? '',
+        ),
+        FieldDefinition(
+          key: 'addressComplement',
+          label: translate('profile.address_complement'),
+          initialValue: company.address?.complement ?? '',
+        ),
+        FieldDefinition(
+          key: 'addressNeighborhood',
+          label: translate('profile.neighborhood'),
+          initialValue: company.address?.neighborhood ?? '',
+        ),
+        FieldDefinition(
+          key: 'addressCity',
+          label: translate('profile.city'),
+          initialValue: company.address?.city ?? '',
+        ),
+        FieldDefinition(
+          key: 'addressState',
+          label: translate('profile.state'),
+          initialValue: company.address?.state ?? '',
+        ),
+        FieldDefinition(
+          key: 'addressZipcode',
+          label: translate('profile.zip_code'),
+          initialValue: company.address?.zipcode ?? '',
+        ),
+      ];
+
+      final res = await showEditEntityBottomSheet(
+        context: context,
+        title: translate('profile.edit_address'),
+        fields: fields,
+      );
+      if (res == null) return;
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(translate('profile.confirm_change_title')),
+          content: Text(translate('profile.confirm_change_address')),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(translate('buttons.cancel')),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(translate('buttons.confirm')),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+
+      final payload = <String, dynamic>{
+        'address': {
+          'address': res['addressStreet']?.toString(),
+          'number': res['addressNumber']?.toString(),
+          'complement': res['addressComplement']?.toString(),
+          'neighborhood': res['addressNeighborhood']?.toString(),
+          'city': res['addressCity']?.toString(),
+          'state': res['addressState']?.toString(),
+          'zipcode': res['addressZipcode']?.toString(),
+        },
+      };
+
+      bool success = false;
+      try {
+        await _companyController.updateMyCompany(payload);
+        success = true;
+      } catch (_) {
+        success = false;
+      }
+
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(
+            success ? translate('common.success') : translate('common.error'),
+          ),
+          content: Text(
+            success
+                ? translate('company.address_update_success')
+                : translate('company.address_update_error'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(translate('buttons.ok')),
+            ),
+          ],
+        ),
+      );
+      if (success) setState(() => _company = _companyController.company);
+    }
   }
 
   Future<void> _confirmAndLogout() async {

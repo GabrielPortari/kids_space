@@ -72,12 +72,18 @@ class ApiClient {
       if (method == 'GET') {
         res = await http.get(uri, headers: allHeaders);
       } else if (method == 'POST') {
-        res = await http.post(uri, headers: allHeaders, body: jsonEncode(body));
+        final cleaned = _cleanBody(body);
+        res = await http.post(
+          uri,
+          headers: allHeaders,
+          body: jsonEncode(cleaned),
+        );
       } else if (method == 'PATCH') {
+        final cleaned = _cleanBody(body);
         res = await http.patch(
           uri,
           headers: allHeaders,
-          body: jsonEncode(body),
+          body: jsonEncode(cleaned),
         );
       } else if (method == 'DELETE') {
         res = await http.delete(uri, headers: allHeaders);
@@ -98,16 +104,18 @@ class ApiClient {
         if (method == 'GET') {
           res = await http.get(uri, headers: allHeaders);
         } else if (method == 'POST') {
+          final cleaned = _cleanBody(body);
           res = await http.post(
             uri,
             headers: allHeaders,
-            body: jsonEncode(body),
+            body: jsonEncode(cleaned),
           );
         } else if (method == 'PATCH') {
+          final cleaned = _cleanBody(body);
           res = await http.patch(
             uri,
             headers: allHeaders,
-            body: jsonEncode(body),
+            body: jsonEncode(cleaned),
           );
         } else if (method == 'DELETE') {
           res = await http.delete(uri, headers: allHeaders);
@@ -124,5 +132,28 @@ class ApiClient {
     }
 
     return res;
+  }
+
+  dynamic _cleanBody(dynamic input) {
+    if (input == null) return null;
+    if (input is String) {
+      final s = input.trim();
+      return s.isEmpty ? null : s;
+    }
+    if (input is num || input is bool) return input;
+    if (input is List) {
+      final out = input.map(_cleanBody).where((e) => e != null).toList();
+      return out.isEmpty ? null : out;
+    }
+    if (input is Map) {
+      final Map<String, dynamic> out = {};
+      input.forEach((k, v) {
+        final cleaned = _cleanBody(v);
+        if (cleaned != null) out[k] = cleaned;
+      });
+      return out.isEmpty ? null : out;
+    }
+    // fallback: attempt to json encode; if empty string, return null
+    return input;
   }
 }

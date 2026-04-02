@@ -160,6 +160,22 @@
     "exit_message": "Do you want to leave the admin panel?",
     "logout": "Log out"
   },
+  "company": {
+    "name": "Name",
+    "legal_name": "Corporate name",
+    "cnpj": "CNPJ",
+    "address": "Address",
+    "number": "Number",
+    "complement": "Complement",
+    "neighborhood": "Neighborhood",
+    "city": "City",
+    "state": "State",
+    "zipcode": "ZIP",
+    "contact": "Contact",
+    "email": "E-mail",
+    "update_success": "Company data updated successfully.",
+    "address_update_success": "Company address updated successfully."
+  },
   "ui": {
     "id_copied": "ID copied to clipboard: {id}",
     "profile_menu": {
