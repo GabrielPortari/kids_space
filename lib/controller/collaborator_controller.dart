@@ -10,6 +10,7 @@ class CollaboratorController extends ChangeNotifier {
   List<Collaborator> _collaborators = [];
   String collaboratorFilter = '';
   bool refreshLoading = false;
+  String? lastError;
 
   Collaborator? get loggedCollaborator => _loggedCollaborator;
 
@@ -40,6 +41,7 @@ class CollaboratorController extends ChangeNotifier {
 
   Future<void> refreshCollaboratorsForCompany(String? companyId) async {
     refreshLoading = true;
+    lastError = null;
     notifyListeners();
     try {
       final data = await _service.list();
@@ -51,6 +53,12 @@ class CollaboratorController extends ChangeNotifier {
       } else {
         _collaborators = list;
       }
+    } catch (e) {
+      // capture error and expose to UI
+      // ignore: avoid_print
+      print('CollaboratorController.refreshCollaboratorsForCompany error: $e');
+      lastError = e.toString();
+      _collaborators = [];
     } finally {
       refreshLoading = false;
       notifyListeners();

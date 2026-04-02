@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
+// Using ChangeNotifier (CollaboratorController) so AnimatedBuilder is used instead
+// import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
@@ -34,6 +35,7 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
     super.initState();
     _searchController.addListener(_onSearchChanged);
     _onRefresh();
+    _collaboratorController.addListener(_controllerListener);
   }
 
   @override
@@ -41,7 +43,19 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
     _debounce?.cancel();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
+    _collaboratorController.removeListener(_controllerListener);
     super.dispose();
+  }
+
+  void _controllerListener() {
+    final err = _collaboratorController.lastError;
+    if (err != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao carregar colaboradores: $err')),
+      );
+      // clear lastError to avoid repeated snackbars
+      _collaboratorController.lastError = null;
+    }
   }
 
   void _onSearchChanged() {
@@ -290,8 +304,9 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
     return Expanded(
       child: RefreshIndicator(
         onRefresh: () async => await _onRefresh(),
-        child: Observer(
-          builder: (_) {
+        child: AnimatedBuilder(
+          animation: _collaboratorController,
+          builder: (_, __) {
             if (_collaboratorController.refreshLoading) {
               return _buildSkeleton();
             }
