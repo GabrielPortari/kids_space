@@ -1,7 +1,7 @@
 {
   "app_bottom_nav": {
     "home": "Inicio",
-    "users": "Usuários",
+    "parents": "Responsáveis",
     "reports": "Relatórios"
   },
   "home": {

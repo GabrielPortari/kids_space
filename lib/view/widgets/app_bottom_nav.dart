@@ -27,7 +27,7 @@ class _AppBottomNavState extends State<AppBottomNav> {
     ),
     BottomNavigationBarItem(
       icon: const Icon(Icons.person),
-      label: translate('app_bottom_nav.users'),
+      label: translate('app_bottom_nav.parents'),
     ),
     BottomNavigationBarItem(
       icon: const Icon(Icons.child_friendly),

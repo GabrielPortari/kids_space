@@ -168,47 +168,70 @@ class _ParentsScreenState extends State<ParentsScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 720),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    SizedBox(height: topSpacing),
-                    _searchField(),
-                    const SizedBox(height: 16),
-                    _userList(),
-                    const SizedBox(height: 16),
-                  ],
-                ),
+            child: RefreshIndicator(
+              onRefresh: () async => await _onRefresh(),
+              child: AnimatedBuilder(
+                animation: _parentController,
+                builder: (_, __) {
+                  // show error snackbar if any
+                  final err = _parentController.lastError;
+                  if (err != null && mounted) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Erro ao carregar usuários: $err'),
+                        ),
+                      );
+                    });
+                    _parentController.lastError = null;
+                  }
+
+                  final filtered = _parentController.filteredUsers;
+
+                  if (_parentController.refreshLoading) {
+                    return _buildSkeletonList();
+                  }
+
+                  if (filtered.isEmpty) {
+                    return ListView(
+                      padding: const EdgeInsets.only(
+                        top: 8.0,
+                        left: 8.0,
+                        right: 8.0,
+                      ),
+                      children: [
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 24.0),
+                            child: Text(
+                              _searchController.text.isEmpty
+                                  ? translate('parents.empty')
+                                  : translate('parents.not_found'),
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.only(
+                      top: 8.0,
+                      left: 8.0,
+                      right: 8.0,
+                    ),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) => _userTile(filtered[index]),
+                  );
+                },
               ),
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _onAddUser,
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-  Widget _searchField() {
-    return TextField(
-      controller: _searchController,
-      decoration: InputDecoration(
-        labelText: translate('parents.search'),
-        prefixIcon: const Icon(Icons.search),
-        border: const OutlineInputBorder(),
-        suffixIcon: _searchController.text.isEmpty
-            ? null
-            : IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () {
-                  _searchController.clear();
-                  _parentController.userFilter = '';
-                },
-              ),
       ),
     );
   }

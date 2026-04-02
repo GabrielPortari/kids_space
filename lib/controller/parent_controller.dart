@@ -8,6 +8,7 @@ class ParentController extends ChangeNotifier {
   List<Parent> _parents = [];
   String userFilter = '';
   bool refreshLoading = false;
+  String? lastError;
   String? selectedUserId;
 
   List<Parent> get parents => _parents;
@@ -45,6 +46,13 @@ class ParentController extends ChangeNotifier {
       } else {
         _parents = list;
       }
+      lastError = null;
+    } catch (e) {
+      // capture and expose error (avoid crashing the app)
+      // ignore: avoid_print
+      print('ParentController.refreshUsersForCompany error: $e');
+      lastError = e.toString();
+      _parents = [];
     } finally {
       refreshLoading = false;
       notifyListeners();

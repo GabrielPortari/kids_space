@@ -212,12 +212,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final found = _collaboratorController.collaborators.firstWhere(
             (c) => c.id == id,
           );
-          if (found != null) {
-            setState(() {
-              _fetchedCollaborator = found;
-            });
-            return;
-          }
+          setState(() {
+            _fetchedCollaborator = found;
+          });
+          return;
         } catch (_) {}
       }
       if (widget.selectedUser != null && widget.selectedUser!.id != null) {
