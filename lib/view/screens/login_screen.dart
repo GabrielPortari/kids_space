@@ -79,10 +79,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         _emailField(),
                         const SizedBox(height: 16),
                         _passwordField(),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
                         _loginButton(),
                         _extraActions(),
-                        const SizedBox(height: 24),
                       ],
                     ),
                   ),
@@ -132,6 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _loginButton() {
     return AppButton(
       text: translate('login.login_button'),
+      style: ElevatedButton.styleFrom(minimumSize: const Size(200, 40)),
       onPressed: _loading ? null : _login,
     );
   }
@@ -139,16 +139,9 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _extraActions() {
     return Column(
       children: [
-        const SizedBox(height: 8),
-        Row(
+        Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/register_company');
-              },
-              child: Text(translate('login.no_account')),
-            ),
             TextButton(
               onPressed: () {
                 _showForgotPasswordDialog();
@@ -162,13 +155,13 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showForgotPasswordDialog() {
-    final _forgotController = TextEditingController();
+    final forgotController = TextEditingController();
     showDialog<void>(
       context: context,
       builder: (c) => AlertDialog(
         title: Text(translate('login.forgot_password')),
         content: TextField(
-          controller: _forgotController,
+          controller: forgotController,
           decoration: InputDecoration(hintText: translate('login.enter_email')),
           keyboardType: TextInputType.emailAddress,
         ),
