@@ -15,15 +15,25 @@ class CollaboratorController extends ChangeNotifier {
   Collaborator? get loggedCollaborator => _loggedCollaborator;
 
   Future<Collaborator?> create(Map<String, dynamic> payload) async {
-    final data = await _service.create(payload);
-    _loggedCollaborator = Collaborator.fromJson(data);
-    // add to cached list
-    final created = _loggedCollaborator;
-    if (created != null) {
-      _collaborators.insert(0, created);
+    try {
+      final data = await _service.create(payload);
+      _loggedCollaborator = Collaborator.fromJson(data);
+      // add to cached list
+      final created = _loggedCollaborator;
+      if (created != null) {
+        _collaborators.insert(0, created);
+      }
+      lastError = null;
+      notifyListeners();
+      return _loggedCollaborator;
+    } catch (e) {
+      // capture error for UI
+      // ignore: avoid_print
+      print('CollaboratorController.create error: $e');
+      lastError = e.toString();
+      notifyListeners();
+      return null;
     }
-    notifyListeners();
-    return _loggedCollaborator;
   }
 
   List<Collaborator> get collaborators => _collaborators;

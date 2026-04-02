@@ -193,5 +193,9 @@
     "inherit_address_question": "Deseja herdar o endereço do responsável?",
     "yes": "Sim",
     "no": "Não"
+  },
+  "collaborators": {
+    "created": "Colaborador cadastrado com sucesso.",
+    "create_error": "Falha ao cadastrar colaborador."
   }
 }

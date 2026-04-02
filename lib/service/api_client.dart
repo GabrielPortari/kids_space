@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:get_it/get_it.dart';
+import 'package:flutter/widgets.dart';
+import 'package:kids_space/controller/auth_controller.dart';
 
 typedef TokenProvider = Future<String?> Function();
 typedef RefreshTokenProvider = Future<String?> Function();
@@ -120,6 +123,30 @@ class ApiClient {
         } else if (method == 'DELETE') {
           res = await http.delete(uri, headers: allHeaders);
         }
+      }
+    }
+
+    // If response indicates lack of authorization (401 or 403) attempt to clear tokens
+    // and navigate to login so the app enforces sign-in.
+    if (res.statusCode == 401 || res.statusCode == 403) {
+      try {
+        if (GetIt.I.isRegistered<AuthController>()) {
+          final auth = GetIt.I.get<AuthController>();
+          await auth.clearTokens();
+          // ignore: avoid_print
+          print(
+            'ApiClient: cleared tokens after unrecoverable ${res.statusCode}',
+          );
+        }
+        if (GetIt.I.isRegistered<GlobalKey<NavigatorState>>()) {
+          final key = GetIt.I.get<GlobalKey<NavigatorState>>();
+          key.currentState?.pushNamedAndRemoveUntil('/login', (route) => false);
+        }
+      } catch (e) {
+        // ignore: avoid_print
+        print(
+          'ApiClient: failed to clear tokens/navigate after ${res.statusCode}: $e',
+        );
       }
     }
 

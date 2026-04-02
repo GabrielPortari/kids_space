@@ -168,9 +168,37 @@ class AuthController extends ChangeNotifier {
   }
 
   Future<bool> ensureSessionValid() async {
+    if (_idToken == null) await loadFromStorage();
     if (_idToken == null) return false;
-    // naive: assume token valid
-    return true;
+    try {
+      final payload = _parseJwtPayload(_idToken!);
+      if (payload != null && payload.containsKey('exp')) {
+        final exp = payload['exp'];
+        if (exp is int || exp is double || exp is String) {
+          final expInt = int.tryParse(exp.toString());
+          if (expInt != null) {
+            final expiry = DateTime.fromMillisecondsSinceEpoch(expInt * 1000);
+            final now = DateTime.now().toUtc();
+            // refresh if token expires within the next 60 seconds
+            if (expiry.isAfter(now.add(const Duration(seconds: 60)))) {
+              return true;
+            }
+          }
+        }
+      }
+      // token missing exp or about to expire -> try refresh
+      final newToken = await refreshToken();
+      if (newToken != null && newToken.isNotEmpty) return true;
+      // refresh failed: force logout
+      await logout();
+      return false;
+    } catch (e) {
+      // on any unexpected error, be conservative and logout
+      try {
+        await logout();
+      } catch (_) {}
+      return false;
+    }
   }
 
   Future<String?> getIdToken() async {

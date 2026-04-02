@@ -65,6 +65,10 @@ Future<void> main() async {
     print('Firebase.initializeApp error: $e');
   }
   setup(GetIt.I);
+  // register navigatorKey so services can perform global navigation (e.g., force logout)
+  if (!GetIt.I.isRegistered<GlobalKey<NavigatorState>>()) {
+    GetIt.I.registerSingleton<GlobalKey<NavigatorState>>(navigatorKey);
+  }
   ApiClient().init(
     baseUrl: safeEnv('API_BASE_URL', 'http://10.0.2.2:3000'),
     tokenProvider: () async {

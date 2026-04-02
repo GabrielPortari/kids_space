@@ -257,6 +257,7 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
     );
     Collaborator? created;
     try {
+      debugPrint('Creating collaborator with payload: $payload');
       created = await _collaboratorController.create(payload);
     } finally {
       // dismiss loading
@@ -272,11 +273,17 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
         );
       }
     } else {
+      final err = _collaboratorController.lastError;
+      final msg = err != null && err.isNotEmpty
+          ? err
+          : translate('collaborators.create_error');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(translate('collaborators.create_error'))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(msg)));
       }
+      // clear the lastError after showing it once
+      _collaboratorController.lastError = null;
     }
   }
 
