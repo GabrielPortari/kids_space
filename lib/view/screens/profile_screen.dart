@@ -88,6 +88,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+    // Listen to controllers so the profile view updates when underlying entities change
+    _collaboratorController.addListener(_onControllersChanged);
+    _userController.addListener(_onControllersChanged);
+    _childController.addListener(_onControllersChanged);
     // If any entity is provided, attempt to refresh it from API and show skeleton while loading
     if (widget.selectedCompany != null && widget.selectedCompany!.id != null) {
       _company = widget.selectedCompany;
@@ -188,6 +192,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
           });
       return;
     }
+  }
+
+  @override
+  void dispose() {
+    _collaboratorController.removeListener(_onControllersChanged);
+    _userController.removeListener(_onControllersChanged);
+    _childController.removeListener(_onControllersChanged);
+    super.dispose();
+  }
+
+  void _onControllersChanged() {
+    // If viewing a collaborator, try to update the fetched collaborator from controller cache
+    try {
+      if (widget.selectedCollaborator != null &&
+          widget.selectedCollaborator!.id != null) {
+        final id = widget.selectedCollaborator!.id!;
+        try {
+          final found = _collaboratorController.collaborators.firstWhere(
+            (c) => c.id == id,
+          );
+          if (found != null) {
+            setState(() {
+              _fetchedCollaborator = found;
+            });
+            return;
+          }
+        } catch (_) {}
+      }
+      if (widget.selectedUser != null && widget.selectedUser!.id != null) {
+        final id = widget.selectedUser!.id!;
+        final found = _userController.getUserById(id);
+        if (found != null) {
+          setState(() {
+            _fetchedUser = found;
+          });
+          return;
+        }
+      }
+      if (widget.selectedChild != null && widget.selectedChild!.id != null) {
+        final id = widget.selectedChild!.id!;
+        final found = _childController.getChildById(id);
+        if (found != null) {
+          setState(() {
+            _fetchedChild = found;
+          });
+          return;
+        }
+      }
+    } catch (_) {}
   }
 
   _AppBarConfig _computeAppBarConfig() {
