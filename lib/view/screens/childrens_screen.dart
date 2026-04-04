@@ -186,8 +186,9 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
       return Expanded(
         child: RefreshIndicator(
           onRefresh: () async => await _loadActiveChildrenWithResponsibles(),
-          child: Observer(
-            builder: (_) {
+          child: AnimatedBuilder(
+            animation: _childController,
+            builder: (_, __) {
               if (_childController.refreshLoading) {
                 return const SkeletonList(itemCount: 6);
               }
@@ -233,8 +234,9 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
     return Expanded(
       child: RefreshIndicator(
         onRefresh: () async => await _onRefresh(),
-        child: Observer(
-          builder: (_) {
+        child: AnimatedBuilder(
+          animation: _childController,
+          builder: (_, __) {
             final filtered = _childController.filteredChildren;
 
             if (_childController.refreshLoading) {

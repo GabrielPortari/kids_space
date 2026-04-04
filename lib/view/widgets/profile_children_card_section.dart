@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kids_space/model/child.dart';
+import 'package:get_it/get_it.dart';
+import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/model/parent.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/util/localization_service.dart';
@@ -35,8 +37,11 @@ class _ProfileChildrenCardSectionState
 
   void _loadChildren() {
     _children.clear();
-    for (final child in widget.user?.children ?? []) {
-      if (child != null) _children.add(child);
+    final childCtrl = GetIt.I.get<ChildController>();
+    for (final childId in widget.user?.children ?? []) {
+      if (childId == null) continue;
+      final c = childCtrl.getChildById(childId);
+      if (c != null) _children.add(c);
     }
     setState(() {});
   }

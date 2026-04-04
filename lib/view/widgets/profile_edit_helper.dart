@@ -240,13 +240,6 @@ Future<void> _editPersonal(
         required: true,
       ),
       FieldDefinition(
-        key: 'email',
-        label: translate('profile.email'),
-        type: FieldType.email,
-        initialValue: c.email ?? '',
-        required: true,
-      ),
-      FieldDefinition(
         key: 'birthDate',
         label: translate('profile.birth_date'),
         type: FieldType.date,
@@ -281,7 +274,6 @@ Future<void> _editPersonal(
       final updated = Collaborator(
         userType: c.userType,
         name: res['name']?.toString() ?? c.name,
-        email: res['email']?.toString() ?? c.email,
         birthDate: (() {
           final v = res['birthDate'];
           if (v is DateTime) return v.toIso8601String();
