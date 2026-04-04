@@ -7,10 +7,12 @@ class ProfileAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool canAddChild;
   final bool canLogout;
   final bool canDelete;
+  final bool canAssignParent;
   final VoidCallback? onEdit;
   final VoidCallback? onAddChild;
   final VoidCallback? onDelete;
   final VoidCallback? onLogout;
+  final VoidCallback? onAssignParent;
 
   const ProfileAppBar({
     super.key,
@@ -19,10 +21,12 @@ class ProfileAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.canAddChild = false,
     this.canLogout = false,
     this.canDelete = false,
+    this.canAssignParent = false,
     this.onEdit,
     this.onAddChild,
     this.onDelete,
     this.onLogout,
+    this.onAssignParent,
   });
 
   @override
@@ -43,6 +47,9 @@ class ProfileAppBar extends StatelessWidget implements PreferredSizeWidget {
               case 'add_child':
                 if (onAddChild != null) onAddChild!();
                 break;
+              case 'assign_parent':
+                if (onAssignParent != null) onAssignParent!();
+                break;
               case 'delete':
                 if (onDelete != null) onDelete!();
                 break;
@@ -54,10 +61,31 @@ class ProfileAppBar extends StatelessWidget implements PreferredSizeWidget {
             }
           },
           itemBuilder: (context) => [
-            if (canEdit) PopupMenuItem(value: 'edit', child: Text(translate('ui.profile_menu.edit'))),
-            if (canAddChild) PopupMenuItem(value: 'add_child', child: Text(translate('ui.profile_menu.add_child'))),
-            if (canLogout) PopupMenuItem(value: 'logout', child: Text(translate('ui.profile_menu.logout'))),
-            if (canDelete) PopupMenuItem(value: 'delete', child: Text(translate('ui.profile_menu.delete'))),
+            if (canEdit)
+              PopupMenuItem(
+                value: 'edit',
+                child: Text(translate('ui.profile_menu.edit')),
+              ),
+            if (canAddChild)
+              PopupMenuItem(
+                value: 'add_child',
+                child: Text(translate('ui.profile_menu.add_child')),
+              ),
+            if (canAssignParent)
+              PopupMenuItem(
+                value: 'assign_parent',
+                child: Text(translate('ui.profile_menu.assign_parent')),
+              ),
+            if (canLogout)
+              PopupMenuItem(
+                value: 'logout',
+                child: Text(translate('ui.profile_menu.logout')),
+              ),
+            if (canDelete)
+              PopupMenuItem(
+                value: 'delete',
+                child: Text(translate('ui.profile_menu.delete')),
+              ),
           ],
         ),
       ],

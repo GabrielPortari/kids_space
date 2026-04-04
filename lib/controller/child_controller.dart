@@ -138,6 +138,44 @@ class ChildController extends ChangeNotifier {
     return ok;
   }
 
+  /// Assign one or more parents to a child via POST /v2/children/:childId/parents
+  /// Expects the service to accept { parentIds: [...] }
+  Future<bool> assignParentToChild(
+    String childId,
+    List<String> parentIds,
+  ) async {
+    try {
+      final res = await _service.assignParent(childId, parentIds);
+      // If the service returned the updated child, merge it; otherwise, update cache conservatively.
+      try {
+        final updated = Child.fromJson(Map<String, dynamic>.from(res));
+        final idx = _children.indexWhere((c) => c.id == updated.id);
+        if (idx != -1) {
+          _children[idx] = updated;
+        } else {
+          _children.add(updated);
+        }
+      } catch (_) {
+        // fallback: ensure parentIds are present in cached child
+        final idx = _children.indexWhere((c) => c.id == childId);
+        if (idx != -1) {
+          final c = _children[idx];
+          final parents = List<String>.from(c.parents ?? []);
+          for (final pid in parentIds) {
+            if (!parents.contains(pid)) parents.add(pid);
+          }
+          _children[idx] = c.copyWith(parents: parents);
+        }
+      }
+      notifyListeners();
+      return true;
+    } catch (e) {
+      // ignore: avoid_print
+      print('ChildController.assignParentToChild error: $e');
+      return false;
+    }
+  }
+
   /// Returns children that are currently checked-in for the given company
   List<Child> activeCheckedInChildren(String? companyId) {
     if (companyId == null) return [];

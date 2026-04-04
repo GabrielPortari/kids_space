@@ -25,6 +25,7 @@ class _AppBarConfig {
   final bool canAddChild;
   final bool canLogout;
   final bool canDelete;
+  final bool canAssignParent;
 
   _AppBarConfig({
     required this.title,
@@ -32,6 +33,7 @@ class _AppBarConfig {
     required this.canAddChild,
     required this.canLogout,
     required this.canDelete,
+    required this.canAssignParent,
   });
 }
 
@@ -192,6 +194,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           });
       return;
     }
+    final parentCtrl = GetIt.I.get<ParentController>();
+    final companyId = _effectiveCompany?.id ?? _companyController.company?.id;
+    // Do NOT await here: open the dialog immediately and load parents inside it.
   }
 
   @override
@@ -309,7 +314,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _effectiveCompany?.id == _companyController.company?.id) ||
         (loggedAsCollaborator &&
             (selectedProfileType == SelectedProfileType.user ||
-                selectedProfileType == SelectedProfileType.child));
+                selectedProfileType == SelectedProfileType.child)) ||
+        // allow a logged collaborator to edit their own collaborator profile
+        (loggedAsCollaborator &&
+            selectedProfileType == SelectedProfileType.collaborator &&
+            widget.selectedCollaborator?.id != null &&
+            widget.selectedCollaborator?.id ==
+                _collaboratorController.loggedCollaborator?.id);
 
     final bool canAddChild =
         (loggedAsCompany || loggedAsCollaborator) &&
@@ -333,12 +344,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             selectedProfileType != SelectedProfileType.company &&
             selectedProfileType != SelectedProfileType.admin);
 
+    final bool canAssignParent =
+        selectedProfileType == SelectedProfileType.child &&
+        (loggedAsCompany || loggedAsCollaborator);
+
     return _AppBarConfig(
       title: title,
       canEdit: canEdit,
       canAddChild: canAddChild,
       canLogout: canLogout,
       canDelete: canDelete,
+      canAssignParent: canAssignParent,
     );
   }
 
@@ -351,10 +367,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: appBarConfig.title,
         canEdit: appBarConfig.canEdit,
         canAddChild: appBarConfig.canAddChild,
+        canAssignParent: appBarConfig.canAssignParent,
         canLogout: appBarConfig.canLogout,
         canDelete: appBarConfig.canDelete,
         onEdit: () {
           _showEditChoice();
+        },
+        onAssignParent: () {
+          _onAssignParent();
         },
         onAddChild: () {
           _onAddChild();
@@ -477,6 +497,196 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (success) Navigator.pop(context);
+  }
+
+  Future<void> _onAssignParent() async {
+    final child = _fetchedChild ?? widget.selectedChild;
+    if (child == null || child.id == null) return;
+
+    final parentCtrl = GetIt.I.get<ParentController>();
+    final companyId = _effectiveCompany?.id ?? _companyController.company?.id;
+    final current = (child.parents ?? []).whereType<String>().toSet();
+
+    bool started = false;
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final selected = Set<String>.from(current);
+        var search = '';
+        return StatefulBuilder(
+          builder: (ctx2, setState) {
+            // start loading parents once when dialog opens
+            if (!started) {
+              started = true;
+              if (parentCtrl.parents.isEmpty) {
+                parentCtrl
+                    .refreshUsersForCompany(companyId)
+                    .catchError((_) {})
+                    .then((_) {
+                      try {
+                        setState(() {});
+                      } catch (_) {}
+                    });
+              }
+            }
+            return AlertDialog(
+              title: Text(translate('attendance.assign_responsibles')),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: parentCtrl.refreshLoading
+                    ? SizedBox(
+                        height: 200,
+                        child: const Center(child: CircularProgressIndicator()),
+                      )
+                    : (parentCtrl.parents.isEmpty
+                          ? Center(child: Text(translate('ui.no_parents')))
+                          : Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Current responsibles (always shown first)
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 8.0),
+                                    child: Text(
+                                      translate(
+                                        'attendance.current_responsibles',
+                                      ),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                ...((child.parents ?? [])
+                                    .whereType<String>()
+                                    .map((pid) {
+                                      final p = parentCtrl.getUserById(pid);
+                                      if (p == null)
+                                        return const SizedBox.shrink();
+                                      final id = p.id ?? '';
+                                      return CheckboxListTile(
+                                        value: selected.contains(id),
+                                        onChanged: (v) => setState(() {
+                                          if (v == true)
+                                            selected.add(id);
+                                          else
+                                            selected.remove(id);
+                                        }),
+                                        title: Text(p.name ?? id),
+                                        subtitle: Text(p.document ?? ''),
+                                      );
+                                    })
+                                    .toList()),
+                                const Divider(),
+                                // Search for other parents
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: TextField(
+                                    decoration: InputDecoration(
+                                      prefixIcon: const Icon(Icons.search),
+                                      hintText: translate(
+                                        'attendance.search_parent',
+                                      ),
+                                      border: const OutlineInputBorder(),
+                                    ),
+                                    onChanged: (q) =>
+                                        setState(() => search = q),
+                                  ),
+                                ),
+                                // Results list (exclude already listed current parents duplicates)
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxHeight:
+                                        MediaQuery.of(ctx).size.height * 0.4,
+                                  ),
+                                  child: Builder(
+                                    builder: (ctx2) {
+                                      final query = search;
+                                      // Use parentCtrl.filtered list by name/document
+                                      final all = parentCtrl.parents
+                                          .where(
+                                            (p) => !(child.parents ?? [])
+                                                .contains(p.id),
+                                          )
+                                          .toList();
+                                      final filtered = all.where((p) {
+                                        final q = query.toLowerCase();
+                                        if (q.isEmpty) return true;
+                                        final name =
+                                            p.name?.toLowerCase() ?? '';
+                                        final doc =
+                                            p.document?.toLowerCase() ?? '';
+                                        return name.contains(q) ||
+                                            doc.contains(q);
+                                      }).toList();
+                                      return ListView.builder(
+                                        shrinkWrap: true,
+                                        itemCount: filtered.length,
+                                        itemBuilder: (_, i) {
+                                          final p = filtered[i];
+                                          final id = p.id ?? '';
+                                          return CheckboxListTile(
+                                            value: selected.contains(id),
+                                            onChanged: (v) => setState(() {
+                                              if (v == true)
+                                                selected.add(id);
+                                              else
+                                                selected.remove(id);
+                                            }),
+                                            title: Text(p.name ?? id),
+                                            subtitle: Text(p.document ?? ''),
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            )),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: Text(translate('buttons.cancel')),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    // Build final selected parents array and send to backend.
+                    final newParents = selected.toList();
+                    var ok = await _childController.assignParentToChild(
+                      child.id!,
+                      newParents,
+                    );
+
+                    if (ok && mounted) {
+                      final refreshed = await _childController.fetchChildById(
+                        child.id!,
+                      );
+                      if (refreshed != null && mounted) {
+                        setState(() {
+                          _fetchedChild = refreshed;
+                        });
+                      }
+                    }
+
+                    Navigator.of(ctx).pop(ok);
+                  },
+                  child: Text(translate('buttons.confirm')),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result == true) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(translate('attendance.assign_success'))),
+      );
+    }
   }
 
   Widget _buildSkeleton() {

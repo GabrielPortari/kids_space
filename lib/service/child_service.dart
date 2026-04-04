@@ -54,4 +54,19 @@ class ChildService {
     if (res.statusCode == 404) return false;
     throw Exception('Failed to delete child: \\${res.statusCode}');
   }
+
+  /// Assign one or more parents to a child using POST /v2/children/:childId/parents
+  /// Payload: { "parentIds": ["parent1", "parent2"] }
+  Future<Map<String, dynamic>> assignParent(
+    String childId,
+    List<String> parentIds,
+  ) async {
+    final res = await _api.post('/v2/children/$childId/parents', {
+      'parentIds': parentIds,
+    });
+    if (res.statusCode == 200 || res.statusCode == 201) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
+    }
+    throw Exception('Failed to assign parent(s): \\${res.statusCode}');
+  }
 }
