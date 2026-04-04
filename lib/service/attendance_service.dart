@@ -28,7 +28,7 @@ class AttendanceService {
 
   Future<List<dynamic>> getActiveCheckinsForCompany({String? companyId}) async {
     final path = companyId != null && companyId.isNotEmpty
-        ? '/v2/attendance/company/active-checkins?companyId=\$companyId'
+        ? '/v2/attendance/company/active-checkins?companyId=$companyId'
         : '/v2/attendance/company/active-checkins';
     final res = await _api.get(path);
     if (res.statusCode == 200) return jsonDecode(res.body) as List<dynamic>;
@@ -37,7 +37,7 @@ class AttendanceService {
 
   Future<List<dynamic>> getLast10ForCompany({String? companyId}) async {
     final path = companyId != null && companyId.isNotEmpty
-        ? '/v2/attendance/company/last10?companyId=\$companyId'
+        ? '/v2/attendance/company/last10?companyId=$companyId'
         : '/v2/attendance/company/last10';
     final res = await _api.get(path);
     if (res.statusCode == 200) return jsonDecode(res.body) as List<dynamic>;
@@ -48,7 +48,7 @@ class AttendanceService {
     String? companyId,
   }) async {
     final path = companyId != null && companyId.isNotEmpty
-        ? '/v2/attendance/company/last-checkin-and-checkout?companyId=\$companyId'
+        ? '/v2/attendance/company/last-checkin-and-checkout?companyId=$companyId'
         : '/v2/attendance/company/last-checkin-and-checkout';
     final res = await _api.get(path);
     if (res.statusCode == 200) {

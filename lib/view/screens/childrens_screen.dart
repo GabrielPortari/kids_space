@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/child_controller.dart';
@@ -60,7 +59,19 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   void _attendanceListener() {
     if (!mounted) return;
     if (widget.onlyActive) {
-      _loadActiveChildrenWithResponsibles();
+      // Recompute active children from existing controller state when
+      // attendance data changes. Avoid calling the full loader here to
+      // prevent a notify->load->notify loop between controllers.
+      final companyId = _companyController.company?.id;
+      final actives = _childController.activeCheckedInChildren(companyId);
+      actives.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
+      final respMap = _childController.getChildrenWithResponsibles(actives);
+
+      setState(() {
+        _allChildren = actives;
+        _filteredChildren = List.from(_allChildren);
+        _childrenResponsibles = respMap;
+      });
     }
   }
 

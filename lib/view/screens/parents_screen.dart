@@ -6,7 +6,6 @@ import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/parent_controller.dart';
 import 'package:kids_space/model/parent.dart';
 import 'package:kids_space/model/address.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';

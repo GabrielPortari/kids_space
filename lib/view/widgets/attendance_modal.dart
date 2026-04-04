@@ -9,6 +9,7 @@ import 'package:kids_space/controller/parent_controller.dart';
 import 'package:kids_space/model/attendance.dart';
 import 'package:kids_space/model/child.dart';
 import 'package:kids_space/util/localization_service.dart';
+import 'package:kids_space/util/string_utils.dart';
 
 Future<void> showAttendanceModal(
   BuildContext context,
@@ -395,13 +396,8 @@ Future<void> showAttendanceModal(
                         bool ok = false;
                         if (confirm == true) {
                           // Build notes string: append identifiers and concat with existing checkin notes on checkout
-                          String? notesPayload;
                           final entered = notes?.trim();
                           if (type == AttendanceType.checkin) {
-                            notesPayload =
-                                (entered != null && entered.isNotEmpty)
-                                ? '$entered (checkin)'
-                                : null;
                           } else {
                             // checkout: try to find existing active checkin note for this child
                             final active = attendanceController.activeCheckins;
@@ -419,58 +415,48 @@ Future<void> showAttendanceModal(
                                 entered != null &&
                                 entered.isNotEmpty) {
                               // if existing already contains identifier, avoid duplicating
-                              final left = existingNotes.contains('(checkin)')
-                                  ? existingNotes
-                                  : '$existingNotes (checkin)';
-                              notesPayload = '$left - $entered (checkout)';
                             } else if (existingNotes != null &&
                                 existingNotes.isNotEmpty) {
-                              notesPayload = existingNotes.contains('(checkin)')
-                                  ? existingNotes
-                                  : '$existingNotes (checkin)';
                             } else if (entered != null && entered.isNotEmpty) {
-                              notesPayload = '$entered (checkout)';
-                            } else {
-                              notesPayload = null;
-                            }
+                            } else {}
                           }
-
-                          final attendance = Attendance(
-                            attendanceType: type == AttendanceType.checkin
-                                ? AttendanceType.checkin
-                                : AttendanceType.checkout,
-                            companyId: collaboratorController
-                                .loggedCollaborator
-                                ?.companyId,
-                            collaboratorWhoCheckedInId:
-                                type == AttendanceType.checkin
-                                ? collaboratorController.loggedCollaborator?.id
-                                : null,
-                            collaboratorWhoCheckedOutId:
-                                type == AttendanceType.checkout
-                                ? collaboratorController.loggedCollaborator?.id
-                                : null,
-                            childId: selectedChildId,
-                            parentIdWhoCheckedInId:
-                                type == AttendanceType.checkin
-                                ? selectedResponsibleId
-                                : null,
-                            parentIdWhoCheckedOutId:
-                                type == AttendanceType.checkout
-                                ? selectedResponsibleId
-                                : null,
-                            notes: notesPayload,
-                          );
 
                           try {
                             if (type == AttendanceType.checkin) {
+                              // Build API-compatible payload for checkin
+                              final payload = <String, dynamic>{
+                                'childId': child.id,
+                                if (selectedResponsibleId != null)
+                                  'responsibleIdWhoCheckedInId':
+                                      selectedResponsibleId,
+                                if (notes != null && notes.isNotEmpty)
+                                  'notes': notes,
+                              };
                               final res = await attendanceController.checkin(
-                                attendance.toJson(),
+                                payload,
                               );
                               ok = (res.id != null);
                             } else {
+                              // Build API-compatible payload for checkout
+                              // Prefer sending responsible document if available
+                              String? responsibleDocument;
+                              if (selectedResponsibleId != null) {
+                                final parent = GetIt.I<ParentController>()
+                                    .getUserById(selectedResponsibleId);
+                                responsibleDocument = parent?.document;
+                              }
+                              final payload = <String, dynamic>{
+                                'childId': child.id,
+                                if (responsibleDocument != null &&
+                                    responsibleDocument.isNotEmpty)
+                                  'responsibleDocument': normalizeDigits(
+                                    responsibleDocument,
+                                  ),
+                                if (notes != null && notes.isNotEmpty)
+                                  'notes': notes,
+                              };
                               final res = await attendanceController.checkout(
-                                attendance.toJson(),
+                                payload,
                               );
                               ok = (res.id != null || res.checkOutTime != null);
                             }
@@ -482,17 +468,35 @@ Future<void> showAttendanceModal(
                         setState(() => loading = false);
                         if (!ctx.mounted) return;
                         Navigator.of(ctx).pop();
+
+                        // Trigger background refreshes so the UI reflects the
+                        // newly created checkin without blocking the flow.
+                        if (companyId != null) {
+                          attendanceController.loadActiveCheckinsForCompany(
+                            companyId,
+                          );
+                          attendanceController.loadLast10AttendancesForCompany(
+                            companyId,
+                          );
+                          attendanceController
+                              .loadLastCheckinAndCheckoutForCompany(companyId);
+                          childController.refreshChildrenForCompany(companyId);
+                        }
+
                         if (!innerCtx.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
                               ok
-                                  ? translate('attendance.operation_success')
+                                  ? (type == AttendanceType.checkin
+                                        ? 'Checkin realizado com sucesso'
+                                        : translate(
+                                            'attendance.operation_success',
+                                          ))
                                   : translate('attendance.operation_error'),
                             ),
                           ),
                         );
-                        childController.refreshChildrenForCompany(companyId!);
                       },
                 child: loading
                     ? const SizedBox(
