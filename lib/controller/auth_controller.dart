@@ -4,7 +4,6 @@ import 'dart:convert';
 
 import 'package:get_it/get_it.dart';
 import '../service/auth_service.dart';
-import '../service/collaborator_service.dart';
 import 'collaborator_controller.dart';
 import '../model/collaborator.dart';
 import 'company_controller.dart';
@@ -80,6 +79,51 @@ class AuthController extends ChangeNotifier {
       else
         saveRole(UserRole.unknown);
     }
+  }
+
+  String? _asString(dynamic value) {
+    if (value == null) return null;
+    if (value is String) {
+      final v = value.trim();
+      return v.isEmpty ? null : v;
+    }
+    return value.toString();
+  }
+
+  String? _extractCompanyId(Map<String, dynamic> payload) {
+    final direct = _asString(payload['companyId'] ?? payload['company_id']);
+    if (direct != null) return direct;
+
+    final company = payload['company'];
+    if (company is Map) {
+      final map = Map<String, dynamic>.from(company);
+      return _asString(map['id'] ?? map['companyId'] ?? map['company_id']);
+    }
+    return null;
+  }
+
+  Collaborator? _buildCollaboratorFromTokenClaims() {
+    if (_idToken == null) return null;
+    final payload = _parseJwtPayload(_idToken!);
+    if (payload == null) return null;
+
+    final id = _asString(payload['uid'] ?? payload['userId'] ?? payload['sub']);
+    final companyId = _extractCompanyId(payload);
+    final name = _asString(payload['name'] ?? payload['displayName']);
+    final email = _asString(payload['email']);
+    final role = _asString(payload['role'] ?? payload['userType']);
+
+    if (id == null && companyId == null && name == null && email == null) {
+      return null;
+    }
+
+    return Collaborator(
+      id: id,
+      companyId: companyId,
+      name: name,
+      email: email,
+      userType: userTypeFromString(role),
+    );
   }
 
   Future<void> saveRole(UserRole role) async {
@@ -226,20 +270,12 @@ class AuthController extends ChangeNotifier {
     await loadFromStorage();
     if (_idToken == null) return;
     try {
-      // attempt to populate user info from v2 endpoints and derive role from returned userType
+      // Prefer token claims bootstrap to avoid hard dependency on /v2/collaborators/me.
       final collabController = GetIt.I.get<CollaboratorController>();
       if (_role == UserRole.collaborator) {
-        final srv = CollaboratorService();
-        final data = await srv.getMe();
-        if (data != null) {
-          final c = Collaborator.fromJson(data);
-          await collabController.setLoggedCollaborator(c);
-          if (c.userType != null) {
-            if (c.userType == UserType.company)
-              await saveRole(UserRole.company);
-            else if (c.userType == UserType.collaborator)
-              await saveRole(UserRole.collaborator);
-          }
+        final tokenCollab = _buildCollaboratorFromTokenClaims();
+        if (tokenCollab != null) {
+          await collabController.setLoggedCollaborator(tokenCollab);
         }
       } else if (_role == UserRole.company) {
         final co = GetIt.I.get<CompanyController>();
@@ -248,11 +284,9 @@ class AuthController extends ChangeNotifier {
         // unknown: try to infer from token claims or API
         if (_idToken != null) _applyClaimsFromToken(_idToken);
         if (_role == UserRole.collaborator) {
-          final srv = CollaboratorService();
-          final data = await srv.getMe();
-          if (data != null) {
-            final c = Collaborator.fromJson(data);
-            await collabController.setLoggedCollaborator(c);
+          final tokenCollab = _buildCollaboratorFromTokenClaims();
+          if (tokenCollab != null) {
+            await collabController.setLoggedCollaborator(tokenCollab);
           }
         } else if (_role == UserRole.company) {
           final co = GetIt.I.get<CompanyController>();

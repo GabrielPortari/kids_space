@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:get_it/get_it.dart';
 import 'package:kids_space/controller/attendance_controller.dart';
+import 'package:kids_space/controller/auth_controller.dart';
 import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/company_controller.dart';
@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late final ScrollController _scrollController;
   late final ScrollController _logListController;
   final _companyController = GetIt.I.get<CompanyController>();
+  final _authController = GetIt.I.get<AuthController>();
   final _collaboratorController = GetIt.I.get<CollaboratorController>();
   final _attendanceController = GetIt.I.get<AttendanceController>();
   final _childController = GetIt.I.get<ChildController>();
@@ -38,8 +39,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _scrollController = ScrollController();
     _logListController = ScrollController();
     _onRefresh();
-    // Listen to AttendanceController (ChangeNotifier) to refresh UI
-    _attendanceController.addListener(_attendanceListener);
   }
 
   @override
@@ -50,6 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  // Defensive callback to avoid stale hot-reload listener crashes.
   void _attendanceListener() {
     if (!mounted) return;
     setState(() {});
@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_companyController.company == null) {
       if (_collaboratorController.loggedCollaborator == null) {
         try {
-          await _collaboratorController.getMe();
+          await _authController.checkLoggedUser();
         } catch (_) {}
       }
 
@@ -111,8 +111,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final mq = MediaQuery.of(context);
     final screenHeight = mq.size.height - mq.padding.top - kToolbarHeight;
     final listHeight = (screenHeight * 0.36).clamp(180.0, 520.0).toDouble();
-    return Observer(
-      builder: (_) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        _companyController,
+        _childController,
+        _attendanceController,
+        _collaboratorController,
+      ]),
+      builder: (context, child) {
         final globalLoading =
             _companyController.isLoading ||
             _childController.refreshLoading ||

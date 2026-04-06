@@ -31,6 +31,8 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
 
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
+  bool _pendingAttendanceSync = false;
+  bool _isLoadingActive = false;
   List<Child> _allChildren = [];
   List<Child> _filteredChildren = [];
   Map<String, List<Parent>> _childrenResponsibles = {};
@@ -40,10 +42,16 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
     super.initState();
     _searchController.addListener(_onSearchChanged);
     if (widget.onlyActive) {
-      _loadActiveChildrenWithResponsibles();
       _attendanceController.addListener(_attendanceListener);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _loadActiveChildrenWithResponsibles();
+      });
     } else {
-      _onRefresh();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _onRefresh();
+      });
     }
   }
 
@@ -57,11 +65,14 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   }
 
   void _attendanceListener() {
-    if (!mounted) return;
-    if (widget.onlyActive) {
+    if (!mounted || !widget.onlyActive || _pendingAttendanceSync) return;
+    _pendingAttendanceSync = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _pendingAttendanceSync = false;
+      if (!mounted || !widget.onlyActive) return;
+
       // Recompute active children from existing controller state when
-      // attendance data changes. Avoid calling the full loader here to
-      // prevent a notify->load->notify loop between controllers.
+      // attendance data changes. Deferring avoids setState during build.
       final companyId = _companyController.company?.id;
       final actives = _childController.activeCheckedInChildren(companyId);
       actives.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
@@ -72,7 +83,7 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
         _filteredChildren = List.from(_allChildren);
         _childrenResponsibles = respMap;
       });
-    }
+    });
   }
 
   void _onSearchChanged() {
@@ -104,13 +115,21 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   }
 
   Future<void> _loadActiveChildrenWithResponsibles() async {
+    if (mounted) {
+      setState(() {
+        _isLoadingActive = true;
+      });
+    }
     final companyId = _companyController.company?.id;
     if (companyId == null) {
-      setState(() {
-        _allChildren = [];
-        _filteredChildren = [];
-        _childrenResponsibles = {};
-      });
+      if (mounted) {
+        setState(() {
+          _allChildren = [];
+          _filteredChildren = [];
+          _childrenResponsibles = {};
+          _isLoadingActive = false;
+        });
+      }
       return;
     }
     // ensure children cache is fresh
@@ -124,11 +143,14 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
     actives.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
     final respMap = _childController.getChildrenWithResponsibles(actives);
 
-    setState(() {
-      _allChildren = actives;
-      _filteredChildren = List.from(_allChildren);
-      _childrenResponsibles = respMap;
-    });
+    if (mounted) {
+      setState(() {
+        _allChildren = actives;
+        _filteredChildren = List.from(_allChildren);
+        _childrenResponsibles = respMap;
+        _isLoadingActive = false;
+      });
+    }
   }
 
   @override
@@ -197,10 +219,9 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
       return Expanded(
         child: RefreshIndicator(
           onRefresh: () async => await _loadActiveChildrenWithResponsibles(),
-          child: AnimatedBuilder(
-            animation: _childController,
-            builder: (_, __) {
-              if (_childController.refreshLoading) {
+          child: Builder(
+            builder: (_) {
+              if (_isLoadingActive) {
                 return const SkeletonList(itemCount: 6);
               }
 
