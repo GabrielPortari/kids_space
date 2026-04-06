@@ -116,7 +116,7 @@ class CollaboratorController extends ChangeNotifier {
       final companyId = c.companyId;
       if (companyId != null && companyId.isNotEmpty) {
         final companyController = GetIt.I.get<CompanyController>();
-        await companyController.loadCompanyById(companyId);
+        await companyController.loadCompanyNameById(companyId);
       }
     } catch (_) {}
   }

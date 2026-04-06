@@ -67,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final collId = _collaboratorController.loggedCollaborator?.companyId;
       if (collId != null && collId.isNotEmpty) {
         try {
-          await _companyController.loadCompanyById(collId);
+          await _companyController.loadCompanyNameById(collId);
         } catch (_) {}
       }
       // Note: do NOT call loadMyCompany() here — company 'me' is used by admin panel only.

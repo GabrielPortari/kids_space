@@ -100,8 +100,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _isLoading = true;
       });
-      _companyController
-          .loadCompanyById(widget.selectedCompany!.id!)
+      final loadCompanyFuture = _authController.role == UserRole.collaborator
+          ? _companyController.loadCompanyNameById(widget.selectedCompany!.id!)
+          : _companyController.loadCompanyById(widget.selectedCompany!.id!);
+      loadCompanyFuture
           .then((_) {
             final fetched = _companyController.getCompanyById(
               widget.selectedCompany!.id!,
@@ -194,9 +196,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           });
       return;
     }
-    final parentCtrl = GetIt.I.get<ParentController>();
-    final companyId = _effectiveCompany?.id ?? _companyController.company?.id;
-    // Do NOT await here: open the dialog immediately and load parents inside it.
   }
 
   @override

@@ -21,6 +21,16 @@ class CompanyService {
     throw Exception('Failed to get company by id: \\${res.statusCode}');
   }
 
+  Future<String?> getNameById(String companyId) async {
+    final res = await _api.get('/v2/companies/$companyId/name');
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body) as Map<String, dynamic>;
+      return body['name'] as String?;
+    }
+    if (res.statusCode == 404) return null;
+    throw Exception('Failed to get company name by id: \\${res.statusCode}');
+  }
+
   Future<Map<String, dynamic>> updateMyCompany(
     Map<String, dynamic> payload,
   ) async {
