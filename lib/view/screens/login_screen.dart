@@ -96,9 +96,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildLogo() {
     return SizedBox(
-      height: 100,
+      height: 120,
       child: Image.asset(
-        'assets/images/company_logo_placeholder.png',
+        'assets/images/kids_space_logo.png',
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) =>
             const Icon(Icons.business, size: 80, color: Colors.deepPurple),

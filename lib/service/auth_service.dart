@@ -34,7 +34,7 @@ class AuthService {
   }
 
   Future<void> logout() async {
-    final res = await _api.post('/auth/logout', null);
+    final res = await _api.post('/auth/logout', {});
     if (res.statusCode == 204) return;
     throw Exception('Logout failed: \\${res.statusCode}');
   }

@@ -142,11 +142,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   void _checkSessionOnResume() async {
+    await _authController.loadFromStorage();
+    if (_authController.idToken == null) {
+      return;
+    }
     final valid = await _authController.ensureSessionValid();
     if (!valid) {
-      try {
-        await _authController.logout();
-      } catch (_) {}
       final ctx = navigatorKey.currentContext;
       if (ctx != null) {
         showDialog<void>(

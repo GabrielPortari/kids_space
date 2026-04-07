@@ -20,12 +20,18 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _startSplashFlow() async {
-    // Verifica sessão ao iniciar: se inválida, desloga e direciona para seleção de company
+    await _authController.loadFromStorage();
+    final hasSession = _authController.idToken != null;
+    if (!hasSession) {
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
+
+    // If there is a persisted session, validate it and only then show
+    // the expiration message when it is actually invalid/expired.
     final valid = await _authController.ensureSessionValid();
     if (!valid) {
-      try {
-        await _authController.logout();
-      } catch (_) {}
       if (!mounted) return;
       await showDialog<void>(
         context: context,
@@ -58,9 +64,15 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.child_care, size: 80),
-            const SizedBox(height: 24),
-            Text('Kids Space'),
+            SizedBox(
+              height: 140,
+              child: Image.asset(
+                'assets/images/kids_space_logo.png',
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.child_care, size: 80),
+              ),
+            ),
             const SizedBox(height: 16),
             const CircularProgressIndicator(),
           ],
