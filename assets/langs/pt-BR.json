@@ -135,7 +135,7 @@
     "welcome": "Bem-vindo",
     "email_label": "E-mail",
     "email_hint": "Digite seu e-mail",
-    "no_account": "Ainda não tem uma conta? Cadastre-se",
+    "no_account": "Cadastre-se",
     "forgot_password": "Esqueceu a senha?",
     "enter_email": "Digite seu e-mail",
     "forgot_sent": "Link de recuperação enviado (simulado)",

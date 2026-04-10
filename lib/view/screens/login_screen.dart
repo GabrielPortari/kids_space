@@ -31,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (role == UserRole.company) {
         Navigator.pushNamedAndRemoveUntil(
           context,
-          '/admin_panel',
+          '/company_screen',
           (route) => false,
         );
       } else if (role == UserRole.collaborator) {
@@ -81,6 +81,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         _passwordField(),
                         const SizedBox(height: 24),
                         _loginButton(),
+                        const SizedBox(height: 8),
+                        _registerButton(),
+                        const SizedBox(height: 16),
                         _extraActions(),
                       ],
                     ),
@@ -96,12 +99,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildLogo() {
     return SizedBox(
-      height: 120,
+      height: 180,
       child: Image.asset(
         'assets/images/kids_space_logo.png',
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) =>
-            const Icon(Icons.business, size: 80, color: Colors.deepPurple),
+            const Icon(Icons.business, size: 18, color: Colors.deepPurple),
       ),
     );
   }
@@ -133,6 +136,21 @@ class _LoginScreenState extends State<LoginScreen> {
       text: translate('login.login_button'),
       style: ElevatedButton.styleFrom(minimumSize: const Size(200, 40)),
       onPressed: _loading ? null : _login,
+    );
+  }
+
+  Widget _registerButton() {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return AppButton(
+      text: translate('login.no_account'),
+      style: ElevatedButton.styleFrom(
+        minimumSize: const Size(200, 40),
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.primary,
+        side: BorderSide(color: colorScheme.primary),
+      ),
+      onPressed: () => Navigator.pushNamed(context, '/register'),
     );
   }
 

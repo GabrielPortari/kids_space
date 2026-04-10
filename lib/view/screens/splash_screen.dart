@@ -86,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
     final role = _authController.role;
     if (role == UserRole.company) {
-      Navigator.pushReplacementNamed(context, '/admin_panel');
+      Navigator.pushReplacementNamed(context, '/company_screen');
       return;
     }
     if (role == UserRole.collaborator) {

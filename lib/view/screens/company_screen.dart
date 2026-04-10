@@ -6,28 +6,28 @@ import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/model/company.dart';
 import 'package:kids_space/util/localization_service.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
-import '../../util/admin_tile_helpers.dart';
-import '../../model/admin_tile_model.dart';
-import '../widgets/admin_tile.dart';
+import '../../util/company_tile_helpers.dart';
+import '../../model/company_tile_model.dart';
+import '../widgets/company_tile.dart';
 
 final AuthController _authController = GetIt.I<AuthController>();
 
-class AdminPanelScreen extends StatefulWidget {
-  const AdminPanelScreen({Key? key}) : super(key: key);
+class CompanyScreen extends StatefulWidget {
+  const CompanyScreen({Key? key}) : super(key: key);
 
   @override
-  State<AdminPanelScreen> createState() => _AdminPanelScreenState();
+  State<CompanyScreen> createState() => _CompanyScreenState();
 }
 
-class _AdminPanelScreenState extends State<AdminPanelScreen> {
+class _CompanyScreenState extends State<CompanyScreen> {
   final TextEditingController _searchController = TextEditingController();
 
-  final List<AdminTileModel> _adminItems = const [
-    AdminTileModel(type: AdminTileType.company, icon: Icons.business),
-    AdminTileModel(type: AdminTileType.responsible, icon: Icons.person),
-    AdminTileModel(type: AdminTileType.child, icon: Icons.child_care),
-    AdminTileModel(type: AdminTileType.collaborator, icon: Icons.group),
-    AdminTileModel(type: AdminTileType.reports, icon: Icons.bar_chart),
+  final List<CompanyTileModel> _companyItems = const [
+    CompanyTileModel(type: CompanyTileType.company, icon: Icons.business),
+    CompanyTileModel(type: CompanyTileType.responsible, icon: Icons.person),
+    CompanyTileModel(type: CompanyTileType.child, icon: Icons.child_care),
+    CompanyTileModel(type: CompanyTileType.collaborator, icon: Icons.group),
+    CompanyTileModel(type: CompanyTileType.reports, icon: Icons.bar_chart),
   ];
   final CompanyController _companyController = GetIt.I.get<CompanyController>();
   final CollaboratorController _collaboratorController = GetIt.I
@@ -94,14 +94,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               child: Padding(
                 padding: EdgeInsets.all(16),
                 child: ListView.separated(
-                  itemCount: _adminItems.length,
+                  itemCount: _companyItems.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
-                    final model = _adminItems[index];
-                    return AdminTile(
+                    final model = _companyItems[index];
+                    return CompanyTile(
                       model: model,
                       onTap: () async {
-                        if (model.type == AdminTileType.company) {
+                        if (model.type == CompanyTileType.company) {
                           // ensure company is loaded before navigating
                           final loggedColl =
                               _collaboratorController.loggedCollaborator;
@@ -119,22 +119,22 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                                   ProfileScreen(selectedCompany: comp),
                             ),
                           );
-                        } else if (model.type == AdminTileType.responsible) {
+                        } else if (model.type == CompanyTileType.responsible) {
                           Navigator.pushNamed(
                             context,
                             getNavigationRoute(model.type),
                           );
-                        } else if (model.type == AdminTileType.child) {
+                        } else if (model.type == CompanyTileType.child) {
                           Navigator.pushNamed(
                             context,
                             getNavigationRoute(model.type),
                           );
-                        } else if (model.type == AdminTileType.collaborator) {
+                        } else if (model.type == CompanyTileType.collaborator) {
                           Navigator.pushNamed(
                             context,
                             getNavigationRoute(model.type),
                           );
-                        } else if (model.type == AdminTileType.reports) {
+                        } else if (model.type == CompanyTileType.reports) {
                           Navigator.pushNamed(
                             context,
                             getNavigationRoute(model.type),
