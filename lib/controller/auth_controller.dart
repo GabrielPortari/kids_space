@@ -9,7 +9,7 @@ import '../model/collaborator.dart';
 import 'company_controller.dart';
 import '../model/user_type.dart';
 
-enum UserRole { company, collaborator, unknown }
+enum UserRole { company, collaborator, admin, master, unknown }
 
 class AuthController extends ChangeNotifier {
   final AuthService _service = AuthService();
@@ -19,17 +19,30 @@ class AuthController extends ChangeNotifier {
 
   String? get idToken => _idToken;
 
+  UserRole _parseUserRole(String? role) {
+    final normalized = role?.trim().toLowerCase();
+    if (normalized == 'company') return UserRole.company;
+    if (normalized == 'collaborator') return UserRole.collaborator;
+    if (normalized == 'admin') return UserRole.admin;
+    if (normalized == 'master') return UserRole.master;
+    return UserRole.unknown;
+  }
+
+  String _roleToStorage(UserRole role) {
+    if (role == UserRole.company) return 'company';
+    if (role == UserRole.collaborator) return 'collaborator';
+    if (role == UserRole.admin) return 'admin';
+    if (role == UserRole.master) return 'master';
+    return 'unknown';
+  }
+
   Future<void> loadFromStorage() async {
     final prefs = await SharedPreferences.getInstance();
     _idToken = prefs.getString('idToken');
     _refreshToken = prefs.getString('refreshToken');
     final r = prefs.getString('userRole');
     if (r != null) {
-      _role = r.toLowerCase() == 'company'
-          ? UserRole.company
-          : (r.toLowerCase() == 'collaborator'
-                ? UserRole.collaborator
-                : UserRole.unknown);
+      _role = _parseUserRole(r);
     }
     notifyListeners();
   }
@@ -64,20 +77,9 @@ class AuthController extends ChangeNotifier {
     final claims = payload['roles'] ?? payload['role'] ?? payload['userType'];
     if (claims is List && claims.isNotEmpty) {
       final first = claims.first.toString().toLowerCase();
-      if (first == 'company')
-        saveRole(UserRole.company);
-      else if (first == 'collaborator')
-        saveRole(UserRole.collaborator);
-      else
-        saveRole(UserRole.unknown);
+      saveRole(_parseUserRole(first));
     } else if (claims is String) {
-      final c = claims.toLowerCase();
-      if (c == 'company')
-        saveRole(UserRole.company);
-      else if (c == 'collaborator')
-        saveRole(UserRole.collaborator);
-      else
-        saveRole(UserRole.unknown);
+      saveRole(_parseUserRole(claims));
     }
   }
 
@@ -131,12 +133,7 @@ class AuthController extends ChangeNotifier {
     _role = role;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      'userRole',
-      role == UserRole.company
-          ? 'company'
-          : (role == UserRole.collaborator ? 'collaborator' : 'unknown'),
-    );
+    await prefs.setString('userRole', _roleToStorage(role));
   }
 
   Future<void> clearTokens() async {
@@ -161,11 +158,7 @@ class AuthController extends ChangeNotifier {
       // Diagnostic logs to help identify unknown role issues
       // ignore: avoid_print
       print('AuthController.login: res.user=${res['user']} roleStr=$roleStr');
-      final parsedRole = (roleStr != null && roleStr.toLowerCase() == 'company')
-          ? UserRole.company
-          : (roleStr != null && roleStr.toLowerCase() == 'collaborator'
-                ? UserRole.collaborator
-                : UserRole.unknown);
+      final parsedRole = _parseUserRole(roleStr);
       if (token != null && refresh != null) {
         await saveTokens(token, refresh);
         // apply claims from token (if present) and fallback to response role

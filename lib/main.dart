@@ -11,6 +11,7 @@ import 'package:kids_space/util/getit_factory.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/screens/company_screen.dart';
+import 'package:kids_space/view/screens/admin_screen.dart';
 import 'package:kids_space/view/screens/childrens_screen.dart';
 import 'package:kids_space/view/screens/parents_screen.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
@@ -203,6 +204,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         '/profile': (context) => const ProfileScreen(),
         '/reports': (context) => const ReportsScreen(),
         '/company_screen': (context) => const CompanyScreen(),
+        '/admin_screen': (context) => const AdminScreen(),
       },
     );
   }

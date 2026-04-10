@@ -34,6 +34,12 @@ class _LoginScreenState extends State<LoginScreen> {
           '/company_screen',
           (route) => false,
         );
+      } else if (role == UserRole.admin || role == UserRole.master) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/admin_screen',
+          (route) => false,
+        );
       } else if (role == UserRole.collaborator) {
         Navigator.pushNamedAndRemoveUntil(
           context,
