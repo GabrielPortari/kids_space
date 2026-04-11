@@ -4,6 +4,16 @@ import 'api_client.dart';
 class ParentService {
   final ApiClient _api = ApiClient();
 
+  String? _extractNameFromBody(String body) {
+    final decoded = jsonDecode(body);
+    if (decoded is String) return decoded;
+    if (decoded is Map<String, dynamic>) {
+      final value = decoded['name'];
+      if (value is String) return value;
+    }
+    return null;
+  }
+
   Future<Map<String, dynamic>> create(Map<String, dynamic> payload) async {
     final res = await _api.post('/v2/parents', payload);
     if (res.statusCode == 201) {
@@ -25,6 +35,15 @@ class ParentService {
     }
     if (res.statusCode == 404) return null;
     throw Exception('Failed to get parent: ${res.statusCode}');
+  }
+
+  Future<String?> getNameById(String parentId) async {
+    final res = await _api.get('/v2/parents/$parentId/name');
+    if (res.statusCode == 200) {
+      return _extractNameFromBody(res.body);
+    }
+    if (res.statusCode == 404) return null;
+    throw Exception('Failed to get parent name: ${res.statusCode}');
   }
 
   Future<Map<String, dynamic>> update(

@@ -21,7 +21,21 @@ class AttendanceService {
   }
 
   Future<List<dynamic>> list({Map<String, String>? query}) async {
-    final res = await _api.get('/v2/attendance');
+    String path = '/v2/attendance';
+    if (query != null && query.isNotEmpty) {
+      final queryString = query.entries
+          .where((e) => e.value.trim().isNotEmpty)
+          .map(
+            (e) =>
+                '${Uri.encodeQueryComponent(e.key)}=${Uri.encodeQueryComponent(e.value)}',
+          )
+          .join('&');
+      if (queryString.isNotEmpty) {
+        path = '$path?$queryString';
+      }
+    }
+
+    final res = await _api.get(path);
     if (res.statusCode == 200) return jsonDecode(res.body) as List<dynamic>;
     throw Exception('Failed to list attendance: ${res.statusCode}');
   }

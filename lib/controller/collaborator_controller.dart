@@ -87,6 +87,24 @@ class CollaboratorController extends ChangeNotifier {
     return c;
   }
 
+  Future<String?> getCollaboratorNameById(String id) async {
+    final logged = _loggedCollaborator;
+    if (logged?.id == id &&
+        logged?.name != null &&
+        logged!.name!.trim().isNotEmpty) {
+      return logged.name;
+    }
+
+    try {
+      final cached = _collaborators.firstWhere((c) => c.id == id);
+      if (cached.name != null && cached.name!.trim().isNotEmpty) {
+        return cached.name;
+      }
+    } catch (_) {}
+
+    return await _service.getNameById(id);
+  }
+
   /// Fetch the currently authenticated collaborator from the API (`/collaborators/me`).
   Future<Collaborator?> getMe() async {
     try {

@@ -70,6 +70,14 @@ class ParentController extends ChangeNotifier {
     return p;
   }
 
+  Future<String?> getParentNameById(String id) async {
+    final cached = getUserById(id);
+    if (cached?.name != null && cached!.name!.trim().isNotEmpty) {
+      return cached.name;
+    }
+    return await _service.getNameById(id);
+  }
+
   Future<bool> createUser(Parent p) async {
     final payload = p.toJson();
     final res = await _service.create(payload);

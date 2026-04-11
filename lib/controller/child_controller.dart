@@ -110,6 +110,14 @@ class ChildController extends ChangeNotifier {
   /// Async lookup that fetches from server if not present in cache.
   Future<Child?> getChildByIdAsync(String id) async => await fetchChildById(id);
 
+  Future<String?> getChildNameById(String id) async {
+    final cached = getChildById(id);
+    if (cached?.name != null && cached!.name!.trim().isNotEmpty) {
+      return cached.name;
+    }
+    return await _service.getNameById(id);
+  }
+
   Future<Child> createChild(Map<String, dynamic> payload) async {
     final data = await _service.create(payload);
     final child = Child.fromJson(data);

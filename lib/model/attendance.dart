@@ -62,9 +62,12 @@ class Attendance extends BaseModel {
           json['collaboratorWhoCheckedOutId'] as String? ??
           json['collaboratorCheckedOutId'] as String?,
       parentIdWhoCheckedInId:
+          json['responsibleIdWhoCheckedInId'] as String? ??
           json['parentIdWhoCheckedInId'] as String? ??
           json['parentId'] as String?,
-      parentIdWhoCheckedOutId: json['parentIdWhoCheckedOutId'] as String?,
+      parentIdWhoCheckedOutId:
+          json['responsibleIdWhoCheckedOutId'] as String? ??
+          json['parentIdWhoCheckedOutId'] as String?,
       childId: json['childId'] as String?,
       checkInTime: inTime,
       checkOutTime: outTime,
@@ -89,8 +92,10 @@ class Attendance extends BaseModel {
     'collaboratorCheckedInId': collaboratorWhoCheckedInId,
     'collaboratorWhoCheckedOutId': collaboratorWhoCheckedOutId,
     'collaboratorCheckedOutId': collaboratorWhoCheckedOutId,
+    'responsibleIdWhoCheckedInId': parentIdWhoCheckedInId,
     'parentIdWhoCheckedInId': parentIdWhoCheckedInId,
     'parentId': parentIdWhoCheckedInId,
+    'responsibleIdWhoCheckedOutId': parentIdWhoCheckedOutId,
     'parentIdWhoCheckedOutId': parentIdWhoCheckedOutId,
     'childId': childId,
     'checkInTime': checkInTime?.toIso8601String(),

@@ -10,6 +10,8 @@ class AttendanceController extends ChangeNotifier {
   List<Attendance> activeCheckins = [];
   // Last 10 events (logs)
   List<Attendance> logEvents = [];
+  // Full list for company history screen
+  List<Attendance> companyEvents = [];
 
   Attendance? lastCheckIn;
   Attendance? lastCheckOut;
@@ -17,6 +19,7 @@ class AttendanceController extends ChangeNotifier {
   bool isLoadingActiveCheckins = false;
   bool isLoadingLogs = false;
   bool isLoadingLastCheck = false;
+  bool isLoadingCompanyEvents = false;
 
   List<Attendance> get events => _events;
 
@@ -26,6 +29,20 @@ class AttendanceController extends ChangeNotifier {
         .map((e) => Attendance.fromJson(Map<String, dynamic>.from(e)))
         .toList();
     notifyListeners();
+  }
+
+  Future<void> loadAllAttendancesForCompany(String companyId) async {
+    isLoadingCompanyEvents = true;
+    notifyListeners();
+    try {
+      final data = await _service.list(query: {'companyId': companyId});
+      companyEvents = data
+          .map((e) => Attendance.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+    } finally {
+      isLoadingCompanyEvents = false;
+      notifyListeners();
+    }
   }
 
   Future<Attendance> checkin(Map<String, dynamic> payload) async {

@@ -8,6 +8,7 @@ import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/model/attendance.dart';
 import 'package:kids_space/util/date_hour_util.dart';
 import 'package:kids_space/util/localization_service.dart';
+import 'package:kids_space/view/screens/company_attendances_screen.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/view/screens/childrens_screen.dart';
 import 'package:kids_space/view/widgets/attendance_modal.dart';
@@ -106,6 +107,25 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
+  void _openAllCompanyAttendances() {
+    final companyId = _companyController.company?.id;
+    if (companyId == null || companyId.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Company nao carregada.')));
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CompanyAttendancesScreen(
+          companyId: companyId,
+          companyName: _companyController.company?.name,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
@@ -192,72 +212,142 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (globalLoading) {
       return AppCard(
-        child: SizedBox(
-          height: listHeight,
-          child: const SkeletonList(itemCount: 6),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 8, 0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextHeaderSmall(
+                      translate('home.30_last_presence_log'),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: null,
+                    child: Text(translate('home.see_more')),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: listHeight,
+              child: const SkeletonList(itemCount: 6),
+            ),
+          ],
         ),
       );
     }
 
     if (events.isEmpty) {
       return AppCard(
-        child: SizedBox(
-          height: listHeight,
-          child: Center(
-            child: TextBodyMedium(translate('home.no_presence_records')),
-          ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 8, 0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextHeaderSmall(
+                      translate('home.30_last_presence_log'),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: _openAllCompanyAttendances,
+                    child: Text(translate('home.see_more')),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: listHeight,
+              child: Center(
+                child: TextBodyMedium(translate('home.no_presence_records')),
+              ),
+            ),
+          ],
         ),
       );
     }
 
     return AppCard(
-      child: SizedBox(
-        height: listHeight,
-        child: Scrollbar(
-          thumbVisibility: true,
-          controller: _logListController,
-          child: ListView.separated(
-            controller: _logListController,
-            itemCount: events.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (context, idx) {
-              final event = events[idx];
-              final isCheckin = event.attendanceType == AttendanceType.checkin;
-              final child = _childController.getChildById(event.childId);
-              final childName = child?.name ?? '';
-
-              return ListTile(
-                contentPadding: const EdgeInsets.fromLTRB(4.0, 0.0, 8.0, 0.0),
-                leading: CircleAvatar(
-                  radius: 20,
-                  backgroundColor: isCheckin ? successBg : dangerBg,
-                  child: Icon(
-                    isCheckin ? Icons.login : Icons.logout,
-                    color: isCheckin ? success : danger,
-                    size: 18,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 8, 0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextHeaderSmall(
+                    translate('home.30_last_presence_log'),
                   ),
                 ),
-                title: TextBodyMedium(
-                  childName,
-                  overflow: TextOverflow.ellipsis,
+                TextButton(
+                  onPressed: _openAllCompanyAttendances,
+                  child: Text(translate('home.see_more')),
                 ),
-                subtitle: TextBodySmall(
-                  formatDate_ddMM_HHmm(event.checkInTime ?? event.checkOutTime),
-                ),
-                trailing: Chip(
-                  label: TextBodySmall(
-                    isCheckin
-                        ? translate('home.check_in')
-                        : translate('home.check_out'),
-                    style: TextStyle(color: isCheckin ? successBg : dangerBg),
-                  ),
-                  backgroundColor: isCheckin ? success : danger,
-                ),
-                onTap: null,
-              );
-            },
+              ],
+            ),
           ),
-        ),
+          SizedBox(
+            height: listHeight,
+            child: Scrollbar(
+              thumbVisibility: true,
+              controller: _logListController,
+              child: ListView.separated(
+                controller: _logListController,
+                itemCount: events.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (context, idx) {
+                  final event = events[idx];
+                  final isCheckin =
+                      event.attendanceType == AttendanceType.checkin;
+                  final child = _childController.getChildById(event.childId);
+                  final childName = child?.name ?? '';
+
+                  return ListTile(
+                    contentPadding: const EdgeInsets.fromLTRB(
+                      4.0,
+                      0.0,
+                      8.0,
+                      0.0,
+                    ),
+                    leading: CircleAvatar(
+                      radius: 20,
+                      backgroundColor: isCheckin ? successBg : dangerBg,
+                      child: Icon(
+                        isCheckin ? Icons.login : Icons.logout,
+                        color: isCheckin ? success : danger,
+                        size: 18,
+                      ),
+                    ),
+                    title: TextBodyMedium(
+                      childName,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: TextBodySmall(
+                      formatDate_ddMM_HHmm(
+                        event.checkInTime ?? event.checkOutTime,
+                      ),
+                    ),
+                    trailing: Chip(
+                      label: TextBodySmall(
+                        isCheckin
+                            ? translate('home.check_in')
+                            : translate('home.check_out'),
+                        style: TextStyle(
+                          color: isCheckin ? successBg : dangerBg,
+                        ),
+                      ),
+                      backgroundColor: isCheckin ? success : danger,
+                    ),
+                    onTap: null,
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

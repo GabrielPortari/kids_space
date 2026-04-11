@@ -4,6 +4,16 @@ import 'api_client.dart';
 class CollaboratorService {
   final ApiClient _api = ApiClient();
 
+  String? _extractNameFromBody(String body) {
+    final decoded = jsonDecode(body);
+    if (decoded is String) return decoded;
+    if (decoded is Map<String, dynamic>) {
+      final value = decoded['name'];
+      if (value is String) return value;
+    }
+    return null;
+  }
+
   Future<Map<String, dynamic>> create(Map<String, dynamic> payload) async {
     final res = await _api.post('/v2/collaborators', payload);
     if (res.statusCode == 201) {
@@ -19,6 +29,15 @@ class CollaboratorService {
     }
     if (res.statusCode == 404) return null;
     throw Exception('Failed to get collaborator: ${res.statusCode}');
+  }
+
+  Future<String?> getNameById(String collaboratorId) async {
+    final res = await _api.get('/v2/collaborators/$collaboratorId/name');
+    if (res.statusCode == 200) {
+      return _extractNameFromBody(res.body);
+    }
+    if (res.statusCode == 404) return null;
+    throw Exception('Failed to get collaborator name: ${res.statusCode}');
   }
 
   Future<Map<String, dynamic>?> getMe() async {
