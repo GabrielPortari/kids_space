@@ -5,8 +5,15 @@ import 'package:kids_space/util/localization_service.dart';
 
 final AuthController _authController = GetIt.I<AuthController>();
 
-class AdminScreen extends StatelessWidget {
+class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
+
+  @override
+  State<AdminScreen> createState() => _AdminScreenState();
+}
+
+class _AdminScreenState extends State<AdminScreen> {
+  bool get _isMaster => _authController.role == UserRole.master;
 
   Future<void> _confirmLogout(BuildContext context) async {
     await showDialog<void>(
@@ -51,35 +58,52 @@ class AdminScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: const Padding(
-            padding: EdgeInsets.all(24),
-            child: Card(
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.admin_panel_settings, size: 48),
-                    SizedBox(height: 12),
-                    Text(
-                      'Painel de administracao do sistema',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Esta tela sera usada para funcionalidades de administradores globais (roles admin e master).',
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 760),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Selecione uma operacao administrativa',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
-              ),
+                const SizedBox(height: 16),
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.admin_panel_settings),
+                    title: const Text('Gerenciar admins do sistema'),
+                    subtitle: const Text(
+                      'Listar, criar, editar e excluir admins.',
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () =>
+                        Navigator.of(context).pushNamed('/admin_users_screen'),
+                  ),
+                ),
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.apartment),
+                    title: const Text('Admin Management por company'),
+                    subtitle: const Text(
+                      'Overview, CRUD por company e listagem global de entidades.',
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(
+                      context,
+                    ).pushNamed('/admin_management_screen'),
+                  ),
+                ),
+                if (!_isMaster)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Perfil admin: acesso ao menu de operacoes sem privilegios de master para exclusao de admins do sistema.',
+                    ),
+                  ),
+              ],
             ),
           ),
         ),

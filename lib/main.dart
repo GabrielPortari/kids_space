@@ -12,6 +12,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/screens/company_screen.dart';
 import 'package:kids_space/view/screens/admin_screen.dart';
+import 'package:kids_space/view/screens/admin_users_screen.dart';
+import 'package:kids_space/view/screens/admin_management_screen.dart';
+import 'package:kids_space/view/screens/admin_management_entity_screen.dart';
 import 'package:kids_space/view/screens/childrens_screen.dart';
 import 'package:kids_space/view/screens/parents_screen.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
@@ -205,6 +208,26 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         '/reports': (context) => const ReportsScreen(),
         '/company_screen': (context) => const CompanyScreen(),
         '/admin_screen': (context) => const AdminScreen(),
+        '/admin_users_screen': (context) => const AdminUsersScreen(),
+        '/admin_management_screen': (context) => const AdminManagementScreen(),
+        '/admin_management_overview_screen': (context) =>
+            const AdminCompanyOverviewScreen(),
+        '/admin_management_collaborators_screen': (context) =>
+            const AdminManagementEntityScreen(
+              entityType: AdminManagementEntityType.collaborators,
+            ),
+        '/admin_management_parents_screen': (context) =>
+            const AdminManagementEntityScreen(
+              entityType: AdminManagementEntityType.parents,
+            ),
+        '/admin_management_children_screen': (context) =>
+            const AdminManagementEntityScreen(
+              entityType: AdminManagementEntityType.children,
+            ),
+        '/admin_management_attendances_screen': (context) =>
+            const AdminManagementEntityScreen(
+              entityType: AdminManagementEntityType.attendances,
+            ),
       },
     );
   }

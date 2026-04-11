@@ -9,7 +9,7 @@ class CompanyService {
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
-    throw Exception('Failed to get company: \\${res.statusCode}');
+    throw Exception('Failed to get company: ${res.statusCode}');
   }
 
   Future<Map<String, dynamic>?> getById(String companyId) async {
@@ -18,7 +18,7 @@ class CompanyService {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
     if (res.statusCode == 404) return null;
-    throw Exception('Failed to get company by id: \\${res.statusCode}');
+    throw Exception('Failed to get company by id: ${res.statusCode}');
   }
 
   Future<String?> getNameById(String companyId) async {
@@ -28,7 +28,7 @@ class CompanyService {
       return body['name'] as String?;
     }
     if (res.statusCode == 404) return null;
-    throw Exception('Failed to get company name by id: \\${res.statusCode}');
+    throw Exception('Failed to get company name by id: ${res.statusCode}');
   }
 
   Future<Map<String, dynamic>> updateMyCompany(
@@ -38,6 +38,6 @@ class CompanyService {
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
-    throw Exception('Failed to update company: \\${res.statusCode}');
+    throw Exception('Failed to update company: ${res.statusCode}');
   }
 }

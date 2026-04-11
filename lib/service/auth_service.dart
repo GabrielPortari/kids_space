@@ -12,7 +12,7 @@ class AuthService {
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
-    throw Exception('Login failed: \\${res.statusCode}');
+    throw Exception('Login failed: ${res.statusCode}');
   }
 
   Future<Map<String, dynamic>> signup(Map<String, dynamic> payload) async {
@@ -30,12 +30,12 @@ class AuthService {
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
-    throw Exception('Refresh failed: \\${res.statusCode}');
+    throw Exception('Refresh failed: ${res.statusCode}');
   }
 
   Future<void> logout() async {
     final res = await _api.post('/auth/logout', {});
     if (res.statusCode == 204) return;
-    throw Exception('Logout failed: \\${res.statusCode}');
+    throw Exception('Logout failed: ${res.statusCode}');
   }
 }

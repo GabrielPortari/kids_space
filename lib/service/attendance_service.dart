@@ -9,7 +9,7 @@ class AttendanceService {
     if (res.statusCode == 201) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
-    throw Exception('Failed to checkin: \\${res.statusCode}');
+    throw Exception('Failed to checkin: ${res.statusCode}');
   }
 
   Future<Map<String, dynamic>> checkout(Map<String, dynamic> payload) async {
@@ -17,13 +17,13 @@ class AttendanceService {
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
-    throw Exception('Failed to checkout: \\${res.statusCode}');
+    throw Exception('Failed to checkout: ${res.statusCode}');
   }
 
   Future<List<dynamic>> list({Map<String, String>? query}) async {
     final res = await _api.get('/v2/attendance');
     if (res.statusCode == 200) return jsonDecode(res.body) as List<dynamic>;
-    throw Exception('Failed to list attendance: \\${res.statusCode}');
+    throw Exception('Failed to list attendance: ${res.statusCode}');
   }
 
   Future<List<dynamic>> getActiveCheckinsForCompany({String? companyId}) async {
@@ -32,7 +32,7 @@ class AttendanceService {
         : '/v2/attendance/company/active-checkins';
     final res = await _api.get(path);
     if (res.statusCode == 200) return jsonDecode(res.body) as List<dynamic>;
-    throw Exception('Failed to get active checkins: \\${res.statusCode}');
+    throw Exception('Failed to get active checkins: ${res.statusCode}');
   }
 
   Future<List<dynamic>> getLast10ForCompany({String? companyId}) async {
@@ -41,7 +41,7 @@ class AttendanceService {
         : '/v2/attendance/company/last10';
     final res = await _api.get(path);
     if (res.statusCode == 200) return jsonDecode(res.body) as List<dynamic>;
-    throw Exception('Failed to get last10 attendances: \\${res.statusCode}');
+    throw Exception('Failed to get last10 attendances: ${res.statusCode}');
   }
 
   Future<Map<String, dynamic>> getLastCheckinAndCheckoutForCompany({
@@ -54,6 +54,6 @@ class AttendanceService {
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
-    throw Exception('Failed to get last checkin/checkout: \\${res.statusCode}');
+    throw Exception('Failed to get last checkin/checkout: ${res.statusCode}');
   }
 }

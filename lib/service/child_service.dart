@@ -9,7 +9,7 @@ class ChildService {
     if (res.statusCode == 201) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
-    throw Exception('Failed to create child: \\${res.statusCode}');
+    throw Exception('Failed to create child: ${res.statusCode}');
   }
 
   Future<List<dynamic>> list({Map<String, String>? query}) async {
@@ -25,7 +25,7 @@ class ChildService {
     }
     final res = await _api.get(path);
     if (res.statusCode == 200) return jsonDecode(res.body) as List<dynamic>;
-    throw Exception('Failed to list children: \\${res.statusCode}');
+    throw Exception('Failed to list children: ${res.statusCode}');
   }
 
   Future<Map<String, dynamic>?> getById(String id) async {
@@ -34,7 +34,7 @@ class ChildService {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
     if (res.statusCode == 404) return null;
-    throw Exception('Failed to get child: \\${res.statusCode}');
+    throw Exception('Failed to get child: ${res.statusCode}');
   }
 
   Future<Map<String, dynamic>> update(
@@ -45,14 +45,14 @@ class ChildService {
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
-    throw Exception('Failed to update child: \\${res.statusCode}');
+    throw Exception('Failed to update child: ${res.statusCode}');
   }
 
   Future<bool> delete(String id) async {
     final res = await _api.delete('/v2/children/$id');
     if (res.statusCode == 204) return true;
     if (res.statusCode == 404) return false;
-    throw Exception('Failed to delete child: \\${res.statusCode}');
+    throw Exception('Failed to delete child: ${res.statusCode}');
   }
 
   /// Assign one or more parents to a child using POST /v2/children/:childId/parents
@@ -67,6 +67,6 @@ class ChildService {
     if (res.statusCode == 200 || res.statusCode == 201) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
-    throw Exception('Failed to assign parent(s): \\${res.statusCode}');
+    throw Exception('Failed to assign parent(s): ${res.statusCode}');
   }
 }

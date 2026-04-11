@@ -9,7 +9,7 @@ class CollaboratorService {
     if (res.statusCode == 201) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
-    throw Exception('Failed to create collaborator: \\${res.statusCode}');
+    throw Exception('Failed to create collaborator: ${res.statusCode}');
   }
 
   Future<Map<String, dynamic>?> getById(String id) async {
@@ -18,7 +18,7 @@ class CollaboratorService {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
     if (res.statusCode == 404) return null;
-    throw Exception('Failed to get collaborator: \\${res.statusCode}');
+    throw Exception('Failed to get collaborator: ${res.statusCode}');
   }
 
   Future<Map<String, dynamic>?> getMe() async {
@@ -33,14 +33,14 @@ class CollaboratorService {
   Future<List<dynamic>> list({Map<String, String>? query}) async {
     final res = await _api.get('/v2/collaborators');
     if (res.statusCode == 200) return jsonDecode(res.body) as List<dynamic>;
-    throw Exception('Failed to list collaborators: \\${res.statusCode}');
+    throw Exception('Failed to list collaborators: ${res.statusCode}');
   }
 
   Future<bool> delete(String id) async {
     final res = await _api.delete('/v2/collaborators/$id');
     if (res.statusCode == 204) return true;
     if (res.statusCode == 404) return false;
-    throw Exception('Failed to delete collaborator: \\${res.statusCode}');
+    throw Exception('Failed to delete collaborator: ${res.statusCode}');
   }
 
   Future<Map<String, dynamic>> update(
@@ -51,6 +51,6 @@ class CollaboratorService {
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
-    throw Exception('Failed to update collaborator: \\${res.statusCode}');
+    throw Exception('Failed to update collaborator: ${res.statusCode}');
   }
 }
