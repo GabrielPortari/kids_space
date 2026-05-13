@@ -77,21 +77,25 @@ class _CompanyAttendancesScreenState extends State<CompanyAttendancesScreen> {
   }
 
   Future<void> _hydrateChildNames(List<Attendance> events) async {
-    final childIds = events
-        .map((e) => e.childId)
-        .whereType<String>()
-        .where((id) => id.isNotEmpty)
-        .toSet();
-
-    for (final id in childIds) {
+    final idsToFetch = <String>{};
+    for (final e in events) {
+      final id = e.childId;
+      if (id == null || id.isEmpty) continue;
+      // prefer snapshot name when available
+      if (e.childSnapshot != null && e.childSnapshot!['name'] is String) {
+        _childNamesById[id] = (e.childSnapshot!['name'] as String).trim();
+        continue;
+      }
       if (_childNamesById[id]?.isNotEmpty == true) continue;
-
       final cached = _childController.getChildById(id)?.name;
       if (cached != null && cached.trim().isNotEmpty) {
         _childNamesById[id] = cached.trim();
         continue;
       }
+      idsToFetch.add(id);
+    }
 
+    for (final id in idsToFetch) {
       final fetched = await _childController.getChildNameById(id);
       if (fetched != null && fetched.trim().isNotEmpty) {
         _childNamesById[id] = fetched.trim();
@@ -144,20 +148,44 @@ class _CompanyAttendancesScreenState extends State<CompanyAttendancesScreen> {
           ? _childController.getChildNameById(event.childId!)
           : Future.value(childName),
       event.parentIdWhoCheckedInId != null
-          ? _parentController.getParentNameById(event.parentIdWhoCheckedInId!)
+          ? (event.responsibleCheckedInSnapshot != null &&
+                    event.responsibleCheckedInSnapshot!['name'] is String
+                ? Future.value(
+                    event.responsibleCheckedInSnapshot!['name'] as String,
+                  )
+                : _parentController.getParentNameById(
+                    event.parentIdWhoCheckedInId!,
+                  ))
           : Future.value(null),
       event.parentIdWhoCheckedOutId != null
-          ? _parentController.getParentNameById(event.parentIdWhoCheckedOutId!)
+          ? (event.responsibleCheckedOutSnapshot != null &&
+                    event.responsibleCheckedOutSnapshot!['name'] is String
+                ? Future.value(
+                    event.responsibleCheckedOutSnapshot!['name'] as String,
+                  )
+                : _parentController.getParentNameById(
+                    event.parentIdWhoCheckedOutId!,
+                  ))
           : Future.value(null),
       event.collaboratorWhoCheckedInId != null
-          ? _collaboratorController.getCollaboratorNameById(
-              event.collaboratorWhoCheckedInId!,
-            )
+          ? (event.collaboratorCheckedInSnapshot != null &&
+                    event.collaboratorCheckedInSnapshot!['name'] is String
+                ? Future.value(
+                    event.collaboratorCheckedInSnapshot!['name'] as String,
+                  )
+                : _collaboratorController.getCollaboratorNameById(
+                    event.collaboratorWhoCheckedInId!,
+                  ))
           : Future.value(null),
       event.collaboratorWhoCheckedOutId != null
-          ? _collaboratorController.getCollaboratorNameById(
-              event.collaboratorWhoCheckedOutId!,
-            )
+          ? (event.collaboratorCheckedOutSnapshot != null &&
+                    event.collaboratorCheckedOutSnapshot!['name'] is String
+                ? Future.value(
+                    event.collaboratorCheckedOutSnapshot!['name'] as String,
+                  )
+                : _collaboratorController.getCollaboratorNameById(
+                    event.collaboratorWhoCheckedOutId!,
+                  ))
           : Future.value(null),
     ]);
 

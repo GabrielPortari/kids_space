@@ -38,6 +38,24 @@ class _ProfileChildrenCardSectionState
   void _loadChildren() {
     _children.clear();
     final childCtrl = GetIt.I.get<ChildController>();
+    // Prefer childrenSnapshot when available to show names immediately
+    final snapshots = widget.user?.childrenSnapshot;
+    if (snapshots != null && snapshots.isNotEmpty) {
+      for (final s in snapshots) {
+        final id = s['id'] as String?;
+        final name = s['name'] as String?;
+        if (id != null) {
+          final cached = childCtrl.getChildById(id);
+          if (cached != null)
+            _children.add(cached);
+          else
+            _children.add(Child(id: id, name: name));
+        }
+      }
+      setState(() {});
+      return;
+    }
+
     for (final childId in widget.user?.children ?? []) {
       if (childId == null) continue;
       final c = childCtrl.getChildById(childId);

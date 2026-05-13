@@ -59,7 +59,13 @@ class Collaborator extends BaseModel {
       updatedAt: BaseModel.tryParseTimestamp(json['updatedAt']),
       companyId: parseCompanyId(json['companyId']),
       name: _s(json['name']),
-      birthDate: _s(json['birthDate']),
+      birthDate: (() {
+        final b = json['birthDate'];
+        final dt = BaseModel.tryParseTimestamp(b);
+        if (dt != null) return dt.toIso8601String();
+        if (b is String) return b;
+        return null;
+      })(),
       document: _s(json['document']),
       address: json['address'] is Map
           ? Address.fromJson(Map<String, dynamic>.from(json['address']))

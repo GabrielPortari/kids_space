@@ -36,6 +36,24 @@ class _ProfileResponsiblesCardSectionState
 
   void _loadResponsibles() {
     _responsibles.clear();
+    // Prefer parentsSnapshot if available
+    final snaps = widget.child?.parentsSnapshot;
+    if (snaps != null && snaps.isNotEmpty) {
+      for (final s in snaps) {
+        final id = s['id'] as String?;
+        final name = s['name'] as String?;
+        if (id != null) {
+          final cached = _userController.getUserById(id);
+          if (cached != null)
+            _responsibles.add(cached);
+          else
+            _responsibles.add(Parent(id: id, name: name));
+        }
+      }
+      setState(() {});
+      return;
+    }
+
     for (final rId in widget.child?.parents ?? []) {
       final u = _userController.getUserById(rId);
       if (u != null) _responsibles.add(u);

@@ -303,7 +303,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   final isCheckin =
                       event.attendanceType == AttendanceType.checkin;
                   final child = _childController.getChildById(event.childId);
-                  final childName = child?.name ?? '';
+                  final childName =
+                      (event.childSnapshot != null &&
+                          event.childSnapshot!['name'] is String)
+                      ? (event.childSnapshot!['name'] as String)
+                      : (child?.name ?? '');
 
                   return ListTile(
                     contentPadding: const EdgeInsets.fromLTRB(
@@ -315,11 +319,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     leading: CircleAvatar(
                       radius: 20,
                       backgroundColor: isCheckin ? successBg : dangerBg,
-                      child: Icon(
-                        isCheckin ? Icons.login : Icons.logout,
-                        color: isCheckin ? success : danger,
-                        size: 18,
-                      ),
+                      backgroundImage:
+                          (event.childSnapshot != null &&
+                              event.childSnapshot!['photoUrl'] is String)
+                          ? NetworkImage(
+                              event.childSnapshot!['photoUrl'] as String,
+                            )
+                          : null,
+                      child:
+                          (event.childSnapshot == null ||
+                              event.childSnapshot!['photoUrl'] == null)
+                          ? Icon(
+                              isCheckin ? Icons.login : Icons.logout,
+                              color: isCheckin ? success : danger,
+                              size: 18,
+                            )
+                          : null,
                     ),
                     title: TextBodyMedium(
                       childName,
@@ -480,18 +495,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     Padding(
                       padding: const EdgeInsets.only(left: 32.0, top: 2.0),
                       child:
-                          _childController
-                                  .getChildById(
-                                    _attendanceController.lastCheckIn?.childId,
-                                  )
-                                  ?.name !=
-                              null
+                          (_attendanceController.lastCheckIn?.childSnapshot !=
+                                  null &&
+                              _attendanceController
+                                      .lastCheckIn!
+                                      .childSnapshot!['name']
+                                  is String)
                           ? TextBodyMedium(
-                              '${_childController.getChildById(_attendanceController.lastCheckIn?.childId)!.name} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckIn?.checkInTime)}',
+                              '${_attendanceController.lastCheckIn!.childSnapshot!['name']} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckIn?.checkInTime)}',
                             )
-                          : TextBodyMedium(
-                              translate('home.no_checkins_registered'),
-                            ),
+                          : (_childController
+                                        .getChildById(
+                                          _attendanceController
+                                              .lastCheckIn
+                                              ?.childId,
+                                        )
+                                        ?.name !=
+                                    null
+                                ? TextBodyMedium(
+                                    '${_childController.getChildById(_attendanceController.lastCheckIn?.childId)!.name} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckIn?.checkInTime)}',
+                                  )
+                                : TextBodyMedium(
+                                    translate('home.no_checkins_registered'),
+                                  )),
                     ),
                     const Divider(height: 20),
                     Row(
@@ -504,18 +530,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     Padding(
                       padding: const EdgeInsets.only(left: 32.0, top: 2.0),
                       child:
-                          _childController
-                                  .getChildById(
-                                    _attendanceController.lastCheckOut?.childId,
-                                  )
-                                  ?.name !=
-                              null
+                          (_attendanceController.lastCheckOut?.childSnapshot !=
+                                  null &&
+                              _attendanceController
+                                      .lastCheckOut!
+                                      .childSnapshot!['name']
+                                  is String)
                           ? TextBodyMedium(
-                              '${_childController.getChildById(_attendanceController.lastCheckOut?.childId)!.name} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckOut?.checkOutTime)}',
+                              '${_attendanceController.lastCheckOut!.childSnapshot!['name']} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckOut?.checkOutTime)}',
                             )
-                          : TextBodyMedium(
-                              translate('home.no_checkouts_registered'),
-                            ),
+                          : (_childController
+                                        .getChildById(
+                                          _attendanceController
+                                              .lastCheckOut
+                                              ?.childId,
+                                        )
+                                        ?.name !=
+                                    null
+                                ? TextBodyMedium(
+                                    '${_childController.getChildById(_attendanceController.lastCheckOut?.childId)!.name} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckOut?.checkOutTime)}',
+                                  )
+                                : TextBodyMedium(
+                                    translate('home.no_checkouts_registered'),
+                                  )),
                     ),
                   ],
                 ),

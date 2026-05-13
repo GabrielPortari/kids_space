@@ -6,6 +6,7 @@ import 'address.dart';
 class Child extends BaseModel {
   final String? name;
   final List<String>? parents;
+  final List<Map<String, dynamic>>? parentsSnapshot;
   final String? birthDate;
   final String? document;
   final Address? address;
@@ -21,6 +22,7 @@ class Child extends BaseModel {
     super.updatedAt,
     this.name,
     this.parents,
+    this.parentsSnapshot,
     this.birthDate,
     this.document,
     this.address,
@@ -36,8 +38,44 @@ class Child extends BaseModel {
     createdAt: BaseModel.tryParseTimestamp(json['createdAt']),
     updatedAt: BaseModel.tryParseTimestamp(json['updatedAt']),
     name: json['name'] as String?,
-    birthDate: json['birthDate'] as String?,
-    parents: (json['parents'] as List<dynamic>?)?.cast<String>(),
+    birthDate: (() {
+      final b = json['birthDate'];
+      final dt = BaseModel.tryParseTimestamp(b);
+      if (dt != null) return dt.toIso8601String();
+      if (b is String) return b;
+      return null;
+    })(),
+    parents: (() {
+      final p = json['parents'];
+      if (p == null) return null;
+      if (p is List<dynamic>) {
+        if (p.isEmpty) return <String>[];
+        if (p.first is String) return p.cast<String>();
+        if (p.first is Map) {
+          return p
+              .map((e) => (e is Map ? (e['id'] as String?) : null))
+              .where((s) => s != null)
+              .cast<String>()
+              .toList();
+        }
+      }
+      return null;
+    })(),
+    parentsSnapshot: (() {
+      final s = json['parentsSnapshot'];
+      if (s == null) return null;
+      if (s is List<dynamic>) {
+        return s
+            .whereType<Map<dynamic, dynamic>>()
+            .map(
+              (m) => Map<String, dynamic>.from(
+                m.map((k, v) => MapEntry(k.toString(), v)),
+              ),
+            )
+            .toList();
+      }
+      return null;
+    })(),
     document: json['document'] as String?,
     address: json['address'] is Map
         ? Address.fromJson(Map<String, dynamic>.from(json['address']))
@@ -47,7 +85,12 @@ class Child extends BaseModel {
     companyId: json['companyId'] as String?,
     checkedIn: json['checkedIn'] is bool ? json['checkedIn'] as bool : null,
     userType: userTypeFromString(
-      json['userType'] as String? ?? json['role'] as String?,
+      (json['userType'] is String)
+          ? json['userType'] as String?
+          : (json['userType'] is Map
+                ? (json['userType']['value'] as String?) ??
+                      (json['userType']['name'] as String?)
+                : json['role'] as String?),
     ),
   );
 

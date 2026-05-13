@@ -14,6 +14,11 @@ class Attendance extends BaseModel {
   final DateTime? checkInTime;
   final DateTime? checkOutTime;
   final int? timeCheckedInSeconds;
+  final Map<String, dynamic>? childSnapshot;
+  final Map<String, dynamic>? collaboratorCheckedInSnapshot;
+  final Map<String, dynamic>? collaboratorCheckedOutSnapshot;
+  final Map<String, dynamic>? responsibleCheckedInSnapshot;
+  final Map<String, dynamic>? responsibleCheckedOutSnapshot;
 
   Attendance({
     super.id,
@@ -30,6 +35,11 @@ class Attendance extends BaseModel {
     this.checkInTime,
     this.checkOutTime,
     this.timeCheckedInSeconds,
+    this.childSnapshot,
+    this.collaboratorCheckedInSnapshot,
+    this.collaboratorCheckedOutSnapshot,
+    this.responsibleCheckedInSnapshot,
+    this.responsibleCheckedOutSnapshot,
   });
 
   factory Attendance.fromJson(Map<String, dynamic> json) {
@@ -75,6 +85,34 @@ class Attendance extends BaseModel {
           ? json['timeCheckedInSeconds'] as int
           : (json['timeCheckedInSeconds'] is String
                 ? int.tryParse(json['timeCheckedInSeconds'])
+                : null),
+      childSnapshot: json['childSnapshot'] is Map
+          ? Map<String, dynamic>.from(json['childSnapshot'])
+          : (json['child'] is Map
+                ? Map<String, dynamic>.from(json['child'])
+                : null),
+      collaboratorCheckedInSnapshot:
+          json['collaboratorCheckedInSnapshot'] is Map
+          ? Map<String, dynamic>.from(json['collaboratorCheckedInSnapshot'])
+          : (json['collaboratorCheckedIn'] is Map
+                ? Map<String, dynamic>.from(json['collaboratorCheckedIn'])
+                : null),
+      collaboratorCheckedOutSnapshot:
+          json['collaboratorCheckedOutSnapshot'] is Map
+          ? Map<String, dynamic>.from(json['collaboratorCheckedOutSnapshot'])
+          : (json['collaboratorCheckedOut'] is Map
+                ? Map<String, dynamic>.from(json['collaboratorCheckedOut'])
+                : null),
+      responsibleCheckedInSnapshot: json['responsibleCheckedInSnapshot'] is Map
+          ? Map<String, dynamic>.from(json['responsibleCheckedInSnapshot'])
+          : (json['responsibleCheckedIn'] is Map
+                ? Map<String, dynamic>.from(json['responsibleCheckedIn'])
+                : null),
+      responsibleCheckedOutSnapshot:
+          json['responsibleCheckedOutSnapshot'] is Map
+          ? Map<String, dynamic>.from(json['responsibleCheckedOutSnapshot'])
+          : (json['responsibleCheckedOut'] is Map
+                ? Map<String, dynamic>.from(json['responsibleCheckedOut'])
                 : null),
     );
   }
