@@ -4,7 +4,7 @@
     "users": "Users",
     "reports": "Reports"
   },
-  "home":{
+  "home": {
     "company": "Company",
     "company_name": "Company Name",
     "collaborator": "Collaborator",
@@ -35,12 +35,16 @@
     "cancel": "Cancel",
     "register_child": "Register child",
     "confirm": "Confirm",
-    "ok": "OK"
-    ,"next": "Next"
-  }
-  ,
+    "ok": "OK",
+    "next": "Next"
+  },
   "profile": {
-    "name_placeholder": "-",
+    "name_placeholder": "{name_placeholder}",
+    "screen_title": "Profile",
+    "profile_of": "Profile of {name_placeholder}",
+    "delete": "Delete",
+    "delete_success": "Operation completed: {name} deleted.",
+    "delete_error": "Failed to delete {name}.",
     "user_type": {
       "user": "User",
       "company": "Company",
@@ -90,18 +94,10 @@
     "zip_code": "ZIP",
     "id_label": "Id:"
   },
-    "profile": {
-      "screen_title": "Profile",
-      "profile_of": "Profile of {name_placeholder}",
-      "delete": "Delete",
-      "delete_success": "Operation completed: {name} deleted.",
-      "delete_error": "Failed to delete {name}."
-    },
   "common": {
     "success": "Success",
     "error": "Error"
-  }
-  ,
+  },
   "attendance": {
     "search_child": "Search child",
     "no_children_found": "No child found",
@@ -116,13 +112,11 @@
     "notes_label": "Notes",
     "operation_success": "Operation completed",
     "operation_error": "Operation cancelled/error"
-  }
-  ,
+  },
   "splash": {
     "session_expired_title": "Session expired",
     "session_expired_message": "Your session has expired. Please log in again."
-  }
-,
+  },
   "users": {
     "title": "Users",
     "search": "Search user",
@@ -136,8 +130,7 @@
     "date_initial": "Start date",
     "date_final": "End date",
     "type": "Type:",
-    "no_data": "No data"
-    ,
+    "no_data": "No data",
     "type_checkins_7d": "Check-ins (7d)",
     "type_checkins_period": "Check-ins by period",
     "type_distribution_by_collaborator": "Distribution by collaborator",
@@ -194,9 +187,9 @@
     "inherit_address_question": "Do you want to inherit the responsible's address?",
     "yes": "Yes",
     "no": "No"
-  }
-,
+  },
   "collaborators": {
     "created": "Collaborator created successfully.",
     "create_error": "Failed to create collaborator."
   }
+}

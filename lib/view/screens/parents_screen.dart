@@ -287,24 +287,24 @@ class _ParentsScreenState extends State<ParentsScreen> {
     return const SkeletonList(itemCount: 8);
   }
 
-  Widget _userTile(Parent user) {
-    String document = user.document ?? '';
+  Widget _userTile(Parent parent) {
+    String document = parent.document ?? '';
     if (document.length >= 11) {
       document = document.replaceRange(3, document.length, '.***.***-**');
     } else if (document.length >= 2) {
       document = document.replaceRange(2, document.length, '.***.***-*');
     }
     return Card(
-      key: ValueKey(user.id),
+      key: ValueKey(parent.id),
       margin: const EdgeInsets.symmetric(vertical: 4),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          _parentController.selectedUserId = user.id;
+          _parentController.selectedUserId = parent.id;
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => ProfileScreen(selectedUser: user),
+              builder: (_) => ProfileScreen(selectedParent: parent),
             ),
           );
         },
@@ -322,7 +322,7 @@ class _ParentsScreenState extends State<ParentsScreen> {
                       context,
                     ).colorScheme.primary.withValues(alpha: 0.2),
                     child: Text(
-                      getInitials(user.name),
+                      getInitials(parent.name),
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.primary,
                       ),
@@ -336,7 +336,7 @@ class _ParentsScreenState extends State<ParentsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      user.name ?? '',
+                      parent.name ?? '',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,

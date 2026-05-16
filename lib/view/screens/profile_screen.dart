@@ -17,7 +17,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'profile_sections.dart';
 import 'package:kids_space/util/localization_service.dart';
 
-enum SelectedProfileType { child, user, collaborator, admin, company }
+enum SelectedProfileType { child, parent, collaborator, admin, company }
 
 class _AppBarConfig {
   final String title;
@@ -38,14 +38,14 @@ class _AppBarConfig {
 }
 
 class ProfileScreen extends StatefulWidget {
-  final Parent? selectedUser;
+  final Parent? selectedParent;
   final Collaborator? selectedCollaborator;
   final Company? selectedCompany;
   final Child? selectedChild;
 
   const ProfileScreen({
     super.key,
-    this.selectedUser,
+    this.selectedParent,
     this.selectedCollaborator,
     this.selectedCompany,
     this.selectedChild,
@@ -63,16 +63,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final AuthController _authController = GetIt.I<AuthController>();
   final CompanyController _companyController = GetIt.I<CompanyController>();
 
-  Company? _company;
   bool _isLoading = false;
   // fetched entities when opening profile
-  Parent? _fetchedUser;
+  Company? _fetchedCompany;
+  Parent? _fetchedParent;
   Collaborator? _fetchedCollaborator;
   Child? _fetchedChild;
 
   SelectedProfileType? get selectedProfileType {
-    if (widget.selectedUser != null) {
-      return SelectedProfileType.user;
+    if (widget.selectedParent != null) {
+      return SelectedProfileType.parent;
     } else if (widget.selectedCollaborator != null) {
       return widget.selectedCollaborator!.userType == UserType.company
           ? SelectedProfileType.admin
@@ -85,7 +85,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return null;
   }
 
-  Company? get _effectiveCompany => _company ?? widget.selectedCompany;
+  Company? get _effectiveCompany => _fetchedCompany ?? widget.selectedCompany;
 
   @override
   void initState() {
@@ -96,7 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _childController.addListener(_onControllersChanged);
     // If any entity is provided, attempt to refresh it from API and show skeleton while loading
     if (widget.selectedCompany != null && widget.selectedCompany!.id != null) {
-      _company = widget.selectedCompany;
+      _fetchedCompany = widget.selectedCompany;
       setState(() {
         _isLoading = true;
       });
@@ -110,7 +110,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             );
             if (fetched != null && mounted) {
               setState(() {
-                _company = fetched;
+                _fetchedCompany = fetched;
               });
             }
           })
@@ -124,17 +124,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
 
-    if (widget.selectedUser != null && widget.selectedUser!.id != null) {
-      _fetchedUser = widget.selectedUser;
+    if (widget.selectedParent != null && widget.selectedParent!.id != null) {
+      _fetchedParent = widget.selectedParent;
       setState(() {
         _isLoading = true;
       });
       _userController
-          .fetchUserById(widget.selectedUser!.id!)
+          .fetchUserById(widget.selectedParent!.id!)
           .then((fetched) {
             if (fetched != null && mounted) {
               setState(() {
-                _fetchedUser = fetched;
+                _fetchedParent = fetched;
               });
             }
           })
@@ -222,12 +222,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           return;
         } catch (_) {}
       }
-      if (widget.selectedUser != null && widget.selectedUser!.id != null) {
-        final id = widget.selectedUser!.id!;
+      if (widget.selectedParent != null && widget.selectedParent!.id != null) {
+        final id = widget.selectedParent!.id!;
         final found = _userController.getUserById(id);
         if (found != null) {
           setState(() {
-            _fetchedUser = found;
+            _fetchedParent = found;
           });
           return;
         }
@@ -248,12 +248,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   _AppBarConfig _computeAppBarConfig() {
     String title = translate('profile.screen_title');
     if (selectedProfileType != null) {
-      if (selectedProfileType == SelectedProfileType.user) {
+      if (selectedProfileType == SelectedProfileType.parent) {
         title = translate(
           'profile.profile_of',
           namedArgs: {
             'name_placeholder':
-                widget.selectedUser?.name ??
+                widget.selectedParent?.name ??
                 translate('profile.name_placeholder'),
           },
         );
@@ -312,7 +312,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _effectiveCompany?.id != null &&
             _effectiveCompany?.id == _companyController.company?.id) ||
         (loggedAsCollaborator &&
-            (selectedProfileType == SelectedProfileType.user ||
+            (selectedProfileType == SelectedProfileType.parent ||
                 selectedProfileType == SelectedProfileType.child)) ||
         // allow a logged collaborator to edit their own collaborator profile
         (loggedAsCollaborator &&
@@ -324,7 +324,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final bool canAddChild =
         (loggedAsCompany || loggedAsCollaborator) &&
         (selectedProfileType != null &&
-            selectedProfileType == SelectedProfileType.user);
+            selectedProfileType == SelectedProfileType.parent);
 
     final bool canLogout =
         // collaborator can logout when viewing their own collaborator profile
@@ -397,7 +397,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: _isLoading
                       ? _buildSkeleton()
                       : ProfileContent(
-                          selectedUser: _fetchedUser ?? widget.selectedUser,
+                          selectedParent:
+                              _fetchedParent ?? widget.selectedParent,
                           selectedCollaborator:
                               _fetchedCollaborator ??
                               widget.selectedCollaborator,
@@ -415,12 +416,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _confirmAndDelete() async {
     final type = selectedProfileType;
-    if (type != SelectedProfileType.user &&
+    if (type != SelectedProfileType.parent &&
         type != SelectedProfileType.collaborator &&
         type != SelectedProfileType.child)
       return;
 
-    final targetName = type == SelectedProfileType.user
+    final targetName = type == SelectedProfileType.parent
         ? 'este usuário'
         : type == SelectedProfileType.collaborator
         ? 'este colaborador'
@@ -454,8 +455,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (confirm != true) return;
 
     bool success = false;
-    if (type == SelectedProfileType.user && widget.selectedUser != null) {
-      success = await _userController.deleteUser(widget.selectedUser?.id ?? '');
+    if (type == SelectedProfileType.parent && widget.selectedParent != null) {
+      success = await _userController.deleteUser(
+        widget.selectedParent?.id ?? '',
+      );
     }
     if (type == SelectedProfileType.collaborator &&
         widget.selectedCollaborator != null) {
@@ -744,7 +747,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     await showProfileEditDialogs(
       context,
-      user: widget.selectedUser,
+      parent: widget.selectedParent,
       collaborator: widget.selectedCollaborator,
       child: widget.selectedChild,
       childController: _childController,
@@ -886,7 +889,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       );
-      if (success) setState(() => _company = _companyController.company);
+      if (success) setState(() => _fetchedCompany = _companyController.company);
     } else if (choice == 'address') {
       final fields = [
         FieldDefinition(
@@ -991,7 +994,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       );
-      if (success) setState(() => _company = _companyController.company);
+      if (success) setState(() => _fetchedCompany = _companyController.company);
     }
   }
 
@@ -1021,7 +1024,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _onAddChild() async {
-    final parent = widget.selectedUser;
+    final parent = widget.selectedParent;
     if (parent == null) return;
 
     // Step 1: get personal data

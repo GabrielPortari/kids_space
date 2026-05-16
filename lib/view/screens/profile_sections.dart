@@ -14,14 +14,14 @@ import 'package:kids_space/view/widgets/profile_responsibles_card_section.dart';
 import 'package:kids_space/util/localization_service.dart';
 
 class ProfileContent extends StatelessWidget {
-  final Parent? selectedUser;
+  final Parent? selectedParent;
   final Collaborator? selectedCollaborator;
   final Company? selectedCompany;
   final Child? selectedChild;
 
   const ProfileContent({
     Key? key,
-    this.selectedUser,
+    this.selectedParent,
     this.selectedCollaborator,
     this.selectedCompany,
     this.selectedChild,
@@ -30,7 +30,7 @@ class ProfileContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     dev.log(
-      'ProfileContent build - selectedUser: ${selectedUser?.toJson() ?? selectedUser}',
+      'ProfileContent build - selectedParent: ${selectedParent?.toJson() ?? selectedParent}',
       name: 'ProfileContent',
     );
     dev.log(
@@ -56,7 +56,7 @@ class ProfileContent extends StatelessWidget {
         const SizedBox(height: 16),
         ProfilePictureSection(
           name:
-              selectedUser?.name ??
+              selectedParent?.name ??
               selectedCollaborator?.name ??
               selectedCompany?.name ??
               selectedChild?.name ??
@@ -67,12 +67,12 @@ class ProfileContent extends StatelessWidget {
         ProfileHeaderSection(
           name:
               selectedChild?.name ??
-              selectedUser?.name ??
+              selectedParent?.name ??
               selectedCollaborator?.name ??
               selectedCompany?.name ??
               translate('profile.name_placeholder'),
-          userTypeLabel: selectedUser != null
-              ? translate('profile.user_type.user')
+          userTypeLabel: selectedParent != null
+              ? translate('profile.user_type.parent')
               : selectedCompany != null
               ? translate('profile.user_type.company')
               : selectedCollaborator != null
@@ -83,7 +83,7 @@ class ProfileContent extends StatelessWidget {
               ? translate('profile.user_type.child')
               : translate('profile.user_type.unknown'),
           id:
-              selectedUser?.id ??
+              selectedParent?.id ??
               selectedCollaborator?.id ??
               selectedChild?.id ??
               selectedCompany?.id,
@@ -99,8 +99,8 @@ class ProfileContent extends StatelessWidget {
           entries: addressEntries,
         ),
         const SizedBox(height: 16),
-        if (selectedUser != null)
-          ProfileChildrenCardSection(user: selectedUser),
+        if (selectedParent != null)
+          ProfileChildrenCardSection(parent: selectedParent),
         if (selectedChild != null)
           ProfileResponsiblesCardSection(child: selectedChild),
       ],
@@ -108,8 +108,8 @@ class ProfileContent extends StatelessWidget {
   }
 
   Map<String, String> _getProfileData() {
-    if (selectedUser != null) {
-      final u = selectedUser!;
+    if (selectedParent != null) {
+      final u = selectedParent!;
       final dt = DateTime.tryParse(u.birthDate ?? '');
       return {
         translate('profile.name'): u.name ?? '-',
@@ -163,8 +163,8 @@ class ProfileContent extends StatelessWidget {
   }
 
   Map<String, String> _getAddressData() {
-    if (selectedUser != null) {
-      final u = selectedUser!;
+    if (selectedParent != null) {
+      final u = selectedParent!;
       final u_address = u.address;
       return {
         translate('profile.address'): u_address?.address ?? '-',

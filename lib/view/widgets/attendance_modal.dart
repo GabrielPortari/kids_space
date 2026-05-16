@@ -8,8 +8,22 @@ import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/parent_controller.dart';
 import 'package:kids_space/model/attendance.dart';
 import 'package:kids_space/model/child.dart';
+import 'package:kids_space/model/parent.dart';
 import 'package:kids_space/util/localization_service.dart';
 import 'package:kids_space/util/string_utils.dart';
+
+Map<String, dynamic> _snapshotFromChild(Child child) => {
+  'id': child.id,
+  'name': child.name,
+  'photoUrl': null,
+};
+
+Map<String, dynamic> _snapshotFromParent(Parent? parent, String? fallbackId) =>
+    {
+      'id': parent?.id ?? fallbackId,
+      'name': parent?.name ?? parent?.id ?? fallbackId,
+      'photoUrl': null,
+    };
 
 Future<void> showAttendanceModal(
   BuildContext context,
@@ -96,7 +110,7 @@ Future<void> showAttendanceModal(
                         final activeAttendances =
                             attendanceController.activeCheckins;
                         final activeIds = activeAttendances
-                            .map((a) => a.childId)
+                          .map((a) => a.childSnapshotId ?? a.childId)
                             .whereType<String>()
                             .toSet();
                         final List<Child> activeChildren = companyId != null
@@ -217,8 +231,15 @@ Future<void> showAttendanceModal(
                           } else {
                             final active = attendanceController.activeCheckins;
                             parents = active
-                                .where((a) => a.childId == child.id)
-                                .map((a) => a.parentIdWhoCheckedInId)
+                                .where(
+                                  (a) => (a.childSnapshotId ?? a.childId) ==
+                                      child.id,
+                                )
+                                .map(
+                                  (a) =>
+                                      a.responsibleCheckedInSnapshotId ??
+                                      a.parentIdWhoCheckedInId,
+                                )
                                 .whereType<String>()
                                 .toSet()
                                 .toList();
@@ -395,40 +416,21 @@ Future<void> showAttendanceModal(
 
                         bool ok = false;
                         if (confirm == true) {
-                          // Build notes string: append identifiers and concat with existing checkin notes on checkout
-                          final entered = notes?.trim();
-                          if (type == AttendanceType.checkin) {
-                          } else {
-                            // checkout: try to find existing active checkin note for this child
-                            final active = attendanceController.activeCheckins;
-                            Attendance? existing;
-                            try {
-                              existing = active.firstWhere(
-                                (a) => a.childId == selectedChildId,
-                              );
-                            } catch (_) {
-                              existing = null;
-                            }
-                            final existingNotes = existing?.notes?.trim();
-                            if (existingNotes != null &&
-                                existingNotes.isNotEmpty &&
-                                entered != null &&
-                                entered.isNotEmpty) {
-                              // if existing already contains identifier, avoid duplicating
-                            } else if (existingNotes != null &&
-                                existingNotes.isNotEmpty) {
-                            } else if (entered != null && entered.isNotEmpty) {
-                            } else {}
-                          }
-
                           try {
                             if (type == AttendanceType.checkin) {
-                              // Build API-compatible payload for checkin
-                              final payload = <String, dynamic>{
-                                'childId': child.id,
-                                if (selectedResponsibleId != null)
-                                  'responsibleIdWhoCheckedInId':
+                              final responsible = selectedResponsibleId != null
+                                  ? userController.getUserById(
                                       selectedResponsibleId,
+                                    )
+                                  : null;
+                              final payload = <String, dynamic>{
+                                'childSnapshot': _snapshotFromChild(child),
+                                if (selectedResponsibleId != null)
+                                  'responsibleSnapshot':
+                                      _snapshotFromParent(
+                                        responsible,
+                                        selectedResponsibleId,
+                                      ),
                                 if (notes != null && notes.isNotEmpty)
                                   'notes': notes,
                               };
@@ -437,8 +439,6 @@ Future<void> showAttendanceModal(
                               );
                               ok = (res.id != null);
                             } else {
-                              // Build API-compatible payload for checkout
-                              // Prefer sending responsible document if available
                               String? responsibleDocument;
                               if (selectedResponsibleId != null) {
                                 final parent = GetIt.I<ParentController>()
@@ -446,7 +446,7 @@ Future<void> showAttendanceModal(
                                 responsibleDocument = parent?.document;
                               }
                               final payload = <String, dynamic>{
-                                'childId': child.id,
+                                'childSnapshot': _snapshotFromChild(child),
                                 if (responsibleDocument != null &&
                                     responsibleDocument.isNotEmpty)
                                   'responsibleDocument': normalizeDigits(

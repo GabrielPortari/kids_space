@@ -107,19 +107,16 @@ Nota: os nomes abaixo indicam arquivos principais; a navegação e telas estão 
   - `dio`: presente como dependency mas não é o cliente primário (pode ser usado em serviços adicionais).
   - `uuid`: geração de ids no cliente quando necessário.
   - `easy_localization`: internacionalização (`assets/langs/`).
-  - `firebase_core`, `firebase_auth`, `cloud_firestore`: integração com Firebase (inicialização feita em `lib/main.dart`).
-  - `flutter_dotenv`: carrega arquivo `.env` para configurações locais e chaves.
+  - `flutter_dotenv`: carrega arquivo `.env` para configurações locais.
   - `mobx`, `flutter_mobx`, `mobx_codegen`, `build_runner`: listados como dependências (ver observação sobre uso real).
 
 - Integrações externas identificadas:
   - Backend REST API: base URL configurável via `API_BASE_URL` (carregado por `flutter_dotenv` e passado para `ApiClient` no startup em `main.dart`).
-  - Firebase: inicialização condicional em `main.dart` (usa variáveis `FIREBASE_*` do `.env`).
 
 ## 5. Guia de configuração
 
 - Variáveis de ambiente necessárias (exemplos; não exponha valores reais):
   - `API_BASE_URL` — endpoint base do backend (ex.: `https://api.example.com` ou `http://10.0.2.2:3000` para emulador).
-  - `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_PROJECT_ID`, `FIREBASE_STORAGE_BUCKET`, `FIREBASE_MESSAGING_SENDER_ID`, `FIREBASE_APP_ID`, `FIREBASE_MEASUREMENT_ID` — chaves de inicialização do Firebase.
   - Outras chaves específicas do ambiente podem existir. [a verificar: localizar `.env.example` ou docs internas]
 
 - Observações sobre segurança:

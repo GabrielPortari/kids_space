@@ -94,7 +94,7 @@ class _ProfileResponsiblesCardSectionState
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (_) =>
-                      ProfileScreen(selectedUser: _responsibles.first),
+                      ProfileScreen(selectedParent: _responsibles.first),
                 ),
               );
             },
@@ -118,7 +118,7 @@ class _ProfileResponsiblesCardSectionState
                     onTap: () {
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
-                          builder: (_) => ProfileScreen(selectedUser: u),
+                          builder: (_) => ProfileScreen(selectedParent: u),
                         ),
                       );
                     },

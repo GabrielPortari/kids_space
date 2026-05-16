@@ -24,18 +24,19 @@
     "no_presence_records": "Nenhum registro de presença"
   },
   "profile": {
-    "name_placeholder": "-",
+    "name_placeholder": "{name_placeholder}",
+    "screen_title": "Perfil",
+    "profile_of": "Perfil de {name_placeholder}",
+    "delete": "Excluir",
+    "delete_success": "Operação concluída: {name} excluído.",
+    "delete_error": "Falha ao excluir {name}.",
     "user_type": {
       "company": "Empresa",
       "admin": "Administrador",
       "collaborator": "Colaborador",
+      "parent": "Responsável",
       "child": "Criança",
-      "unknown": "Desconhecido",
-      "screen_title": "Perfil",
-      "profile_of": "Perfil de {name_placeholder}",
-      "delete": "Excluir",
-      "delete_success": "Operação concluída: {name} excluído.",
-      "delete_error": "Falha ao excluir {name}."
+      "unknown": "Desconhecido"
     },
     "personal_title": "Dados pessoais",
     "address_title": "Endereço",

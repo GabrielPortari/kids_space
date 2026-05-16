@@ -15,7 +15,7 @@ import 'package:kids_space/util/localization_service.dart';
 /// opens the generic `EditEntityBottomSheet` to apply changes.
 Future<void> showProfileEditDialogs(
   BuildContext context, {
-  Parent? user,
+  Parent? parent,
   Collaborator? collaborator,
   Child? child,
   ChildController? childController,
@@ -65,10 +65,10 @@ Future<void> showProfileEditDialogs(
   );
 
   if (choice == 'personal') {
-    if (user != null || collaborator != null) {
+    if (parent != null || collaborator != null) {
       await _editPersonal(
         context,
-        user: user,
+        parent: parent,
         collaborator: collaborator,
         userController: userController,
         collaboratorController: collaboratorController,
@@ -81,10 +81,10 @@ Future<void> showProfileEditDialogs(
       );
     }
   } else if (choice == 'address') {
-    if (user != null || collaborator != null) {
+    if (parent != null || collaborator != null) {
       await _editAddress(
         context,
-        user: user,
+        parent: parent,
         collaborator: collaborator,
         userController: userController,
         collaboratorController: collaboratorController,
@@ -148,13 +148,13 @@ Future<void> _showResultDialog(
 
 Future<void> _editPersonal(
   BuildContext context, {
-  Parent? user,
+  Parent? parent,
   Collaborator? collaborator,
   required ParentController userController,
   required CollaboratorController collaboratorController,
 }) async {
-  if (user != null) {
-    final u = user;
+  if (parent != null) {
+    final u = parent;
     DateTime? parsedBirth = BaseModel.tryParseTimestamp(u.birthDate);
     final fields = [
       FieldDefinition(
@@ -301,13 +301,13 @@ Future<void> _editPersonal(
 
 Future<void> _editAddress(
   BuildContext context, {
-  Parent? user,
+  Parent? parent,
   Collaborator? collaborator,
   required ParentController userController,
   required CollaboratorController collaboratorController,
 }) async {
-  if (user != null) {
-    final u = user;
+  if (parent != null) {
+    final u = parent;
     final fields = [
       FieldDefinition(
         key: 'address',

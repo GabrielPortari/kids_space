@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -47,27 +46,6 @@ Future<void> main() async {
     }
   }
 
-  try {
-    if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp(
-        options: FirebaseOptions(
-          apiKey: safeEnv('FIREBASE_API_KEY', ''),
-          authDomain: safeEnv('FIREBASE_AUTH_DOMAIN', ''),
-          projectId: safeEnv('FIREBASE_PROJECT_ID', ''),
-          storageBucket: safeEnv('FIREBASE_STORAGE_BUCKET', ''),
-          messagingSenderId: safeEnv('FIREBASE_MESSAGING_SENDER_ID', ''),
-          appId: safeEnv('FIREBASE_APP_ID', ''),
-          measurementId: safeEnv('FIREBASE_MEASUREMENT_ID', null),
-        ),
-      );
-    } else {
-      // ignore: avoid_print
-      print('Firebase already initialized, skipping initializeApp');
-    }
-  } catch (e) {
-    // ignore: avoid_print
-    print('Firebase.initializeApp error: $e');
-  }
   setup(GetIt.I);
   // register navigatorKey so services can perform global navigation (e.g., force logout)
   if (!GetIt.I.isRegistered<GlobalKey<NavigatorState>>()) {

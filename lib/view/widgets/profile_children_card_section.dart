@@ -7,9 +7,9 @@ import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/util/localization_service.dart';
 
 class ProfileChildrenCardSection extends StatefulWidget {
-  final Parent? user;
+  final Parent? parent;
 
-  const ProfileChildrenCardSection({super.key, this.user});
+  const ProfileChildrenCardSection({super.key, this.parent});
 
   @override
   State<ProfileChildrenCardSection> createState() =>
@@ -30,7 +30,7 @@ class _ProfileChildrenCardSectionState
   @override
   void didUpdateWidget(covariant ProfileChildrenCardSection oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.user?.id != widget.user?.id) {
+    if (oldWidget.parent?.id != widget.parent?.id) {
       _loadChildren();
     }
   }
@@ -39,24 +39,25 @@ class _ProfileChildrenCardSectionState
     _children.clear();
     final childCtrl = GetIt.I.get<ChildController>();
     // Prefer childrenSnapshot when available to show names immediately
-    final snapshots = widget.user?.childrenSnapshot;
+    final snapshots = widget.parent?.childrenSnapshot;
     if (snapshots != null && snapshots.isNotEmpty) {
       for (final s in snapshots) {
         final id = s['id'] as String?;
         final name = s['name'] as String?;
         if (id != null) {
           final cached = childCtrl.getChildById(id);
-          if (cached != null)
+          if (cached != null) {
             _children.add(cached);
-          else
+          } else {
             _children.add(Child(id: id, name: name));
+          }
         }
       }
       setState(() {});
       return;
     }
 
-    for (final childId in widget.user?.children ?? []) {
+    for (final childId in widget.parent?.children ?? []) {
       if (childId == null) continue;
       final c = childCtrl.getChildById(childId);
       if (c != null) _children.add(c);
