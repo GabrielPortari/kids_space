@@ -107,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return SizedBox(
       height: 180,
       child: Image.asset(
-        'assets/images/kids_space_logo.png',
+        'assets/images/kids_space_logo.jpg',
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) =>
             const Icon(Icons.business, size: 18, color: Colors.deepPurple),

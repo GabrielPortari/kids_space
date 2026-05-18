@@ -5,6 +5,7 @@ import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/model/company.dart';
 import 'package:kids_space/util/localization_service.dart';
+import 'package:kids_space/view/screens/company_attendances_screen.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import '../../util/company_tile_helpers.dart';
 import '../../model/company_tile_model.dart';
@@ -23,11 +24,16 @@ class _CompanyScreenState extends State<CompanyScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   final List<CompanyTileModel> _companyItems = const [
+    CompanyTileModel(type: CompanyTileType.dashboard, icon: Icons.dashboard),
+    CompanyTileModel(
+      type: CompanyTileType.attendances,
+      icon: Icons.fact_check_outlined,
+    ),
     CompanyTileModel(type: CompanyTileType.company, icon: Icons.business),
+    CompanyTileModel(type: CompanyTileType.collaborator, icon: Icons.group),
     CompanyTileModel(type: CompanyTileType.responsible, icon: Icons.person),
     CompanyTileModel(type: CompanyTileType.child, icon: Icons.child_care),
-    CompanyTileModel(type: CompanyTileType.collaborator, icon: Icons.group),
-    CompanyTileModel(type: CompanyTileType.reports, icon: Icons.bar_chart),
+    //CompanyTileModel(type: CompanyTileType.reports, icon: Icons.bar_chart),
   ];
   final CompanyController _companyController = GetIt.I.get<CompanyController>();
   final CollaboratorController _collaboratorController = GetIt.I
@@ -119,22 +125,27 @@ class _CompanyScreenState extends State<CompanyScreen> {
                                   ProfileScreen(selectedCompany: comp),
                             ),
                           );
-                        } else if (model.type == CompanyTileType.responsible) {
-                          Navigator.pushNamed(
-                            context,
-                            getNavigationRoute(model.type),
+                        } else if (model.type == CompanyTileType.attendances) {
+                          final currentCompany = company;
+                          final companyId = currentCompany?.id;
+                          if (companyId == null || companyId.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Company nao carregada.'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => CompanyAttendancesScreen(
+                                companyId: companyId,
+                                companyName: currentCompany?.name,
+                              ),
+                            ),
                           );
-                        } else if (model.type == CompanyTileType.child) {
-                          Navigator.pushNamed(
-                            context,
-                            getNavigationRoute(model.type),
-                          );
-                        } else if (model.type == CompanyTileType.collaborator) {
-                          Navigator.pushNamed(
-                            context,
-                            getNavigationRoute(model.type),
-                          );
-                        } else if (model.type == CompanyTileType.reports) {
+                        } else {
                           Navigator.pushNamed(
                             context,
                             getNavigationRoute(model.type),

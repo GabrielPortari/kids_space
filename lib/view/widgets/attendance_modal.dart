@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/controller/attendance_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
@@ -8,22 +7,8 @@ import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/parent_controller.dart';
 import 'package:kids_space/model/attendance.dart';
 import 'package:kids_space/model/child.dart';
-import 'package:kids_space/model/parent.dart';
 import 'package:kids_space/util/localization_service.dart';
 import 'package:kids_space/util/string_utils.dart';
-
-Map<String, dynamic> _snapshotFromChild(Child child) => {
-  'id': child.id,
-  'name': child.name,
-  'photoUrl': null,
-};
-
-Map<String, dynamic> _snapshotFromParent(Parent? parent, String? fallbackId) =>
-    {
-      'id': parent?.id ?? fallbackId,
-      'name': parent?.name ?? parent?.id ?? fallbackId,
-      'photoUrl': null,
-    };
 
 Future<void> showAttendanceModal(
   BuildContext context,
@@ -38,7 +23,7 @@ Future<void> showAttendanceModal(
   final companyId = companyController.company?.id;
   if (companyId != null) {
     // trigger load of active checkins so UI can react when data arrives
-    attendanceController.loadActiveCheckinsForCompany(companyId);
+    await attendanceController.loadActiveCheckinsForCompany(companyId);
   }
 
   String? selectedChildId;
@@ -51,21 +36,24 @@ Future<void> showAttendanceModal(
         builder: (innerCtx, setState) {
           final filter = childController.childFilter.toLowerCase();
           final companyId = companyController.company?.id;
-          // Use computed active checked-in children from controller when available
-          final List<Child> activeChildren = companyId != null
-              ? childController.activeCheckedInChildrenComputed(companyId)
-              : [];
+          final activeIds = attendanceController.activeCheckins
+              .map((a) => a.childId)
+              .whereType<String>()
+              .toSet();
           final List<Child> source = type == AttendanceType.checkout
-              ? activeChildren
-              : // For checkin, exclude children that are already active (checked-in)
-                childController.filteredChildren
+              ? (companyId != null
+                    ? childController.children
+                          .where(
+                            (ch) => ch.id != null && activeIds.contains(ch.id),
+                          )
+                          .toList()
+                    : <Child>[])
+              : childController.filteredChildren
                     .where(
-                      (ch) =>
-                          !(ch.id != null &&
-                              activeChildren.map((c) => c.id).contains(ch.id)),
+                      (ch) => !(ch.id != null && activeIds.contains(ch.id)),
                     )
                     .toList();
-          source.where((ch) {
+          final filteredSource = source.where((ch) {
             if (filter.isEmpty) return true;
             final name = ch.name?.toLowerCase() ?? '';
             final email = ch.email?.toLowerCase() ?? '';
@@ -104,67 +92,32 @@ Future<void> showAttendanceModal(
                   ),
                   const SizedBox(height: 12),
                   Flexible(
-                    child: Observer(
-                      builder: (_) {
-                        // compute active children from attendanceController.activeCheckins
-                        final activeAttendances =
-                            attendanceController.activeCheckins;
-                        final activeIds = activeAttendances
-                          .map((a) => a.childSnapshotId ?? a.childId)
-                            .whereType<String>()
-                            .toSet();
-                        final List<Child> activeChildren = companyId != null
-                            ? childController.children
-                                  .where(
-                                    (c) =>
-                                        c.id != null &&
-                                        activeIds.contains(c.id),
-                                  )
-                                  .toList()
-                            : <Child>[];
-
-                        // compute source depending on type
-                        final List<Child> source =
-                            type == AttendanceType.checkout
-                            ? activeChildren
-                            : childController.filteredChildren
-                                  .where(
-                                    (ch) =>
-                                        !(ch.id != null &&
-                                            activeIds.contains(ch.id)),
-                                  )
-                                  .toList();
-
-                        if (source.isEmpty) {
-                          return Center(
+                    child: filteredSource.isEmpty
+                        ? Center(
                             child: Text(
                               translate('attendance.no_children_found'),
                             ),
-                          );
-                        }
-
-                        return Scrollbar(
-                          child: ListView.separated(
-                            shrinkWrap: true,
-                            itemCount: source.length,
-                            separatorBuilder: (_, __) =>
-                                const Divider(height: 1),
-                            itemBuilder: (_, i) {
-                              final Child ch = source[i];
-                              final id = ch.id ?? '';
-                              return RadioListTile<String>(
-                                value: id,
-                                groupValue: selectedChildId,
-                                onChanged: (v) =>
-                                    setState(() => selectedChildId = v),
-                                title: Text(ch.name ?? '-'),
-                                subtitle: Text(ch.document ?? ''),
-                              );
-                            },
+                          )
+                        : Scrollbar(
+                            child: ListView.separated(
+                              shrinkWrap: true,
+                              itemCount: filteredSource.length,
+                              separatorBuilder: (_, __) =>
+                                  const Divider(height: 1),
+                              itemBuilder: (_, i) {
+                                final Child ch = filteredSource[i];
+                                final id = ch.id ?? '';
+                                return RadioListTile<String>(
+                                  value: id,
+                                  groupValue: selectedChildId,
+                                  onChanged: (v) =>
+                                      setState(() => selectedChildId = v),
+                                  title: Text(ch.name ?? '-'),
+                                  subtitle: Text(ch.document ?? ''),
+                                );
+                              },
+                            ),
                           ),
-                        );
-                      },
-                    ),
                   ),
                 ],
               ),
@@ -184,9 +137,7 @@ Future<void> showAttendanceModal(
                         setState(() => loading = true);
 
                         // Recompute the current source to match the list shown inside the Observer
-                        final activeAttendances =
-                            attendanceController.activeCheckins;
-                        final activeIds = activeAttendances
+                        final activeIds = attendanceController.activeCheckins
                             .map((a) => a.childId)
                             .whereType<String>()
                             .toSet();
@@ -221,6 +172,7 @@ Future<void> showAttendanceModal(
                         // Ask for responsible and notes for both checkin and checkout flows.
                         String? selectedResponsibleId;
                         String? notes;
+                        String? typedResponsibleDocument;
                         final userController = GetIt.I<ParentController>();
                         if (type == AttendanceType.checkin ||
                             type == AttendanceType.checkout) {
@@ -232,12 +184,13 @@ Future<void> showAttendanceModal(
                             final active = attendanceController.activeCheckins;
                             parents = active
                                 .where(
-                                  (a) => (a.childSnapshotId ?? a.childId) ==
+                                  (a) =>
+                                      (a.childSnapshot ?? a.childId) ==
                                       child.id,
                                 )
                                 .map(
                                   (a) =>
-                                      a.responsibleCheckedInSnapshotId ??
+                                      a.responsibleCheckedInSnapshot ??
                                       a.parentIdWhoCheckedInId,
                                 )
                                 .whereType<String>()
@@ -256,6 +209,21 @@ Future<void> showAttendanceModal(
                                   ? parents.first
                                   : null;
                               String localNotes = '';
+                              String localDocument = '';
+                              final TextEditingController
+                              localDocumentController = TextEditingController();
+                              String formatCpf(String v) {
+                                final d = normalizeDigits(v);
+                                final len = d.length;
+                                if (len <= 3) return d;
+                                if (len <= 6)
+                                  return '${d.substring(0, 3)}.${d.substring(3)}';
+                                if (len <= 9)
+                                  return '${d.substring(0, 3)}.${d.substring(3, 6)}.${d.substring(6)}';
+                                return '${d.substring(0, 3)}.${d.substring(3, 6)}.${d.substring(6, 9)}-${d.substring(9)}';
+                              }
+
+                              // formatting will be applied in the TextField.onChanged
                               return StatefulBuilder(
                                 builder: (rcCtx, rcSetState) {
                                   return AlertDialog(
@@ -320,6 +288,70 @@ Future<void> showAttendanceModal(
                                             maxLines: 3,
                                             onChanged: (v) => localNotes = v,
                                           ),
+                                          const SizedBox(height: 8),
+                                          if (type == AttendanceType.checkout)
+                                            TextField(
+                                              controller:
+                                                  localDocumentController,
+                                              decoration: InputDecoration(
+                                                hintText: translate(
+                                                  'attendance.responsible_document_placeholder',
+                                                ),
+                                                helperText: translate(
+                                                  'attendance.responsible_document_helper',
+                                                ),
+                                              ),
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              onChanged: (raw) {
+                                                final digits = normalizeDigits(
+                                                  raw,
+                                                );
+                                                final limited =
+                                                    digits.length > 11
+                                                    ? digits.substring(0, 11)
+                                                    : digits;
+                                                final formatted = formatCpf(
+                                                  limited,
+                                                );
+                                                if (formatted != raw) {
+                                                  localDocumentController
+                                                      .value = TextEditingValue(
+                                                    text: formatted,
+                                                    selection:
+                                                        TextSelection.collapsed(
+                                                          offset:
+                                                              formatted.length,
+                                                        ),
+                                                  );
+                                                }
+                                                rcSetState(
+                                                  () =>
+                                                      localDocument = formatted,
+                                                );
+                                              },
+                                            ),
+                                          if (type == AttendanceType.checkout)
+                                            const SizedBox(height: 8),
+                                          if (type == AttendanceType.checkout &&
+                                              localDocument.isNotEmpty &&
+                                              normalizeDigits(
+                                                    localDocument,
+                                                  ).length !=
+                                                  11)
+                                            Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: Text(
+                                                translate(
+                                                  'attendance.invalid_document',
+                                                ),
+                                                style: TextStyle(
+                                                  color: Theme.of(
+                                                    rcCtx,
+                                                  ).colorScheme.error,
+                                                ),
+                                              ),
+                                            ),
                                         ],
                                       ),
                                     ),
@@ -332,10 +364,19 @@ Future<void> showAttendanceModal(
                                         ),
                                       ),
                                       ElevatedButton(
-                                        onPressed: () => Navigator.of(rc).pop({
-                                          'responsible': chosen,
-                                          'notes': localNotes,
-                                        }),
+                                        onPressed:
+                                            (type == AttendanceType.checkout &&
+                                                normalizeDigits(
+                                                      localDocument,
+                                                    ).length !=
+                                                    11)
+                                            ? null
+                                            : () => Navigator.of(rc).pop({
+                                                'responsible': chosen,
+                                                'notes': localNotes,
+                                                'responsibleDocument':
+                                                    localDocument,
+                                              }),
                                         child: Text(translate('buttons.next')),
                                       ),
                                     ],
@@ -352,6 +393,8 @@ Future<void> showAttendanceModal(
                           }
                           selectedResponsibleId = result['responsible'];
                           notes = result['notes'];
+                          typedResponsibleDocument =
+                              result['responsibleDocument'];
                         }
 
                         // Confirmation dialog
@@ -418,35 +461,39 @@ Future<void> showAttendanceModal(
                         if (confirm == true) {
                           try {
                             if (type == AttendanceType.checkin) {
-                              final responsible = selectedResponsibleId != null
-                                  ? userController.getUserById(
-                                      selectedResponsibleId,
-                                    )
-                                  : null;
-                              final payload = <String, dynamic>{
-                                'childSnapshot': _snapshotFromChild(child),
+                              // Build payload according to backend contract
+                              final res = await attendanceController.checkin({
+                                'childId': child.id,
                                 if (selectedResponsibleId != null)
-                                  'responsibleSnapshot':
-                                      _snapshotFromParent(
-                                        responsible,
-                                        selectedResponsibleId,
-                                      ),
+                                  'responsibleIdWhoCheckedInId':
+                                      selectedResponsibleId,
                                 if (notes != null && notes.isNotEmpty)
                                   'notes': notes,
-                              };
-                              final res = await attendanceController.checkin(
-                                payload,
-                              );
+                                if (companyId != null && companyId.isNotEmpty)
+                                  'companyId': companyId,
+                              });
                               ok = (res.id != null);
                             } else {
                               String? responsibleDocument;
+                              // Prefer document typed by the operator in the dialog
                               if (selectedResponsibleId != null) {
+                                // try to get typed document from dialog result
+                                // `selectedResponsibleDocument` is in scope above
+                                // but not here; recompute from result map instead
+                                // If dialog provided a document, use it; otherwise
+                                // fallback to parent's stored document.
                                 final parent = GetIt.I<ParentController>()
                                     .getUserById(selectedResponsibleId);
                                 responsibleDocument = parent?.document;
                               }
-                              final payload = <String, dynamic>{
-                                'childSnapshot': _snapshotFromChild(child),
+                              // If dialog returned an explicit document, override
+                              // (result variable available above as selectedResponsibleDocument)
+                              if (typedResponsibleDocument != null &&
+                                  typedResponsibleDocument.isNotEmpty) {
+                                responsibleDocument = typedResponsibleDocument;
+                              }
+                              final checkoutPayload = <String, dynamic>{
+                                'childId': child.id,
                                 if (responsibleDocument != null &&
                                     responsibleDocument.isNotEmpty)
                                   'responsibleDocument': normalizeDigits(
@@ -454,9 +501,11 @@ Future<void> showAttendanceModal(
                                   ),
                                 if (notes != null && notes.isNotEmpty)
                                   'notes': notes,
+                                if (companyId != null && companyId.isNotEmpty)
+                                  'companyId': companyId,
                               };
                               final res = await attendanceController.checkout(
-                                payload,
+                                checkoutPayload,
                               );
                               ok = (res.id != null || res.checkOutTime != null);
                             }
@@ -484,15 +533,14 @@ Future<void> showAttendanceModal(
                         }
 
                         if (!innerCtx.mounted) return;
+                        final successMsg = type == AttendanceType.checkin
+                            ? 'Checkin realizado com sucesso'
+                            : 'Checkout realizado com sucesso';
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
                               ok
-                                  ? (type == AttendanceType.checkin
-                                        ? 'Checkin realizado com sucesso'
-                                        : translate(
-                                            'attendance.operation_success',
-                                          ))
+                                  ? successMsg
                                   : translate('attendance.operation_error'),
                             ),
                           ),

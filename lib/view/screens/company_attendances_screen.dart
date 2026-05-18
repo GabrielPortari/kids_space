@@ -335,11 +335,13 @@ class _CompanyAttendancesScreenState extends State<CompanyAttendancesScreen> {
                               ),
                             ],
                           )
-                        : ListView.separated(
-                            padding: const EdgeInsets.all(12),
+                        : ListView.builder(
+                            padding: const EdgeInsets.only(
+                              top: 8.0,
+                              left: 8.0,
+                              right: 8.0,
+                            ),
                             itemCount: filteredEvents.length,
-                            separatorBuilder: (_, __) =>
-                                const Divider(height: 1),
                             itemBuilder: (_, index) {
                               final event = filteredEvents[index];
                               final isCheckin =
@@ -351,34 +353,35 @@ class _CompanyAttendancesScreenState extends State<CompanyAttendancesScreen> {
                               final when = formatDate_ddMM_HHmm(
                                 event.checkInTime ?? event.checkOutTime,
                               );
+                              final typeLabel = isCheckin
+                                  ? translate('home.check_in')
+                                  : translate('home.check_out');
 
-                              return ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: isCheckin
-                                      ? Colors.green.withValues(alpha: 0.14)
-                                      : Colors.red.withValues(alpha: 0.14),
-                                  child: Icon(
-                                    isCheckin ? Icons.login : Icons.logout,
-                                    color: isCheckin
-                                        ? Colors.green
-                                        : Colors.red,
-                                  ),
+                              return Card(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 12.0,
+                                  vertical: 6.0,
                                 ),
-                                title: Text(childName),
-                                subtitle: Text('$when\nID: ${event.id ?? '-'}'),
-                                isThreeLine: true,
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      tooltip: 'Detalhes',
-                                      icon: const Icon(Icons.info_outline),
-                                      onPressed: () => _showAttendanceDetails(
-                                        event,
-                                        childName,
-                                      ),
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0,
+                                    vertical: 8.0,
+                                  ),
+                                  leading: CircleAvatar(
+                                    backgroundColor: isCheckin
+                                        ? Colors.green.withValues(alpha: 0.14)
+                                        : Colors.red.withValues(alpha: 0.14),
+                                    child: Icon(
+                                      isCheckin ? Icons.login : Icons.logout,
+                                      color: isCheckin
+                                          ? Colors.green
+                                          : Colors.red,
                                     ),
-                                  ],
+                                  ),
+                                  title: Text(childName),
+                                  subtitle: Text('$typeLabel · $when'),
+                                  onTap: () =>
+                                      _showAttendanceDetails(event, childName),
                                 ),
                               );
                             },

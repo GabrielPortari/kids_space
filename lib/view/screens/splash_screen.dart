@@ -67,7 +67,7 @@ class _SplashScreenState extends State<SplashScreen> {
             SizedBox(
               height: 140,
               child: Image.asset(
-                'assets/images/kids_space_logo.png',
+                'assets/images/kids_space_logo.jpg',
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) =>
                     const Icon(Icons.child_care, size: 80),
