@@ -9,6 +9,7 @@ import 'package:kids_space/model/address.dart';
 import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
+import 'package:kids_space/view/widgets/health_info_edit_bottom_sheet.dart';
 import 'package:kids_space/util/localization_service.dart';
 
 /// Helper that shows a choice modal to edit personal data or address and
@@ -53,6 +54,12 @@ Future<void> showProfileEditDialogs(
               title: Text(translate('profile.edit_address')),
               onTap: () => Navigator.of(context).pop('address'),
             ),
+            if (child != null && childController != null)
+              ListTile(
+                leading: const Icon(Icons.health_and_safety),
+                title: Text(translate('health_info.edit_title')),
+                onTap: () => Navigator.of(context).pop('health'),
+              ),
             ListTile(
               leading: const Icon(Icons.close, color: danger),
               title: Text(translate('buttons.cancel')),
@@ -91,6 +98,14 @@ Future<void> showProfileEditDialogs(
       );
     } else if (child != null && childController != null) {
       await _editChildAddress(
+        context,
+        child: child,
+        childController: childController,
+      );
+    }
+  } else if (choice == 'health') {
+    if (child != null && childController != null) {
+      await _editChildHealthInfo(
         context,
         child: child,
         childController: childController,
@@ -538,6 +553,11 @@ Future<bool?> showChildEditDialogs(
               onTap: () => Navigator.of(context).pop('address'),
             ),
             ListTile(
+              leading: const Icon(Icons.health_and_safety),
+              title: Text(translate('health_info.edit_title')),
+              onTap: () => Navigator.of(context).pop('health'),
+            ),
+            ListTile(
               leading: const Icon(Icons.close, color: danger),
               title: Text(translate('buttons.cancel')),
               onTap: () => Navigator.of(context).pop(null),
@@ -556,6 +576,12 @@ Future<bool?> showChildEditDialogs(
     );
   } else if (choice == 'address') {
     return await _editChildAddress(
+      context,
+      child: child,
+      childController: childController,
+    );
+  } else if (choice == 'health') {
+    return await _editChildHealthInfo(
       context,
       child: child,
       childController: childController,
@@ -752,6 +778,53 @@ Future<bool?> _editChildAddress(
     success,
     'Endereço atualizado com sucesso.',
     'Falha ao atualizar endereço.',
+  );
+  return success;
+}
+
+Future<bool?> _editChildHealthInfo(
+  BuildContext context, {
+  Child? child,
+  required ChildController childController,
+}) async {
+  if (child == null) return null;
+
+  final result = await showHealthInfoEditBottomSheet(
+    context: context,
+    current: child.healthInfo,
+  );
+  if (result == null) return null;
+
+  final confirmed = await _confirmDialog(
+    context,
+    translate('profile.confirm_change_title'),
+    translate('health_info.confirm_change'),
+  );
+  if (confirmed != true) return null;
+
+  final updated = Child(
+    id: child.id,
+    createdAt: child.createdAt,
+    updatedAt: DateTime.now(),
+    name: child.name,
+    email: child.email,
+    birthDate: child.birthDate,
+    document: child.document,
+    contact: child.contact,
+    address: child.address,
+    companyId: child.companyId,
+    parents: child.parents,
+    checkedIn: child.checkedIn,
+    userType: child.userType,
+    healthInfo: result,
+  );
+
+  final success = await childController.updateChild(updated);
+  await _showResultDialog(
+    context,
+    success,
+    translate('health_info.update_success'),
+    translate('health_info.update_error'),
   );
   return success;
 }

@@ -2,6 +2,7 @@ import 'package:kids_space/model/user_type.dart';
 
 import 'base_model.dart';
 import 'address.dart';
+import 'child_health_info.dart';
 
 class Child extends BaseModel {
   final String? name;
@@ -15,6 +16,7 @@ class Child extends BaseModel {
   final String? companyId;
   final bool? checkedIn;
   final UserType? userType;
+  final ChildHealthInfo? healthInfo;
 
   Child({
     super.id,
@@ -31,6 +33,7 @@ class Child extends BaseModel {
     this.companyId,
     this.checkedIn,
     this.userType,
+    this.healthInfo,
   });
 
   factory Child.fromJson(Map<String, dynamic> json) => Child(
@@ -84,6 +87,11 @@ class Child extends BaseModel {
     contact: json['contact'] as String?,
     companyId: json['companyId'] as String?,
     checkedIn: json['checkedIn'] is bool ? json['checkedIn'] as bool : null,
+    healthInfo: json['healthInfo'] is Map
+        ? ChildHealthInfo.fromJson(
+            Map<String, dynamic>.from(json['healthInfo']),
+          )
+        : null,
     userType: userTypeFromString(
       (json['userType'] is String)
           ? json['userType'] as String?
@@ -108,6 +116,7 @@ class Child extends BaseModel {
     'companyId': companyId,
     'checkedIn': checkedIn,
     'userType': userTypeToString(userType),
+    'healthInfo': healthInfo?.toJson(),
   };
 
   Child copyWith({
@@ -124,6 +133,7 @@ class Child extends BaseModel {
     String? companyId,
     bool? checkedIn,
     UserType? user,
+    ChildHealthInfo? healthInfo,
   }) {
     return Child(
       id: id ?? this.id,
@@ -139,6 +149,7 @@ class Child extends BaseModel {
       companyId: companyId ?? this.companyId,
       checkedIn: checkedIn ?? this.checkedIn,
       userType: user ?? this.userType,
+      healthInfo: healthInfo ?? this.healthInfo,
     );
   }
 }

@@ -198,5 +198,32 @@
   "collaborators": {
     "created": "Colaborador cadastrado com sucesso.",
     "create_error": "Falha ao cadastrar colaborador."
+  },
+  "children": {
+    "created": "Criança cadastrada com sucesso.",
+    "create_error": "Falha ao cadastrar criança.",
+    "add_title": "Cadastrar criança"
+  },
+  "health_info": {
+    "title": "Cuidados médicos",
+    "no_data": "Nenhuma informação de saúde cadastrada.",
+    "edit_title": "Editar cuidados médicos",
+    "confirm_change": "Deseja aplicar as alterações nos cuidados médicos?",
+    "update_success": "Cuidados médicos atualizados com sucesso.",
+    "update_error": "Falha ao atualizar cuidados médicos.",
+    "dietary_restrictions": "Restrições alimentares",
+    "allergies": "Alergias",
+    "medical_conditions": "Condições médicas",
+    "fears_or_sensitivities": "Medos e sensibilidades",
+    "medications": "Medicamentos",
+    "medication": "Medicamento",
+    "add_medication": "Adicionar medicamento",
+    "remove_medication": "Remover medicamento",
+    "med_name": "Nome",
+    "med_dosage": "Dosagem",
+    "med_schedule": "Horário(s)",
+    "med_schedule_hint": "ex: 08h e 12h",
+    "pick_time": "Selecionar horário",
+    "add_item_hint": "Adicionar item..."
   }
 }

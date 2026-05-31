@@ -11,6 +11,7 @@ import 'package:kids_space/view/widgets/profile_header_section.dart';
 import 'package:kids_space/view/widgets/profile_info_card_section.dart';
 import 'package:kids_space/view/widgets/profile_children_card_section.dart';
 import 'package:kids_space/view/widgets/profile_responsibles_card_section.dart';
+import 'package:kids_space/view/widgets/profile_health_info_section.dart';
 import 'package:kids_space/util/localization_service.dart';
 
 class ProfileContent extends StatelessWidget {
@@ -103,6 +104,8 @@ class ProfileContent extends StatelessWidget {
           ProfileChildrenCardSection(parent: selectedParent),
         if (selectedChild != null)
           ProfileResponsiblesCardSection(child: selectedChild),
+        if (selectedChild != null)
+          ProfileHealthInfoSection(healthInfo: selectedChild!.healthInfo),
       ],
     );
   }

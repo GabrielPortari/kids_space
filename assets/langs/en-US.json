@@ -198,5 +198,32 @@
   "collaborators": {
     "created": "Collaborator registered successfully.",
     "create_error": "Failed to register collaborator."
+  },
+  "children": {
+    "created": "Child registered successfully.",
+    "create_error": "Failed to register child.",
+    "add_title": "Register child"
+  },
+  "health_info": {
+    "title": "Medical care",
+    "no_data": "No health information registered.",
+    "edit_title": "Edit medical care",
+    "confirm_change": "Do you want to apply the changes to medical care?",
+    "update_success": "Medical care updated successfully.",
+    "update_error": "Failed to update medical care.",
+    "dietary_restrictions": "Dietary restrictions",
+    "allergies": "Allergies",
+    "medical_conditions": "Medical conditions",
+    "fears_or_sensitivities": "Fears and sensitivities",
+    "medications": "Medications",
+    "medication": "Medication",
+    "add_medication": "Add medication",
+    "remove_medication": "Remove medication",
+    "med_name": "Name",
+    "med_dosage": "Dosage",
+    "med_schedule": "Schedule",
+    "med_schedule_hint": "e.g. 08h and 12h",
+    "pick_time": "Pick time",
+    "add_item_hint": "Add item..."
   }
 }

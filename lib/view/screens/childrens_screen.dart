@@ -2,16 +2,21 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kids_space/controller/auth_controller.dart';
+import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/controller/parent_controller.dart';
 import 'package:kids_space/controller/attendance_controller.dart';
 import 'package:kids_space/model/parent.dart';
 import 'package:kids_space/model/child.dart';
+import 'package:kids_space/model/user_type.dart';
+import 'package:kids_space/util/localization_service.dart';
 import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/design_system/app_text.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
+import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
 import 'package:kids_space/view/widgets/skeleton_list.dart';
 
 class ChildrensScreen extends StatefulWidget {
@@ -23,11 +28,23 @@ class ChildrensScreen extends StatefulWidget {
 }
 
 class _ChildrensScreenState extends State<ChildrensScreen> {
+  final AuthController _authController = GetIt.I.get<AuthController>();
+  final CollaboratorController _collaboratorController =
+      GetIt.I.get<CollaboratorController>();
   final CompanyController _companyController = GetIt.I.get<CompanyController>();
   final ChildController _childController = GetIt.I.get<ChildController>();
   final ParentController _parentController = GetIt.I.get<ParentController>();
-  final AttendanceController _attendanceController = GetIt.I
-      .get<AttendanceController>();
+  final AttendanceController _attendanceController =
+      GetIt.I.get<AttendanceController>();
+
+  bool get _canManageChildren {
+    final role = _authController.role.toString().toLowerCase();
+    final userType = _collaboratorController.loggedCollaborator?.userType;
+    return role.contains('company') ||
+        role.contains('collaborator') ||
+        userType == UserType.company ||
+        userType == UserType.collaborator;
+  }
 
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
@@ -167,6 +184,13 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
               leading: Navigator.canPop(context) ? const BackButton() : null,
             )
           : null,
+      floatingActionButton: (!widget.onlyActive && _canManageChildren)
+          ? FloatingActionButton(
+              onPressed: _onAddChild,
+              tooltip: translate('profile.edit_child'),
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -304,6 +328,166 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
             );
           },
         ),
+      ),
+    );
+  }
+
+  Future<void> _onAddChild() async {
+    final companyId = _companyController.company?.id;
+
+    final personalFields = [
+      FieldDefinition(
+        key: 'name',
+        label: translate('profile.name'),
+        initialValue: null,
+        required: true,
+      ),
+      FieldDefinition(
+        key: 'email',
+        label: translate('profile.email'),
+        type: FieldType.email,
+        initialValue: null,
+      ),
+      FieldDefinition(
+        key: 'birthDate',
+        label: translate('profile.birth_date'),
+        type: FieldType.date,
+        initialValue: null,
+      ),
+      FieldDefinition(
+        key: 'phone',
+        label: translate('profile.phone'),
+        type: FieldType.phone,
+        initialValue: null,
+      ),
+      FieldDefinition(
+        key: 'document',
+        label: translate('profile.document'),
+        initialValue: null,
+      ),
+    ];
+
+    final personalRes = await showEditEntityBottomSheet(
+      context: context,
+      title: translate('children.add_title'),
+      fields: personalFields,
+    );
+    if (personalRes == null || !mounted) return;
+
+    final inherit = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(translate('profile.address_title')),
+        content: Text(translate('ui.inherit_address_question')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(translate('ui.no')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(translate('ui.yes')),
+          ),
+        ],
+      ),
+    );
+    if (inherit == null || !mounted) return;
+
+    Map<String, dynamic>? addressRes;
+    if (inherit == false) {
+      final addressFields = [
+        FieldDefinition(
+          key: 'address',
+          label: translate('profile.address'),
+          initialValue: null,
+        ),
+        FieldDefinition(
+          key: 'addressNumber',
+          label: translate('profile.address_number'),
+          initialValue: null,
+        ),
+        FieldDefinition(
+          key: 'addressComplement',
+          label: translate('profile.address_complement'),
+          initialValue: null,
+        ),
+        FieldDefinition(
+          key: 'neighborhood',
+          label: translate('profile.neighborhood'),
+          initialValue: null,
+        ),
+        FieldDefinition(
+          key: 'city',
+          label: translate('profile.city'),
+          initialValue: null,
+        ),
+        FieldDefinition(
+          key: 'state',
+          label: translate('profile.state'),
+          initialValue: null,
+        ),
+        FieldDefinition(
+          key: 'zipCode',
+          label: translate('profile.zip_code'),
+          initialValue: null,
+        ),
+      ];
+      addressRes = await showEditEntityBottomSheet(
+        context: context,
+        title: translate('profile.edit_address'),
+        fields: addressFields,
+      );
+      if (addressRes == null || !mounted) return;
+    }
+
+    final payload = <String, dynamic>{
+      'name': personalRes['name']?.toString(),
+      'email': personalRes['email']?.toString(),
+      'document': personalRes['document']?.toString(),
+      'contact': personalRes['phone']?.toString(),
+      'birthDate': personalRes['birthDate']?.toString(),
+      'companyId': companyId,
+      'parents': [],
+    };
+
+    if (inherit == false && addressRes != null) {
+      payload['address'] = {
+        'street': addressRes['address']?.toString(),
+        'number': addressRes['addressNumber']?.toString(),
+        'complement': addressRes['addressComplement']?.toString(),
+        'neighborhood': addressRes['neighborhood']?.toString(),
+        'city': addressRes['city']?.toString(),
+        'state': addressRes['state']?.toString(),
+        'zipcode': addressRes['zipCode']?.toString(),
+      };
+    }
+
+    bool success = false;
+    try {
+      final created = await _childController.createChild(payload);
+      success = created.id != null;
+    } catch (_) {
+      success = false;
+    }
+
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          success ? translate('common.success') : translate('common.error'),
+        ),
+        content: Text(
+          success
+              ? translate('children.created')
+              : translate('children.create_error'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(translate('buttons.ok')),
+          ),
+        ],
       ),
     );
   }
