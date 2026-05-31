@@ -89,10 +89,6 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.pushReplacementNamed(context, '/company_screen');
       return;
     }
-    if (role == UserRole.admin || role == UserRole.master) {
-      Navigator.pushReplacementNamed(context, '/admin_screen');
-      return;
-    }
     if (role == UserRole.collaborator) {
       Navigator.pushReplacementNamed(context, '/app_bottom_nav');
       return;

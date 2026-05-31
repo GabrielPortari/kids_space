@@ -5,11 +5,7 @@ import 'package:kids_space/service/child_service.dart';
 import 'package:kids_space/service/collaborator_service.dart';
 import 'package:kids_space/service/parent_service.dart';
 import 'package:kids_space/service/attendance_service.dart';
-import 'package:kids_space/service/admin_service.dart';
-import 'package:kids_space/service/admin_management_service.dart';
 import 'package:kids_space/controller/company_controller.dart';
-import 'package:kids_space/controller/admin_controller.dart';
-import 'package:kids_space/controller/admin_management_controller.dart';
 import 'package:kids_space/controller/auth_controller.dart';
 import 'package:kids_space/controller/parent_controller.dart';
 import 'package:kids_space/controller/child_controller.dart';
@@ -26,8 +22,6 @@ void setup(GetIt getIt) {
   getIt.registerSingleton<ParentService>(ParentService());
   getIt.registerSingleton<ChildService>(ChildService());
   getIt.registerSingleton<AttendanceService>(AttendanceService());
-  getIt.registerSingleton<AdminService>(AdminService());
-  getIt.registerSingleton<AdminManagementService>(AdminManagementService());
 
   // Controllers
   getIt.registerSingleton<AuthController>(AuthController());
@@ -36,8 +30,4 @@ void setup(GetIt getIt) {
   getIt.registerSingleton<ChildController>(ChildController());
   getIt.registerSingleton<CollaboratorController>(CollaboratorController());
   getIt.registerSingleton<AttendanceController>(AttendanceController());
-  getIt.registerSingleton<AdminController>(AdminController());
-  getIt.registerSingleton<AdminManagementController>(
-    AdminManagementController(),
-  );
 }

@@ -1,7 +1,7 @@
 {
   "app_bottom_nav": {
     "home": "Home",
-    "users": "Users",
+    "parents": "Guardians",
     "reports": "Reports"
   },
   "home": {
@@ -10,33 +10,18 @@
     "collaborator": "Collaborator",
     "collaborator_name": "Collaborator: {name_placeholder}",
     "user_name": "User Name",
-    "actives": "Actives",
+    "actives": "Active",
     "see_more": "See more",
-    "check_in": "Check in",
-    "check_out": "Check out",
-    "last_check_in": "Last check in",
-    "last_check_out": "Last check out",
+    "check_in": "Check-in",
+    "check_out": "Check-out",
+    "last_check_in": "Last check-in",
+    "last_check_out": "Last check-out",
     "loading": "Loading...",
-    "child_removed": "Removed child",
+    "child_removed": "Child removed",
     "no_checkins_registered": "No check-ins registered",
     "no_checkouts_registered": "No check-outs registered",
-    "30_last_presence_log": "Last 30 presence records",
-    "no_presence_records": "No presence records"
-  },
-  "user_profile": {
-    "title": "User Profile",
-    "no_children": "You have no registered children",
-    "children_under_responsibility": "Children under responsibility",
-    "child_updated": "Child updated"
-  },
-  "buttons": {
-    "edit": "Edit",
-    "save": "Save",
-    "cancel": "Cancel",
-    "register_child": "Register child",
-    "confirm": "Confirm",
-    "ok": "OK",
-    "next": "Next"
+    "30_last_presence_log": "Last 30 attendance records",
+    "no_presence_records": "No attendance records"
   },
   "profile": {
     "name_placeholder": "{name_placeholder}",
@@ -46,41 +31,41 @@
     "delete_success": "Operation completed: {name} deleted.",
     "delete_error": "Failed to delete {name}.",
     "user_type": {
-      "user": "User",
       "company": "Company",
       "admin": "Administrator",
       "collaborator": "Collaborator",
+      "parent": "Guardian",
       "child": "Child",
       "unknown": "Unknown"
     },
-    "personal_title": "Personal Data",
+    "personal_title": "Personal information",
     "address_title": "Address",
-    "responsibles_title": "Responsibles",
-    "no_responsibles": "No responsibles registered.",
+    "responsibles_title": "Guardians",
+    "no_responsibles": "No guardians registered.",
     "edit_user": "Edit user data",
-    "edit_personal": "Edit personal data",
+    "edit_personal": "Edit personal information",
     "edit_address": "Edit address",
     "edit_child": "Edit child data",
     "confirm_change_title": "Confirm change",
-    "confirm_change_personal": "Apply changes to personal data?",
-    "confirm_change_address": "Apply changes to address?",
-    "personal_update_success": "Personal data updated successfully.",
-    "personal_update_error": "Failed to update personal data.",
+    "confirm_change_personal": "Do you want to apply the changes to personal information?",
+    "confirm_change_address": "Do you want to apply the changes to the address?",
+    "personal_update_success": "Personal information updated successfully.",
+    "personal_update_error": "Failed to update personal information.",
     "address_update_success": "Address updated successfully.",
     "address_update_error": "Failed to update address.",
     "name": "Name",
     "email": "Email",
-    "birth_date": "Birth date",
+    "birth_date": "Date of Birth",
     "phone": "Phone",
     "document": "Document",
     "status": "Status",
     "active": "Active",
     "inactive": "Inactive",
-    "fantasy_name": "Fantasy Name",
-    "corporate_name": "Corporate Name",
+    "fantasy_name": "Trade name",
+    "corporate_name": "Legal name",
     "cnpj": "CNPJ",
     "website": "Website",
-    "responsible": "Responsible",
+    "responsible": "Guardian",
     "logo_url": "Logo (URL)",
     "collaborators": "Collaborators",
     "users": "Users",
@@ -91,8 +76,15 @@
     "neighborhood": "Neighborhood",
     "city": "City",
     "state": "State",
-    "zip_code": "ZIP",
+    "zip_code": "ZIP Code",
     "id_label": "Id:"
+  },
+  "buttons": {
+    "confirm": "Confirm",
+    "ok": "OK",
+    "cancel": "Cancel",
+    "save": "Save",
+    "next": "Next"
   },
   "common": {
     "success": "Success",
@@ -100,14 +92,14 @@
   },
   "attendance": {
     "search_child": "Search child",
-    "no_children_found": "No child found",
-    "responsible_and_notes": "Responsible and Notes",
-    "select_responsible": "Select responsible:",
+    "no_children_found": "No children found",
+    "responsible_and_notes": "Guardian and Notes",
+    "select_responsible": "Select the guardian:",
     "notes_optional": "Notes (optional)",
     "confirm_attendance": "Confirm attendance",
     "child_label": "Child",
     "type_label": "Type",
-    "responsible_label": "Responsible",
+    "responsible_label": "Guardian",
     "collaborator_label": "Collaborator",
     "notes_label": "Notes",
     "operation_success": "Operation completed",
@@ -139,23 +131,29 @@
     "type_active_collaborators": "Active collaborators"
   },
   "login": {
-    "invalid_credentials": "Invalid user or password!",
-    "title": "Login - {company}",
-    "welcome": "Welcome {company}",
+    "invalid_credentials": "Invalid username or password!",
+    "title": "Login",
+    "welcome": "Welcome",
     "email_label": "E-mail",
     "email_hint": "Enter your e-mail",
+    "no_account": "Sign up",
+    "forgot_password": "Forgot your password?",
+    "enter_email": "Enter your e-mail",
+    "forgot_sent": "Recovery link sent (simulated)",
     "password_label": "Password",
     "password_hint": "Enter your password",
-    "login_button": "Log in"
+    "login_button": "Sign in"
   },
-  "admin": {
-    "exit_title": "Log out",
-    "exit_message": "Do you want to leave the admin panel?",
-    "logout": "Log out"
+  "register": {
+    "title": "Company Registration",
+    "submit": "Register",
+    "success": "Company registered successfully.",
+    "failed": "Failed to register company.",
+    "password": "Password"
   },
   "company": {
     "name": "Name",
-    "legal_name": "Corporate name",
+    "legal_name": "Legal name",
     "cnpj": "CNPJ",
     "address": "Address",
     "number": "Number",
@@ -163,11 +161,20 @@
     "neighborhood": "Neighborhood",
     "city": "City",
     "state": "State",
-    "zipcode": "ZIP",
+    "zipcode": "ZIP Code",
     "contact": "Contact",
     "email": "E-mail",
-    "update_success": "Company data updated successfully.",
+    "update_success": "Company information updated successfully.",
     "address_update_success": "Company address updated successfully."
+  },
+  "validation": {
+    "required": "Required field",
+    "password_length": "Password must be at least 6 characters"
+  },
+  "admin": {
+    "exit_title": "Exit",
+    "exit_message": "Do you want to exit the admin panel?",
+    "logout": "Log out"
   },
   "ui": {
     "id_copied": "ID copied to clipboard: {id}",
@@ -178,18 +185,18 @@
       "delete": "Delete (Admin)"
     },
     "children_under_responsibility": "Children under responsibility",
-    "no_children": "No child registered",
+    "no_children": "No children registered",
     "logout_confirm_title": "Confirm logout",
-    "logout_confirm_message": "Do you really want to sign out?",
-    "logout_button": "Sign out",
+    "logout_confirm_message": "Are you sure you want to log out?",
+    "logout_button": "Log out",
     "confirm_delete_title": "Confirm deletion",
-    "confirm_delete_message": "Do you really want to delete {name}?",
-    "inherit_address_question": "Do you want to inherit the responsible's address?",
+    "confirm_delete_message": "Are you sure you want to delete {name}?",
+    "inherit_address_question": "Do you want to inherit the guardian's address?",
     "yes": "Yes",
     "no": "No"
   },
   "collaborators": {
-    "created": "Collaborator created successfully.",
-    "create_error": "Failed to create collaborator."
+    "created": "Collaborator registered successfully.",
+    "create_error": "Failed to register collaborator."
   }
 }

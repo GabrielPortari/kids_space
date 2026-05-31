@@ -58,13 +58,13 @@ class _CompanyScreenState extends State<CompanyScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        tooltip: translate('admin.exit_title'),
+        tooltip: translate('ui.logout_confirm_title'),
         onPressed: () {
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
-              title: Text(translate('admin.exit_title')),
-              content: Text(translate('admin.exit_message')),
+              title: Text(translate('ui.logout_confirm_title')),
+              content: Text(translate('ui.logout_confirm_message')),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -83,7 +83,7 @@ class _CompanyScreenState extends State<CompanyScreen> {
                       context,
                     ).pushNamedAndRemoveUntil('/login', (route) => false);
                   },
-                  child: Text(translate('admin.logout')),
+                  child: Text(translate('ui.logout_button')),
                 ),
               ],
             ),

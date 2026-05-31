@@ -47,3 +47,4 @@ app.*.map.json
 
 # Local env (contains secrets)
 .env
+RELATORIO.md

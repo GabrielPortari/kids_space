@@ -9,7 +9,7 @@ import '../model/collaborator.dart';
 import 'company_controller.dart';
 import '../model/user_type.dart';
 
-enum UserRole { company, collaborator, admin, master, unknown }
+enum UserRole { company, collaborator, unknown }
 
 class AuthController extends ChangeNotifier {
   final AuthService _service = AuthService();
@@ -23,16 +23,12 @@ class AuthController extends ChangeNotifier {
     final normalized = role?.trim().toLowerCase();
     if (normalized == 'company') return UserRole.company;
     if (normalized == 'collaborator') return UserRole.collaborator;
-    if (normalized == 'admin') return UserRole.admin;
-    if (normalized == 'master') return UserRole.master;
     return UserRole.unknown;
   }
 
   String _roleToStorage(UserRole role) {
     if (role == UserRole.company) return 'company';
     if (role == UserRole.collaborator) return 'collaborator';
-    if (role == UserRole.admin) return 'admin';
-    if (role == UserRole.master) return 'master';
     return 'unknown';
   }
 
