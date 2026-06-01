@@ -6,9 +6,9 @@ import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/parent_controller.dart';
 import 'package:kids_space/model/parent.dart';
 import 'package:kids_space/model/address.dart';
-import 'package:kids_space/util/string_utils.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
+import 'package:kids_space/view/widgets/person_list_tile.dart';
 import 'package:kids_space/view/widgets/skeleton_list.dart';
 import 'package:kids_space/util/localization_service.dart';
 
@@ -294,12 +294,12 @@ class _ParentsScreenState extends State<ParentsScreen> {
     } else if (document.length >= 2) {
       document = document.replaceRange(2, document.length, '.***.***-*');
     }
-    return Card(
+    return Padding(
       key: ValueKey(parent.id),
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: PersonListTile(
+        name: parent.name,
+        subtitle: document.isNotEmpty ? document : parent.contact,
         onTap: () {
           _parentController.selectedUserId = parent.id;
           Navigator.of(context).push(
@@ -308,52 +308,6 @@ class _ParentsScreenState extends State<ParentsScreen> {
             ),
           );
         },
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 56,
-                child: Center(
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.2),
-                    child: Text(
-                      getInitials(parent.name),
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      parent.name ?? '',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      document,
-                      style: const TextStyle(fontSize: 15, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

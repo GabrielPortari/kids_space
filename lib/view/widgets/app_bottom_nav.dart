@@ -14,41 +14,50 @@ class AppBottomNav extends StatefulWidget {
 class _AppBottomNavState extends State<AppBottomNav> {
   int _selectedIndex = 0;
 
-  static final List<Widget> _pages = <Widget>[
+  static final List<Widget> _pages = [
     const HomeScreen(),
     const ParentsScreen(),
     const ChildrensScreen(onlyActive: false),
   ];
 
-  List<BottomNavigationBarItem> get _items => <BottomNavigationBarItem>[
-    BottomNavigationBarItem(
-      icon: const Icon(Icons.home),
-      label: translate('app_bottom_nav.home'),
-    ),
-    BottomNavigationBarItem(
-      icon: const Icon(Icons.person),
-      label: translate('app_bottom_nav.parents'),
-    ),
-    BottomNavigationBarItem(
-      icon: const Icon(Icons.child_friendly),
-      label: translate('Crianças'),
-    ),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _selectedIndex, children: _pages),
-      bottomNavigationBar: BottomNavigationBar(
-        items: _items,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(color: const Color(0xFFEEF1F7), width: 1),
+          ),
+        ),
+        child: NavigationBar(
+          selectedIndex: _selectedIndex,
+          onDestinationSelected: (i) => setState(() => _selectedIndex = i),
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          elevation: 0,
+          height: 64,
+          animationDuration: const Duration(milliseconds: 200),
+          destinations: [
+            NavigationDestination(
+              icon: const Icon(Icons.home_outlined),
+              selectedIcon: const Icon(Icons.home_rounded),
+              label: translate('app_bottom_nav.home'),
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.people_outline_rounded),
+              selectedIcon: const Icon(Icons.people_rounded),
+              label: translate('app_bottom_nav.parents'),
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.child_care_outlined),
+              selectedIcon: const Icon(Icons.child_care_rounded),
+              label: translate('Crianças'),
+            ),
+          ],
+        ),
       ),
     );
   }

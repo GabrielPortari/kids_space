@@ -9,10 +9,6 @@ import 'package:kids_space/controller/parent_controller.dart';
 import 'package:kids_space/model/attendance.dart';
 import 'package:kids_space/util/date_hour_util.dart';
 import 'package:kids_space/util/localization_service.dart';
-import 'package:kids_space/view/design_system/app_button.dart';
-import 'package:kids_space/view/design_system/app_card.dart';
-import 'package:kids_space/view/design_system/app_text.dart';
-import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/screens/childrens_screen.dart';
 import 'package:kids_space/view/screens/company_attendances_screen.dart';
 import 'package:kids_space/view/widgets/attendance_modal.dart';
@@ -55,51 +51,37 @@ class _CompanyDashboardScreenState extends State<CompanyDashboardScreen> {
   Future<void> _onRefresh() async {
     if (_companyController.company == null) {
       if (_collaboratorController.loggedCollaborator == null) {
-        try {
-          await _authController.checkLoggedUser();
-        } catch (_) {}
+        try { await _authController.checkLoggedUser(); } catch (_) {}
       }
-
       final collId = _collaboratorController.loggedCollaborator?.companyId;
       if (collId != null && collId.isNotEmpty) {
-        try {
-          await _companyController.loadCompanyNameById(collId);
-        } catch (_) {}
+        try { await _companyController.loadCompanyNameById(collId); } catch (_) {}
       }
     }
-
-    final String? companyId = _companyController.company?.id;
-    final futures = <Future<dynamic>>[
-      _childController.refreshChildrenForCompany(companyId),
-      _parentController.refreshUsersForCompany(companyId),
-      _collaboratorController.refreshCollaboratorsForCompany(companyId),
-      _attendanceController.loadActiveCheckinsForCompany(companyId),
-      _attendanceController.loadLast10AttendancesForCompany(companyId),
-      _attendanceController.loadLastCheckinAndCheckoutForCompany(companyId),
-    ];
-
-    try {
-      await Future.wait(futures);
-    } catch (e) {
-      _showError(e);
-    }
-  }
-
-  void _showError(Object e) {
-    if (!mounted) return;
-    final msg = e is Exception ? e.toString() : 'Erro interno';
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-  }
-
-  void _openAllCompanyAttendances() {
     final companyId = _companyController.company?.id;
-    if (companyId == null || companyId.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Company nao carregada.')));
-      return;
+    try {
+      await Future.wait([
+        _childController.refreshChildrenForCompany(companyId),
+        _parentController.refreshUsersForCompany(companyId),
+        _collaboratorController.refreshCollaboratorsForCompany(companyId),
+        if (companyId != null) ...[
+          _attendanceController.loadActiveCheckinsForCompany(companyId),
+          _attendanceController.loadLast10AttendancesForCompany(companyId),
+          _attendanceController.loadLastCheckinAndCheckoutForCompany(companyId),
+        ],
+      ]);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
     }
+  }
 
+  void _openAttendances() {
+    final companyId = _companyController.company?.id;
+    if (companyId == null || companyId.isEmpty) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => CompanyAttendancesScreen(
@@ -112,9 +94,11 @@ class _CompanyDashboardScreenState extends State<CompanyDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final mq = MediaQuery.of(context);
-    final screenHeight = mq.size.height - mq.padding.top - kToolbarHeight;
-    final listHeight = (screenHeight * 0.36).clamp(180.0, 520.0).toDouble();
+    final listHeight = ((MediaQuery.sizeOf(context).height -
+                MediaQuery.paddingOf(context).top -
+                kToolbarHeight) *
+            0.36)
+        .clamp(180.0, 520.0);
 
     return AnimatedBuilder(
       animation: Listenable.merge([
@@ -125,7 +109,7 @@ class _CompanyDashboardScreenState extends State<CompanyDashboardScreen> {
         _collaboratorController,
       ]),
       builder: (_, __) {
-        final globalLoading =
+        final loading =
             _companyController.isLoading ||
             _childController.refreshLoading ||
             _parentController.refreshLoading ||
@@ -135,424 +119,561 @@ class _CompanyDashboardScreenState extends State<CompanyDashboardScreen> {
             _attendanceController.isLoadingLastCheck;
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Dashboard')),
-          body: SafeArea(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 720),
-                    child: RefreshIndicator(
-                      onRefresh: _onRefresh,
-                      child: SingleChildScrollView(
-                        controller: _scrollController,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0,
-                                ),
-                                child: _companyTotalsCard(globalLoading),
+          backgroundColor: const Color(0xFFF7F9FC),
+          appBar: AppBar(
+            title: Text(translate('home.company')),
+            leading: const BackButton(),
+          ),
+          body: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: RefreshIndicator(
+                onRefresh: _onRefresh,
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // ── Totais ────────────────────────────────────────────
+                      _TotalsCard(
+                        childCount: _childController.children.length,
+                        parentCount: _parentController.parents.length,
+                        collaboratorCount:
+                            _collaboratorController.collaborators.length,
+                        loading: loading,
+                      ),
+                      const SizedBox(height: 12),
+
+                      // ── Botões ────────────────────────────────────────────
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _DashboardActionButton(
+                              label: translate('home.check_in'),
+                              icon: Icons.login_rounded,
+                              color: const Color(0xFF388E3C),
+                              bgColor: const Color(0xFFE8F5E9),
+                              enabled: !loading,
+                              onTap: () => showAttendanceModal(
+                                context,
+                                AttendanceType.checkin,
                               ),
-                              const SizedBox(height: 8),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0,
-                                ),
-                                child: _checkInAndOutButtons(globalLoading),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _DashboardActionButton(
+                              label: translate('home.check_out'),
+                              icon: Icons.logout_rounded,
+                              color: const Color(0xFFE65100),
+                              bgColor: const Color(0xFFFFF3E0),
+                              enabled: !loading,
+                              onTap: () => showAttendanceModal(
+                                context,
+                                AttendanceType.checkout,
                               ),
-                              const SizedBox(height: 8),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0,
-                                ),
-                                child: _activeChildrenInfoCard(globalLoading),
-                              ),
-                              const SizedBox(height: 8),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0,
-                                  vertical: 8.0,
-                                ),
-                                child: _presenceLogCard(
-                                  listHeight,
-                                  globalLoading,
-                                ),
-                              ),
-                              const SizedBox(height: 48),
-                            ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // ── Ativos ────────────────────────────────────────────
+                      _ActiveSummaryCard(
+                        attendanceController: _attendanceController,
+                        childController: _childController,
+                        loading: loading,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const ChildrensScreen(onlyActive: true),
                           ),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 12),
+
+                      // ── Log ───────────────────────────────────────────────
+                      _LogCard(
+                        height: listHeight,
+                        loading: loading,
+                        events: _attendanceController.logEvents,
+                        childController: _childController,
+                        logCtrl: _logListController,
+                        onSeeMore: _openAttendances,
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         );
       },
     );
   }
+}
 
-  Widget _checkInAndOutButtons(bool globalLoading) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          AppButton(
-            enabled: !globalLoading,
-            text: translate('home.check_in'),
-            icon: const Icon(Icons.login_rounded, color: Colors.white),
-            onPressed: globalLoading
-                ? null
-                : () => showAttendanceModal(context, AttendanceType.checkin),
-          ),
-          AppButton(
-            enabled: !globalLoading,
-            text: translate('home.check_out'),
-            icon: const Icon(Icons.logout_rounded, color: Colors.white),
-            onPressed: globalLoading
-                ? null
-                : () => showAttendanceModal(context, AttendanceType.checkout),
-          ),
-        ],
-      ),
-    );
-  }
+// ── Widgets internos ──────────────────────────────────────────────────────────
 
-  Widget _companyTotalsCard(bool globalLoading) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: AppCard(
-        child: Skeletonizer(
-          enabled: globalLoading,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextHeaderSmall('Resumo da empresa'),
-              const SizedBox(height: 12),
-              _totalRow(
-                icon: Icons.child_care,
-                color: success,
-                label: 'Criancas cadastradas',
-                value: _childController.children.length,
+class _TotalsCard extends StatelessWidget {
+  final int childCount;
+  final int parentCount;
+  final int collaboratorCount;
+  final bool loading;
+
+  const _TotalsCard({
+    required this.childCount,
+    required this.parentCount,
+    required this.collaboratorCount,
+    required this.loading,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Skeletonizer(
+      enabled: loading,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFEEF1F7)),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: _StatItem(
+                icon: Icons.child_care_rounded,
+                color: const Color(0xFFAD1457),
+                bg: const Color(0xFFFCE4EC),
+                label: 'Crianças',
+                value: childCount,
               ),
-              const SizedBox(height: 8),
-              _totalRow(
-                icon: Icons.people_alt_outlined,
-                color: success,
-                label: 'Responsaveis cadastrados',
-                value: _parentController.parents.length,
+            ),
+            const _VertDivider(),
+            Expanded(
+              child: _StatItem(
+                icon: Icons.people_rounded,
+                color: const Color(0xFFE65100),
+                bg: const Color(0xFFFFF3E0),
+                label: 'Responsáveis',
+                value: parentCount,
               ),
-              const SizedBox(height: 8),
-              _totalRow(
-                icon: Icons.badge_outlined,
-                color: success,
-                label: 'Colaboradores cadastrados',
-                value: _collaboratorController.collaborators.length,
+            ),
+            const _VertDivider(),
+            Expanded(
+              child: _StatItem(
+                icon: Icons.badge_rounded,
+                color: const Color(0xFF00838F),
+                bg: const Color(0xFFE0F7FA),
+                label: 'Colaboradores',
+                value: collaboratorCount,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
-  Widget _totalRow({
-    required IconData icon,
-    required Color color,
-    required String label,
-    required int value,
-  }) {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 16,
-          backgroundColor: color.withValues(alpha: 0.15),
-          child: Icon(icon, size: 18, color: color),
+class _VertDivider extends StatelessWidget {
+  const _VertDivider();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 1,
+    height: 48,
+    color: const Color(0xFFEEF1F7),
+    margin: const EdgeInsets.symmetric(horizontal: 8),
+  );
+}
+
+class _StatItem extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final Color bg;
+  final String label;
+  final int value;
+
+  const _StatItem({
+    required this.icon,
+    required this.color,
+    required this.bg,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(10)),
+        child: Icon(icon, size: 20, color: color),
+      ),
+      const SizedBox(height: 6),
+      Text(
+        '$value',
+        style: const TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF0F1218),
         ),
-        const SizedBox(width: 10),
-        Expanded(child: TextBodyMedium(label)),
-        TextHeaderMedium('$value'),
-      ],
-    );
+      ),
+      Text(
+        label,
+        style: const TextStyle(fontSize: 11, color: Color(0xFF9AA3B5)),
+      ),
+    ],
+  );
+}
+
+class _DashboardActionButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final Color bgColor;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _DashboardActionButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.bgColor,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: enabled ? bgColor : const Color(0xFFF7F9FC),
+    borderRadius: BorderRadius.circular(12),
+    child: InkWell(
+      onTap: enabled ? onTap : null,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: enabled ? color.withValues(alpha: 0.3) : const Color(0xFFEEF1F7),
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 28, color: enabled ? color : const Color(0xFFC4CADA)),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: enabled ? color : const Color(0xFFC4CADA),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _ActiveSummaryCard extends StatelessWidget {
+  final AttendanceController attendanceController;
+  final ChildController childController;
+  final bool loading;
+  final VoidCallback onTap;
+
+  const _ActiveSummaryCard({
+    required this.attendanceController,
+    required this.childController,
+    required this.loading,
+    required this.onTap,
+  });
+
+  String _name(Map<String, dynamic>? snapshot, String? id) {
+    if (snapshot?['name'] is String) return snapshot!['name'] as String;
+    return childController.getChildById(id)?.name ?? '—';
   }
 
-  Widget _activeChildrenInfoCard(bool globalLoading) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: AppCard(
-        child: Skeletonizer(
-          enabled: globalLoading,
-          child: Row(
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const ChildrensScreen(onlyActive: true),
-                  ),
+  @override
+  Widget build(BuildContext context) {
+    final lastIn = attendanceController.lastCheckIn;
+    final lastOut = attendanceController.lastCheckOut;
+
+    return Skeletonizer(
+      enabled: loading,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFEEF1F7)),
+        ),
+        child: Column(
+          children: [
+            InkWell(
+              onTap: onTap,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE8F0FE),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
                 ),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      TextTitle(translate('home.actives')),
-                      TextHeaderLarge(
-                        '${_attendanceController.activeCheckins.length}',
-                      ),
-                      TextBodyMedium(translate('home.see_more')),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 32),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        Icon(Icons.login, color: success, size: 20),
-                        const SizedBox(width: 6),
-                        TextHeaderSmall(translate('home.last_check_in')),
-                      ],
+                    const Icon(Icons.child_care_rounded,
+                        color: Color(0xFF2962FF), size: 22),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        translate('home.actives'),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1A3EB3),
+                        ),
+                      ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 32.0, top: 2.0),
-                      child:
-                          (_attendanceController.lastCheckIn?.childSnapshot !=
-                                  null &&
-                              _attendanceController
-                                      .lastCheckIn!
-                                      .childSnapshot!['name']
-                                  is String)
-                          ? TextBodyMedium(
-                              '${_attendanceController.lastCheckIn!.childSnapshot!['name']} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckIn?.checkInTime)}',
-                            )
-                          : (_childController
-                                        .getChildById(
-                                          _attendanceController
-                                              .lastCheckIn
-                                              ?.childId,
-                                        )
-                                        ?.name !=
-                                    null
-                                ? TextBodyMedium(
-                                    '${_childController.getChildById(_attendanceController.lastCheckIn?.childId)!.name} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckIn?.checkInTime)}',
-                                  )
-                                : TextBodyMedium(
-                                    translate('home.no_checkins_registered'),
-                                  )),
+                    Text(
+                      '${attendanceController.activeCheckins.length}',
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF2962FF),
+                      ),
                     ),
-                    const Divider(height: 20),
-                    Row(
-                      children: [
-                        Icon(Icons.logout, color: danger, size: 20),
-                        const SizedBox(width: 6),
-                        TextHeaderSmall(translate('home.last_check_out')),
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 32.0, top: 2.0),
-                      child:
-                          (_attendanceController.lastCheckOut?.childSnapshot !=
-                                  null &&
-                              _attendanceController
-                                      .lastCheckOut!
-                                      .childSnapshot!['name']
-                                  is String)
-                          ? TextBodyMedium(
-                              '${_attendanceController.lastCheckOut!.childSnapshot!['name']} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckOut?.checkOutTime)}',
-                            )
-                          : (_childController
-                                        .getChildById(
-                                          _attendanceController
-                                              .lastCheckOut
-                                              ?.childId,
-                                        )
-                                        ?.name !=
-                                    null
-                                ? TextBodyMedium(
-                                    '${_childController.getChildById(_attendanceController.lastCheckOut?.childId)!.name} - ${formatDate_ddMM_HHmm(_attendanceController.lastCheckOut?.checkOutTime)}',
-                                  )
-                                : TextBodyMedium(
-                                    translate('home.no_checkouts_registered'),
-                                  )),
-                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.chevron_right_rounded,
+                        color: Color(0xFF2962FF), size: 20),
                   ],
                 ),
               ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _EventRow(
+                    icon: Icons.login_rounded,
+                    color: const Color(0xFF388E3C),
+                    label: translate('home.last_check_in'),
+                    name: _name(lastIn?.childSnapshot, lastIn?.childId),
+                    time: formatDate_ddMM_HHmm(lastIn?.checkInTime),
+                    empty: translate('home.no_checkins_registered'),
+                  ),
+                  const Divider(height: 20, color: Color(0xFFEEF1F7)),
+                  _EventRow(
+                    icon: Icons.logout_rounded,
+                    color: const Color(0xFFE65100),
+                    label: translate('home.last_check_out'),
+                    name: _name(lastOut?.childSnapshot, lastOut?.childId),
+                    time: formatDate_ddMM_HHmm(lastOut?.checkOutTime),
+                    empty: translate('home.no_checkouts_registered'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EventRow extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String label;
+  final String name;
+  final String time;
+  final String empty;
+
+  const _EventRow({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.name,
+    required this.time,
+    required this.empty,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasData = name.isNotEmpty && name != '—';
+    return Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 18, color: color),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label,
+                  style: const TextStyle(fontSize: 11, color: Color(0xFF9AA3B5))),
+              Text(
+                hasData ? name : empty,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: hasData ? const Color(0xFF0F1218) : const Color(0xFFC4CADA),
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
         ),
-      ),
+        if (hasData)
+          Text(time,
+              style: const TextStyle(fontSize: 12, color: Color(0xFF9AA3B5))),
+      ],
     );
   }
+}
 
-  Widget _presenceLogCard(double listHeight, bool globalLoading) {
-    final events = _attendanceController.logEvents;
+class _LogCard extends StatelessWidget {
+  final double height;
+  final bool loading;
+  final List events;
+  final ChildController childController;
+  final ScrollController logCtrl;
+  final VoidCallback onSeeMore;
 
-    if (globalLoading) {
-      return AppCard(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 8, 0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextHeaderSmall(
-                      translate('home.30_last_presence_log'),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: null,
-                    child: Text(translate('home.see_more')),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: listHeight,
-              child: const SkeletonList(itemCount: 6),
-            ),
-          ],
-        ),
-      );
-    }
+  const _LogCard({
+    required this.height,
+    required this.loading,
+    required this.events,
+    required this.childController,
+    required this.logCtrl,
+    required this.onSeeMore,
+  });
 
-    if (events.isEmpty) {
-      return AppCard(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 8, 0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextHeaderSmall(
-                      translate('home.30_last_presence_log'),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: _openAllCompanyAttendances,
-                    child: Text(translate('home.see_more')),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: listHeight,
-              child: Center(
-                child: TextBodyMedium(translate('home.no_presence_records')),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return AppCard(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 8, 0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextHeaderSmall(
-                    translate('home.30_last_presence_log'),
-                  ),
+  @override
+  Widget build(BuildContext context) => Container(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: const Color(0xFFEEF1F7)),
+    ),
+    child: Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 8, 0),
+          child: Row(
+            children: [
+              const Icon(Icons.history_rounded, size: 18, color: Color(0xFF9AA3B5)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  translate('home.30_last_presence_log'),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                 ),
-                TextButton(
-                  onPressed: _openAllCompanyAttendances,
-                  child: Text(translate('home.see_more')),
-                ),
-              ],
-            ),
+              ),
+              TextButton(
+                onPressed: loading ? null : onSeeMore,
+                child: Text(translate('home.see_more')),
+              ),
+            ],
           ),
-          SizedBox(
-            height: listHeight,
-            child: Scrollbar(
-              thumbVisibility: true,
-              controller: _logListController,
-              child: ListView.separated(
-                controller: _logListController,
-                itemCount: events.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (_, idx) {
-                  final event = events[idx];
-                  final isCheckin =
-                      event.attendanceType == AttendanceType.checkin;
-                  final child = _childController.getChildById(event.childId);
-                  final childName =
-                      (event.childSnapshot != null &&
-                          event.childSnapshot!['name'] is String)
-                      ? (event.childSnapshot!['name'] as String)
-                      : (child?.name ?? '');
-
-                  return ListTile(
-                    contentPadding: const EdgeInsets.fromLTRB(
-                      4.0,
-                      0.0,
-                      8.0,
-                      0.0,
-                    ),
-                    leading: CircleAvatar(
-                      radius: 20,
-                      backgroundColor: isCheckin ? successBg : dangerBg,
-                      backgroundImage:
-                          (event.childSnapshot != null &&
-                              event.childSnapshot!['photoUrl'] is String)
-                          ? NetworkImage(
-                              event.childSnapshot!['photoUrl'] as String,
-                            )
-                          : null,
-                      child:
-                          (event.childSnapshot == null ||
-                              event.childSnapshot!['photoUrl'] == null)
-                          ? Icon(
-                              isCheckin ? Icons.login : Icons.logout,
-                              color: isCheckin ? success : danger,
-                              size: 18,
-                            )
-                          : null,
-                    ),
-                    title: TextBodyMedium(
-                      childName,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    subtitle: TextBodySmall(
-                      formatDate_ddMM_HHmm(
-                        event.checkInTime ?? event.checkOutTime,
+        ),
+        const Divider(height: 1, color: Color(0xFFEEF1F7)),
+        SizedBox(
+          height: height,
+          child: loading
+              ? const SkeletonList(itemCount: 6)
+              : events.isEmpty
+              ? Center(
+                  child: Text(
+                    translate('home.no_presence_records'),
+                    style: const TextStyle(color: Color(0xFF9AA3B5)),
+                  ),
+                )
+              : ListView.separated(
+                  controller: logCtrl,
+                  padding: EdgeInsets.zero,
+                  itemCount: events.length,
+                  separatorBuilder: (_, __) =>
+                      const Divider(height: 1, color: Color(0xFFEEF1F7)),
+                  itemBuilder: (_, i) {
+                    final e = events[i] as Attendance;
+                    final isIn = e.attendanceType == AttendanceType.checkin;
+                    final name = e.childSnapshot?['name'] is String
+                        ? e.childSnapshot!['name'] as String
+                        : childController.getChildById(e.childId)?.name ?? '';
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
                       ),
-                    ),
-                    trailing: Chip(
-                      label: TextBodySmall(
-                        isCheckin
-                            ? translate('home.check_in')
-                            : translate('home.check_out'),
-                        style: TextStyle(
-                          color: isCheckin ? successBg : dangerBg,
+                      leading: CircleAvatar(
+                        radius: 20,
+                        backgroundColor: isIn
+                            ? const Color(0xFFE8F5E9)
+                            : const Color(0xFFFFF3E0),
+                        child: Icon(
+                          isIn ? Icons.login_rounded : Icons.logout_rounded,
+                          size: 16,
+                          color: isIn
+                              ? const Color(0xFF388E3C)
+                              : const Color(0xFFE65100),
                         ),
                       ),
-                      backgroundColor: isCheckin ? success : danger,
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+                      title: Text(
+                        name,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        formatDate_ddMM_HHmm(e.checkInTime ?? e.checkOutTime),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF9AA3B5),
+                        ),
+                      ),
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isIn
+                              ? const Color(0xFFE8F5E9)
+                              : const Color(0xFFFFF3E0),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          isIn
+                              ? translate('home.check_in')
+                              : translate('home.check_out'),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isIn
+                                ? const Color(0xFF388E3C)
+                                : const Color(0xFFE65100),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
+    ),
+  );
 }

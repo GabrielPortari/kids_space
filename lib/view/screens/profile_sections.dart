@@ -90,13 +90,19 @@ class ProfileContent extends StatelessWidget {
               selectedCompany?.id,
         ),
         const SizedBox(height: 16),
+        // Alerta de saúde no topo para crianças — dado crítico antes do scroll
+        if (selectedChild != null)
+          ProfileHealthInfoSection(healthInfo: selectedChild!.healthInfo),
+        if (selectedChild != null) const SizedBox(height: 16),
         ProfileInfoCardSection(
           title: translate('profile.personal_title'),
+          icon: Icons.person_outline_rounded,
           entries: profileEntries,
         ),
         const SizedBox(height: 16),
         ProfileInfoCardSection(
           title: translate('profile.address_title'),
+          icon: Icons.home_outlined,
           entries: addressEntries,
         ),
         const SizedBox(height: 16),
@@ -104,8 +110,6 @@ class ProfileContent extends StatelessWidget {
           ProfileChildrenCardSection(parent: selectedParent),
         if (selectedChild != null)
           ProfileResponsiblesCardSection(child: selectedChild),
-        if (selectedChild != null)
-          ProfileHealthInfoSection(healthInfo: selectedChild!.healthInfo),
       ],
     );
   }
@@ -167,52 +171,48 @@ class ProfileContent extends StatelessWidget {
 
   Map<String, String> _getAddressData() {
     if (selectedParent != null) {
-      final u = selectedParent!;
-      final u_address = u.address;
+      final addr = selectedParent!.address;
       return {
-        translate('profile.address'): u_address?.address ?? '-',
-        translate('profile.address_number'): u_address?.number ?? '-',
-        translate('profile.address_complement'): u_address?.complement ?? '-',
-        translate('profile.neighborhood'): u_address?.neighborhood ?? '-',
-        translate('profile.city'): u_address?.city ?? '-',
-        translate('profile.state'): u_address?.state ?? '-',
-        translate('profile.zip_code'): u_address?.zipcode ?? '-',
+        translate('profile.address'): addr?.address ?? '-',
+        translate('profile.address_number'): addr?.number ?? '-',
+        translate('profile.address_complement'): addr?.complement ?? '-',
+        translate('profile.neighborhood'): addr?.neighborhood ?? '-',
+        translate('profile.city'): addr?.city ?? '-',
+        translate('profile.state'): addr?.state ?? '-',
+        translate('profile.zip_code'): addr?.zipcode ?? '-',
       };
     } else if (selectedCollaborator != null) {
-      final c = selectedCollaborator!;
-      final c_address = c.address;
+      final addr = selectedCollaborator!.address;
       return {
-        translate('profile.address'): c_address?.address ?? '-',
-        translate('profile.address_number'): c_address?.number ?? '-',
-        translate('profile.address_complement'): c_address?.complement ?? '-',
-        translate('profile.neighborhood'): c_address?.neighborhood ?? '-',
-        translate('profile.city'): c_address?.city ?? '-',
-        translate('profile.state'): c_address?.state ?? '-',
-        translate('profile.zip_code'): c_address?.zipcode ?? '-',
+        translate('profile.address'): addr?.address ?? '-',
+        translate('profile.address_number'): addr?.number ?? '-',
+        translate('profile.address_complement'): addr?.complement ?? '-',
+        translate('profile.neighborhood'): addr?.neighborhood ?? '-',
+        translate('profile.city'): addr?.city ?? '-',
+        translate('profile.state'): addr?.state ?? '-',
+        translate('profile.zip_code'): addr?.zipcode ?? '-',
       };
     } else if (selectedCompany != null) {
-      final co = selectedCompany!;
-      final co_address = co.address;
+      final addr = selectedCompany!.address;
       return {
-        translate('profile.address'): co_address?.address ?? '-',
-        translate('profile.address_number'): co_address?.number ?? '-',
-        translate('profile.address_complement'): co_address?.complement ?? '-',
-        translate('profile.neighborhood'): co_address?.neighborhood ?? '-',
-        translate('profile.city'): co_address?.city ?? '-',
-        translate('profile.state'): co_address?.state ?? '-',
-        translate('profile.zip_code'): co_address?.zipcode ?? '-',
+        translate('profile.address'): addr?.address ?? '-',
+        translate('profile.address_number'): addr?.number ?? '-',
+        translate('profile.address_complement'): addr?.complement ?? '-',
+        translate('profile.neighborhood'): addr?.neighborhood ?? '-',
+        translate('profile.city'): addr?.city ?? '-',
+        translate('profile.state'): addr?.state ?? '-',
+        translate('profile.zip_code'): addr?.zipcode ?? '-',
       };
     } else if (selectedChild != null) {
-      final ch = selectedChild!;
-      final ch_address = ch.address;
+      final addr = selectedChild!.address;
       return {
-        translate('profile.address'): ch_address?.address ?? '-',
-        translate('profile.address_number'): ch_address?.number ?? '-',
-        translate('profile.address_complement'): ch_address?.complement ?? '-',
-        translate('profile.neighborhood'): ch_address?.neighborhood ?? '-',
-        translate('profile.city'): ch_address?.city ?? '-',
-        translate('profile.state'): ch_address?.state ?? '-',
-        translate('profile.zip_code'): ch_address?.zipcode ?? '-',
+        translate('profile.address'): addr?.address ?? '-',
+        translate('profile.address_number'): addr?.number ?? '-',
+        translate('profile.address_complement'): addr?.complement ?? '-',
+        translate('profile.neighborhood'): addr?.neighborhood ?? '-',
+        translate('profile.city'): addr?.city ?? '-',
+        translate('profile.state'): addr?.state ?? '-',
+        translate('profile.zip_code'): addr?.zipcode ?? '-',
       };
     }
     return {};

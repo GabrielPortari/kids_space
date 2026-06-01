@@ -10,13 +10,28 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   final AuthController _authController = GetIt.I<AuthController>();
+  late final AnimationController _animCtrl;
+  late final Animation<double> _fadeAnim;
 
   @override
   void initState() {
     super.initState();
+    _animCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _fadeAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
+    _animCtrl.forward();
     _startSplashFlow();
+  }
+
+  @override
+  void dispose() {
+    _animCtrl.dispose();
+    super.dispose();
   }
 
   Future<void> _startSplashFlow() async {
@@ -28,8 +43,6 @@ class _SplashScreenState extends State<SplashScreen> {
       return;
     }
 
-    // If there is a persisted session, validate it and only then show
-    // the expiration message when it is actually invalid/expired.
     final valid = await _authController.ensureSessionValid();
     if (!valid) {
       if (!mounted) return;
@@ -40,12 +53,12 @@ class _SplashScreenState extends State<SplashScreen> {
           title: Text(translate('splash.session_expired_title')),
           content: Text(translate('splash.session_expired_message')),
           actions: [
-            TextButton(
+            FilledButton(
               onPressed: () {
                 Navigator.of(c).pop();
                 Navigator.of(
                   context,
-                ).pushNamedAndRemoveUntil('/login', (route) => false);
+                ).pushNamedAndRemoveUntil('/login', (_) => false);
               },
               child: Text(translate('buttons.ok')),
             ),
@@ -57,42 +70,88 @@ class _SplashScreenState extends State<SplashScreen> {
     await _checkLoggedUser();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              height: 140,
-              child: Image.asset(
-                'assets/images/kids_space_logo.jpg',
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.child_care, size: 80),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const CircularProgressIndicator(),
-          ],
-        ),
-      ),
-    );
-  }
-
   Future<void> _checkLoggedUser() async {
     await _authController.checkLoggedUser();
     if (!mounted) return;
-    final role = _authController.role;
-    if (role == UserRole.company) {
-      Navigator.pushReplacementNamed(context, '/company_screen');
-      return;
-    }
-    if (role == UserRole.collaborator) {
-      Navigator.pushReplacementNamed(context, '/app_bottom_nav');
-      return;
-    }
-    Navigator.pushReplacementNamed(context, '/login');
+    final route = _authController.role == UserRole.company
+        ? '/company_screen'
+        : _authController.role == UserRole.collaborator
+        ? '/app_bottom_nav'
+        : '/login';
+    Navigator.pushReplacementNamed(context, route);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      backgroundColor: scheme.primary,
+      body: FadeTransition(
+        opacity: _fadeAnim,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Logo container com sombra suave sobre fundo primário
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 32,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Image.asset(
+                  'assets/images/kids_space_logo.jpg',
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => Icon(
+                    Icons.child_care_rounded,
+                    size: 64,
+                    color: scheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // App name
+              Text(
+                'Kids Space',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Gestão de presença infantil',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.75),
+                ),
+              ),
+              const SizedBox(height: 48),
+
+              // Loading indicator branco sobre fundo primário
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: Colors.white.withValues(alpha: 0.9),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

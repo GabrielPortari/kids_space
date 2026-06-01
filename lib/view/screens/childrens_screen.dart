@@ -13,8 +13,6 @@ import 'package:kids_space/model/child.dart';
 import 'package:kids_space/model/user_type.dart';
 import 'package:kids_space/util/localization_service.dart';
 import 'package:kids_space/util/string_utils.dart';
-import 'package:kids_space/view/design_system/app_text.dart';
-import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
 import 'package:kids_space/view/widgets/skeleton_list.dart';
@@ -320,11 +318,16 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
                 ],
               );
             }
+            final sorted = List<Child>.from(filtered)
+              ..sort((a, b) {
+                final aActive = (a.checkedIn ?? false) ? 0 : 1;
+                final bActive = (b.checkedIn ?? false) ? 0 : 1;
+                return aActive.compareTo(bActive);
+              });
             return ListView.builder(
               padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-              itemCount: _childController.filteredChildren.length,
-              itemBuilder: (context, index) =>
-                  _childTile(_childController.filteredChildren[index]),
+              itemCount: sorted.length,
+              itemBuilder: (context, index) => _childTile(sorted[index]),
             );
           },
         ),
@@ -500,77 +503,115 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
     final firstResponsible = child.parents != null && child.parents!.isNotEmpty
         ? _parentController.getUserById(child.parents!.first)
         : null;
+    final isCheckedIn = child.checkedIn ?? false;
+    final hasHealth = child.healthInfo != null && !child.healthInfo!.isEmpty;
 
-    return Card(
+    return Padding(
       key: ValueKey(child.id),
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => ProfileScreen(selectedChild: child),
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => ProfileScreen(selectedChild: child)),
+          ),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFEEF1F7)),
             ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 56,
-                child: Center(
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.2),
-                    child: TextBodyMedium(getInitials(child.name)),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              children: [
+                Stack(
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          child.name ?? '',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          overflow: TextOverflow.ellipsis,
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor:
+                          Theme.of(context).colorScheme.primaryContainer,
+                      child: Text(
+                        getInitials(child.name),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
-                        if (child.checkedIn ?? false)
-                          Container(
-                            margin: const EdgeInsets.only(left: 8),
-                            width: 10,
-                            height: 10,
-                            decoration: const BoxDecoration(
-                              color: success,
-                              shape: BoxShape.circle,
-                            ),
+                      ),
+                    ),
+                    if (isCheckedIn)
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF388E3C),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
                           ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Responsável: ${firstResponsible?.name ?? '-'}',
-                      style: const TextStyle(fontSize: 15),
-                    ),
-                    Text(
-                      'Telefone: ${firstResponsible?.contact ?? '-'}',
-                      style: const TextStyle(fontSize: 15, color: Colors.grey),
-                    ),
+                        ),
+                      ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              child.name ?? '—',
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF0F1218),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isCheckedIn)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF388E3C),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                'Presente',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          if (hasHealth) ...[
+                            const SizedBox(width: 4),
+                            const Icon(Icons.health_and_safety_rounded,
+                                size: 16, color: Color(0xFFE65100)),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Resp.: ${firstResponsible?.name ?? '—'}',
+                        style: const TextStyle(
+                            fontSize: 12, color: Color(0xFF9AA3B5)),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded,
+                    size: 18, color: Color(0xFFC4CADA)),
+              ],
+            ),
           ),
         ),
       ),

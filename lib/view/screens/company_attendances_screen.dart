@@ -139,6 +139,13 @@ class _CompanyAttendancesScreenState extends State<CompanyAttendancesScreen> {
     return formatDate_ddMM_HHmm(value);
   }
 
+  String _formatDuration(int seconds) {
+    final hours = seconds ~/ 3600;
+    final minutes = (seconds % 3600) ~/ 60;
+    if (hours > 0) return '${hours}h ${minutes}min';
+    return '${minutes}min';
+  }
+
   Future<void> _showAttendanceDetails(
     Attendance event,
     String childName,
@@ -205,70 +212,188 @@ class _CompanyAttendancesScreenState extends State<CompanyAttendancesScreen> {
         ? names[4]!.trim()
         : '-';
 
-    final details = <MapEntry<String, String>>[
-      MapEntry('ID', event.id ?? '-'),
-      MapEntry('Tipo', _labelForType(event.attendanceType)),
-      MapEntry('Criado em', _formatDateTime(event.createdAt)),
-      MapEntry('Atualizado em', _formatDateTime(event.updatedAt)),
-      MapEntry('Company ID', event.companyId ?? '-'),
-      MapEntry('Child ID', event.childId ?? '-'),
-      MapEntry('Nome da criança', resolvedChildName),
-      MapEntry('Responsible check-in ID', event.parentIdWhoCheckedInId ?? '-'),
-      MapEntry('Responsible check-in nome', responsibleCheckInName),
-      MapEntry(
-        'Responsible check-out ID',
-        event.parentIdWhoCheckedOutId ?? '-',
-      ),
-      MapEntry('Responsible check-out nome', responsibleCheckOutName),
-      MapEntry(
-        'Collaborator check-in ID',
-        event.collaboratorWhoCheckedInId ?? '-',
-      ),
-      MapEntry('Collaborator check-in nome', collaboratorCheckInName),
-      MapEntry(
-        'Collaborator check-out ID',
-        event.collaboratorWhoCheckedOutId ?? '-',
-      ),
-      MapEntry('Collaborator check-out nome', collaboratorCheckOutName),
-      MapEntry('Check-in', _formatDateTime(event.checkInTime)),
-      MapEntry('Check-out', _formatDateTime(event.checkOutTime)),
-      MapEntry(
-        'Tempo em segundos',
-        event.timeCheckedInSeconds?.toString() ?? '-',
-      ),
-      MapEntry(
-        'Observacoes',
-        event.notes?.trim().isNotEmpty == true ? event.notes!.trim() : '-',
-      ),
-    ];
+    final isIn = event.attendanceType == AttendanceType.checkin;
 
+    if (!mounted) return;
     await showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Detalhes do attendance'),
-        content: SizedBox(
-          width: 560,
-          child: SingleChildScrollView(
+      builder: (dialogContext) {
+        final textTheme = Theme.of(dialogContext).textTheme;
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: details
-                  .map(
-                    (d) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Text('${d.key}: ${d.value}'),
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  color: isIn
+                      ? const Color(0xFFE8F5E9)
+                      : const Color(0xFFFFF3E0),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isIn ? Icons.login_rounded : Icons.logout_rounded,
+                        color: isIn
+                            ? const Color(0xFF388E3C)
+                            : const Color(0xFFE65100),
+                        size: 22,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Detalhes da presença',
+                          style: textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: isIn
+                                ? const Color(0xFF1B5E20)
+                                : const Color(0xFFBF360C),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        color: const Color(0xFF495267),
+                        tooltip: translate('buttons.cancel'),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Content
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _AttendanceDetailRow(
+                          icon: Icons.child_care_rounded,
+                          label: translate('attendance.child_label'),
+                          value: resolvedChildName,
+                        ),
+                        _AttendanceDetailRow(
+                          icon: isIn
+                              ? Icons.login_rounded
+                              : Icons.logout_rounded,
+                          label: translate('attendance.type_label'),
+                          value: _labelForType(event.attendanceType),
+                          valueColor: isIn
+                              ? const Color(0xFF388E3C)
+                              : const Color(0xFFE65100),
+                        ),
+
+                        if (event.checkInTime != null) ...[
+                          const SizedBox(height: 16),
+                          const _AttendanceDetailSection(label: 'Check-in'),
+                          _AttendanceDetailRow(
+                            icon: Icons.access_time_rounded,
+                            label: 'Horário',
+                            value: _formatDateTime(event.checkInTime),
+                          ),
+                          _AttendanceDetailRow(
+                            icon: Icons.person_rounded,
+                            label: translate('attendance.responsible_label'),
+                            value: responsibleCheckInName,
+                          ),
+                          if (collaboratorCheckInName != '-')
+                            _AttendanceDetailRow(
+                              icon: Icons.badge_rounded,
+                              label: translate('attendance.collaborator_label'),
+                              value: collaboratorCheckInName,
+                            ),
+                        ],
+
+                        if (event.checkOutTime != null) ...[
+                          const SizedBox(height: 16),
+                          const _AttendanceDetailSection(label: 'Check-out'),
+                          _AttendanceDetailRow(
+                            icon: Icons.access_time_rounded,
+                            label: 'Horário',
+                            value: _formatDateTime(event.checkOutTime),
+                          ),
+                          _AttendanceDetailRow(
+                            icon: Icons.person_rounded,
+                            label: translate('attendance.responsible_label'),
+                            value: responsibleCheckOutName,
+                          ),
+                          if (collaboratorCheckOutName != '-')
+                            _AttendanceDetailRow(
+                              icon: Icons.badge_rounded,
+                              label: translate('attendance.collaborator_label'),
+                              value: collaboratorCheckOutName,
+                            ),
+                        ],
+
+                        if (event.timeCheckedInSeconds != null) ...[
+                          const SizedBox(height: 8),
+                          _AttendanceDetailRow(
+                            icon: Icons.timer_rounded,
+                            label: 'Tempo total',
+                            value: _formatDuration(
+                              event.timeCheckedInSeconds!,
+                            ),
+                          ),
+                        ],
+
+                        if (event.notes?.trim().isNotEmpty == true) ...[
+                          const SizedBox(height: 16),
+                          const _AttendanceDetailSection(
+                            label: 'Observações',
+                          ),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF7F9FC),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: const Color(0xFFEEF1F7),
+                              ),
+                            ),
+                            child: Text(
+                              event.notes!.trim(),
+                              style: textTheme.bodyMedium,
+                            ),
+                          ),
+                        ],
+
+                        const SizedBox(height: 16),
+                      ],
                     ),
-                  )
-                  .toList(),
+                  ),
+                ),
+
+                // Footer
+                Container(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      top: BorderSide(color: Color(0xFFEEF1F7)),
+                    ),
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      child: Text(translate('buttons.ok')),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(translate('buttons.ok')),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -278,34 +403,54 @@ class _CompanyAttendancesScreenState extends State<CompanyAttendancesScreen> {
     final filteredEvents = _filteredEvents(events);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF7F9FC),
       appBar: AppBar(
         title: Text(
           widget.companyName?.trim().isNotEmpty == true
-              ? 'Attendances - ${widget.companyName}'
-              : 'Attendances da company',
+              ? '${translate('reports.title')} — ${widget.companyName}'
+              : translate('reports.title'),
         ),
+        leading: const BackButton(),
       ),
       body: _attendanceController.isLoadingCompanyEvents
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
+                // Search field
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      labelText: 'Buscar por nome da crianca ou ID completo',
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.search),
+                      hintText: 'Buscar por nome da criança ou ID',
+                      prefixIcon: const Icon(Icons.search_rounded),
                       suffixIcon: _searchQuery.isEmpty
                           ? null
                           : IconButton(
-                              icon: const Icon(Icons.clear),
+                              icon: const Icon(Icons.close_rounded, size: 18),
                               onPressed: () => _searchController.clear(),
                             ),
                     ),
                   ),
                 ),
+
+                // Count chip
+                if (filteredEvents.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '${filteredEvents.length} registro${filteredEvents.length == 1 ? '' : 's'}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF9AA3B5),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // List
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: _load,
@@ -313,11 +458,21 @@ class _CompanyAttendancesScreenState extends State<CompanyAttendancesScreen> {
                         ? ListView(
                             children: [
                               SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.5,
+                                height: MediaQuery.sizeOf(context).height * 0.5,
                                 child: Center(
-                                  child: Text(
-                                    translate('home.no_presence_records'),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.inbox_rounded,
+                                          size: 56, color: Color(0xFFC4CADA)),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        translate('home.no_presence_records'),
+                                        style: const TextStyle(
+                                          color: Color(0xFF9AA3B5),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -327,61 +482,120 @@ class _CompanyAttendancesScreenState extends State<CompanyAttendancesScreen> {
                         ? ListView(
                             children: [
                               SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.45,
+                                height: MediaQuery.sizeOf(context).height * 0.45,
                                 child: const Center(
-                                  child: Text('Nenhum attendance encontrado.'),
+                                  child: Text(
+                                    'Nenhum registro encontrado.',
+                                    style: TextStyle(color: Color(0xFF9AA3B5)),
+                                  ),
                                 ),
                               ),
                             ],
                           )
-                        : ListView.builder(
-                            padding: const EdgeInsets.only(
-                              top: 8.0,
-                              left: 8.0,
-                              right: 8.0,
-                            ),
+                        : ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
                             itemCount: filteredEvents.length,
-                            itemBuilder: (_, index) {
-                              final event = filteredEvents[index];
-                              final isCheckin =
-                                  event.attendanceType ==
-                                  AttendanceType.checkin;
-                              final childName = _resolveChildName(
-                                event.childId,
-                              );
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 8),
+                            itemBuilder: (_, i) {
+                              final event = filteredEvents[i];
+                              final isIn =
+                                  event.attendanceType == AttendanceType.checkin;
+                              final childName =
+                                  _resolveChildName(event.childId);
                               final when = formatDate_ddMM_HHmm(
                                 event.checkInTime ?? event.checkOutTime,
                               );
-                              final typeLabel = isCheckin
+                              final typeLabel = isIn
                                   ? translate('home.check_in')
                                   : translate('home.check_out');
 
-                              return Card(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 12.0,
-                                  vertical: 6.0,
-                                ),
-                                child: ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0,
-                                    vertical: 8.0,
-                                  ),
-                                  leading: CircleAvatar(
-                                    backgroundColor: isCheckin
-                                        ? Colors.green.withValues(alpha: 0.14)
-                                        : Colors.red.withValues(alpha: 0.14),
-                                    child: Icon(
-                                      isCheckin ? Icons.login : Icons.logout,
-                                      color: isCheckin
-                                          ? Colors.green
-                                          : Colors.red,
-                                    ),
-                                  ),
-                                  title: Text(childName),
-                                  subtitle: Text('$typeLabel · $when'),
+                              return Material(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                child: InkWell(
                                   onTap: () =>
                                       _showAttendanceDetails(event, childName),
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 12,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: const Color(0xFFEEF1F7),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 20,
+                                          backgroundColor: isIn
+                                              ? const Color(0xFFE8F5E9)
+                                              : const Color(0xFFFFF3E0),
+                                          child: Icon(
+                                            isIn
+                                                ? Icons.login_rounded
+                                                : Icons.logout_rounded,
+                                            size: 18,
+                                            color: isIn
+                                                ? const Color(0xFF388E3C)
+                                                : const Color(0xFFE65100),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 14),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                childName,
+                                                style: const TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Color(0xFF0F1218),
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              Text(
+                                                when,
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Color(0xFF9AA3B5),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: isIn
+                                                ? const Color(0xFFE8F5E9)
+                                                : const Color(0xFFFFF3E0),
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                          child: Text(
+                                            typeLabel,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              color: isIn
+                                                  ? const Color(0xFF388E3C)
+                                                  : const Color(0xFFE65100),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               );
                             },
@@ -390,6 +604,72 @@ class _CompanyAttendancesScreenState extends State<CompanyAttendancesScreen> {
                 ),
               ],
             ),
+    );
+  }
+}
+
+class _AttendanceDetailRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color? valueColor;
+
+  const _AttendanceDetailRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.valueColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16, color: const Color(0xFF9AA3B5)),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 110,
+            child: Text(
+              '$label:',
+              style: const TextStyle(fontSize: 13, color: Color(0xFF9AA3B5)),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: valueColor ?? const Color(0xFF0F1218),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AttendanceDetailSection extends StatelessWidget {
+  final String label;
+
+  const _AttendanceDetailSection({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+          color: const Color(0xFF495267),
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
+        ),
+      ),
     );
   }
 }

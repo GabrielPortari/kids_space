@@ -46,5 +46,6 @@ app.*.map.json
 .github/copilot-instructions.md
 
 # Local env (contains secrets)
+.agents
 .env
 RELATORIO.md

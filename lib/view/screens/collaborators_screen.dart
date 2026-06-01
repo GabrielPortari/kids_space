@@ -9,11 +9,10 @@ import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/model/collaborator.dart';
 import 'package:kids_space/util/date_hour_util.dart';
 import 'package:kids_space/util/localization_service.dart';
-import 'package:kids_space/util/string_utils.dart';
-import 'package:kids_space/view/design_system/app_text.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
-import 'package:skeletonizer/skeletonizer.dart';
+import 'package:kids_space/view/widgets/person_list_tile.dart';
+import 'package:kids_space/view/widgets/skeleton_list.dart';
 
 class CollaboratorsScreen extends StatefulWidget {
   const CollaboratorsScreen({super.key});
@@ -350,78 +349,15 @@ class _CollaboratorsScreenState extends State<CollaboratorsScreen> {
     );
   }
 
-  Widget _buildSkeleton() {
-    return ListView.builder(
-      padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-      itemCount: 6,
-      itemBuilder: (context, index) {
-        return Skeletonizer(
-          enabled: true,
-          child: Card(
-            margin: const EdgeInsets.symmetric(vertical: 4),
-            child: Center(
-              child: ListTile(
-                leading: CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Colors.grey.shade300,
-                ),
-                title: const SizedBox.shrink(),
-                subtitle: const SizedBox.shrink(),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
+  Widget _buildSkeleton() => const SkeletonList(itemCount: 8);
 
-  Widget _tile(Collaborator c) {
-    return Card(
-      key: ValueKey(c.id),
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: () => _onTapCollaborator(c),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 56,
-                child: Center(
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.2),
-                    child: TextBodyMedium(getInitials(c.name)),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextHeaderSmall(c.name ?? '', heavy: true),
-                    const SizedBox(height: 4),
-                    TextBodyMedium(
-                      c.email ?? '',
-                      style: TextStyle(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: 0.8),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _tile(Collaborator c) => Padding(
+    key: ValueKey(c.id),
+    padding: const EdgeInsets.only(bottom: 8),
+    child: PersonListTile(
+      name: c.name,
+      subtitle: c.email ?? c.document,
+      onTap: () => _onTapCollaborator(c),
+    ),
+  );
 }
