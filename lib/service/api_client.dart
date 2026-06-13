@@ -56,6 +56,26 @@ class ApiClient {
     return _send('DELETE', path, null, headers);
   }
 
+  Future<http.Response> _rawDispatch(
+    String method,
+    Uri uri,
+    Map<String, String> headers,
+    dynamic body,
+  ) async {
+    switch (method) {
+      case 'GET':
+        return http.get(uri, headers: headers);
+      case 'POST':
+        return http.post(uri, headers: headers, body: jsonEncode(_cleanBody(body)));
+      case 'PATCH':
+        return http.patch(uri, headers: headers, body: jsonEncode(_cleanBody(body)));
+      case 'DELETE':
+        return http.delete(uri, headers: headers);
+      default:
+        throw UnsupportedError('Method not supported: $method');
+    }
+  }
+
   Future<http.Response> _send(
     String method,
     String path,
@@ -70,63 +90,17 @@ class ApiClient {
       allHeaders['Authorization'] = 'Bearer $token';
     }
 
-    http.Response res;
-    try {
-      if (method == 'GET') {
-        res = await http.get(uri, headers: allHeaders);
-      } else if (method == 'POST') {
-        final cleaned = _cleanBody(body);
-        res = await http.post(
-          uri,
-          headers: allHeaders,
-          body: jsonEncode(cleaned),
-        );
-      } else if (method == 'PATCH') {
-        final cleaned = _cleanBody(body);
-        res = await http.patch(
-          uri,
-          headers: allHeaders,
-          body: jsonEncode(cleaned),
-        );
-      } else if (method == 'DELETE') {
-        res = await http.delete(uri, headers: allHeaders);
-      } else {
-        throw UnsupportedError('Method not supported');
-      }
-    } catch (e) {
-      rethrow;
-    }
+    var res = await _rawDispatch(method, uri, allHeaders, body);
 
     if (res.statusCode == 401 && refreshTokenProvider != null) {
-      // try refresh
       final newToken = await refreshTokenProvider!();
       if (newToken != null && newToken.isNotEmpty) {
         allHeaders['Authorization'] = 'Bearer $newToken';
-        if (method == 'GET') {
-          res = await http.get(uri, headers: allHeaders);
-        } else if (method == 'POST') {
-          final cleaned = _cleanBody(body);
-          res = await http.post(
-            uri,
-            headers: allHeaders,
-            body: jsonEncode(cleaned),
-          );
-        } else if (method == 'PATCH') {
-          final cleaned = _cleanBody(body);
-          res = await http.patch(
-            uri,
-            headers: allHeaders,
-            body: jsonEncode(cleaned),
-          );
-        } else if (method == 'DELETE') {
-          res = await http.delete(uri, headers: allHeaders);
-        }
+        res = await _rawDispatch(method, uri, allHeaders, body);
       }
     }
 
-    // If response indicates lack of authorization (401 or 403) attempt to clear tokens
-    // and navigate to login so the app enforces sign-in.
-    if (res.statusCode == 401 || res.statusCode == 403) {
+    if (res.statusCode == 401) {
       try {
         if (GetIt.I.isRegistered<AuthController>()) {
           final auth = GetIt.I.get<AuthController>();
