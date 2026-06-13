@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import '../service/child_service.dart';
@@ -85,10 +86,8 @@ class ChildController extends ChangeNotifier {
   }
 
   Future<Child?> fetchChildById(String id) async {
-    try {
-      final cached = _children.firstWhere((c) => c.id == id);
-      return cached;
-    } catch (_) {}
+    final cached = _children.firstWhereOrNull((c) => c.id == id);
+    if (cached != null) return cached;
     final res = await _service.getById(id);
     if (res == null) return null;
     final c = Child.fromJson(Map<String, dynamic>.from(res));
@@ -100,11 +99,7 @@ class ChildController extends ChangeNotifier {
   /// Synchronous cached lookup for a child by id. Returns null if not cached.
   Child? getChildById(String? id) {
     if (id == null) return null;
-    try {
-      return _children.firstWhere((c) => c.id == id);
-    } catch (_) {
-      return null;
-    }
+    return _children.firstWhereOrNull((c) => c.id == id);
   }
 
   /// Async lookup that fetches from server if not present in cache.
