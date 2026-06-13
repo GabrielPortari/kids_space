@@ -12,7 +12,7 @@ import '../model/user_type.dart';
 enum UserRole { company, collaborator, unknown }
 
 class AuthController extends ChangeNotifier {
-  final AuthService _service = AuthService();
+  AuthService get _service => GetIt.I<AuthService>();
   static const _storage = FlutterSecureStorage();
   String? _idToken;
   String? _refreshToken;
