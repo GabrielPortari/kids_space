@@ -134,14 +134,10 @@ class ApiClient {
 
   dynamic _cleanBody(dynamic input) {
     if (input == null) return null;
-    if (input is String) {
-      final s = input.trim();
-      return s.isEmpty ? null : s;
-    }
+    if (input is String) return input;
     if (input is num || input is bool) return input;
     if (input is List) {
-      final out = input.map(_cleanBody).where((e) => e != null).toList();
-      return out.isEmpty ? null : out;
+      return input.map(_cleanBody).where((e) => e != null).toList();
     }
     if (input is Map) {
       final Map<String, dynamic> out = {};
@@ -149,9 +145,8 @@ class ApiClient {
         final cleaned = _cleanBody(v);
         if (cleaned != null) out[k] = cleaned;
       });
-      return out.isEmpty ? null : out;
+      return out;
     }
-    // fallback: attempt to json encode; if empty string, return null
     return input;
   }
 }
