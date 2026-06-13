@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 
 import 'package:get_it/get_it.dart';
@@ -13,6 +13,7 @@ enum UserRole { company, collaborator, unknown }
 
 class AuthController extends ChangeNotifier {
   final AuthService _service = AuthService();
+  static const _storage = FlutterSecureStorage();
   String? _idToken;
   String? _refreshToken;
   UserRole _role = UserRole.unknown;
@@ -33,10 +34,9 @@ class AuthController extends ChangeNotifier {
   }
 
   Future<void> loadFromStorage() async {
-    final prefs = await SharedPreferences.getInstance();
-    _idToken = prefs.getString('idToken');
-    _refreshToken = prefs.getString('refreshToken');
-    final r = prefs.getString('userRole');
+    _idToken = await _storage.read(key: 'idToken');
+    _refreshToken = await _storage.read(key: 'refreshToken');
+    final r = await _storage.read(key: 'userRole');
     if (r != null) {
       _role = _parseUserRole(r);
     }
@@ -44,9 +44,8 @@ class AuthController extends ChangeNotifier {
   }
 
   Future<void> saveTokens(String idToken, String refreshToken) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('idToken', idToken);
-    await prefs.setString('refreshToken', refreshToken);
+    await _storage.write(key: 'idToken', value: idToken);
+    await _storage.write(key: 'refreshToken', value: refreshToken);
     _idToken = idToken;
     _refreshToken = refreshToken;
     notifyListeners();
@@ -125,17 +124,14 @@ class AuthController extends ChangeNotifier {
   }
 
   Future<void> saveRole(UserRole role) async {
-    // Set role immediately so UI can read it synchronously.
     _role = role;
     notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('userRole', _roleToStorage(role));
+    await _storage.write(key: 'userRole', value: _roleToStorage(role));
   }
 
   Future<void> clearTokens() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('idToken');
-    await prefs.remove('refreshToken');
+    await _storage.delete(key: 'idToken');
+    await _storage.delete(key: 'refreshToken');
     _idToken = null;
     _refreshToken = null;
     notifyListeners();
@@ -195,8 +191,7 @@ class AuthController extends ChangeNotifier {
       await _service.logout();
     } catch (_) {}
     await clearTokens();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('userRole');
+    await _storage.delete(key: 'userRole');
     _role = UserRole.unknown;
   }
 
