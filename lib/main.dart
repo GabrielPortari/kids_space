@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kids_space/controller/auth_controller.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/company_controller.dart';
@@ -26,30 +25,13 @@ import 'package:kids_space/view/screens/collaborators_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
-  try {
-    await dotenv.load(fileName: '.env');
-  } catch (e) {
-    // If .env is missing, continue with defaults and avoid crashing the app.
-    // This prevents a FileNotFoundError from stopping app startup in dev setups.
-    // ignore: avoid_print
-    print('dotenv: .env not found, continuing with default env values.');
-  }
-  // helper to safely read env variables even if dotenv failed to initialize
-  String safeEnv(String key, [String? fallback]) {
-    try {
-      return dotenv.env[key] ?? (fallback ?? '');
-    } catch (_) {
-      return fallback ?? '';
-    }
-  }
-
   setup(GetIt.I);
   // register navigatorKey so services can perform global navigation (e.g., force logout)
   if (!GetIt.I.isRegistered<GlobalKey<NavigatorState>>()) {
     GetIt.I.registerSingleton<GlobalKey<NavigatorState>>(navigatorKey);
   }
   ApiClient().init(
-    baseUrl: safeEnv('API_BASE_URL', 'http://10.0.2.2:3000'),
+    baseUrl: const String.fromEnvironment('API_BASE_URL', defaultValue: 'http://10.0.2.2:3000'),
     tokenProvider: () async {
       final authController = GetIt.I<AuthController>();
       return await authController.getIdToken();
