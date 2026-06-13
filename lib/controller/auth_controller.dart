@@ -147,20 +147,10 @@ class AuthController extends ChangeNotifier {
           ? (res['user']['role'] as String? ??
                 res['user']['userType'] as String?)
           : null;
-      // Diagnostic logs to help identify unknown role issues
-      // ignore: avoid_print
-      print('AuthController.login: res.user=${res['user']} roleStr=$roleStr');
       final parsedRole = _parseUserRole(roleStr);
       if (token != null && refresh != null) {
         await saveTokens(token, refresh);
-        // apply claims from token (if present) and fallback to response role
-        // ignore: avoid_print
-        print('AuthController.login: token payload=${_parseJwtPayload(token)}');
         _applyClaimsFromToken(token);
-        // ignore: avoid_print
-        print(
-          'AuthController.login: role after claims=$_role parsedRole=$parsedRole',
-        );
         if (_role == UserRole.unknown) await saveRole(parsedRole);
         // populate collaborator/company info after login
         await checkLoggedUser();
