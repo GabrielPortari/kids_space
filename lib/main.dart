@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:kids_space/controller/auth_controller.dart';
-import 'package:kids_space/controller/collaborator_controller.dart';
-import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/service/api_client.dart';
 import 'package:kids_space/util/getit_factory.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -41,26 +39,11 @@ Future<void> main() async {
       return await authController.refreshToken();
     },
   );
-  // Load persisted auth state and print diagnostics to help verify token persistence
   try {
     final authController = GetIt.I<AuthController>();
     await authController.loadFromStorage();
-    // ignore: avoid_print
-    print(
-      'Startup Auth: idToken=${authController.idToken} role=${authController.role}',
-    );
-    // attempt to repopulate logged user/collaborator/company info
     await authController.checkLoggedUser();
-    final collabCtrl = GetIt.I<CollaboratorController>();
-    final companyCtrl = GetIt.I<CompanyController>();
-    // ignore: avoid_print
-    print('Startup Auth: loggedCollaborator=${collabCtrl.loggedCollaborator}');
-    // ignore: avoid_print
-    print('Startup Auth: loadedCompany=${companyCtrl.company}');
-  } catch (e) {
-    // ignore: avoid_print
-    print('Startup Auth diagnostics failed: $e');
-  }
+  } catch (_) {}
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('pt', 'BR'), Locale('en', 'US')],
