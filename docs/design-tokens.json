@@ -1,0 +1,255 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "$metadata": {
+    "version": "1.0.0",
+    "project": "Kids Space",
+    "framework": "Flutter / Material 3",
+    "generatedBy": "UI/UX Pro Max — SKILL.md rules §1–§9",
+    "wcag": "AA (4.5:1 normal text, 3:1 large/UI)",
+    "notes": "Paleta A (Kid-Friendly Institucional) é a recomendada. Paleta B (Corporativo Sóbrio) como alternativa."
+  },
+
+  "color": {
+
+    "palette-a": {
+      "$description": "Kid-Friendly Institucional — RECOMENDADA. Combina confiança institucional com calor visual. Adequada para colaboradores (uso intensivo) e responsáveis (uso ocasional).",
+      "primary": {
+        "50":  { "$value": "#E8F0FE", "$description": "Surface tint, hover bg" },
+        "100": { "$value": "#C5D5FC" },
+        "200": { "$value": "#9DBBFA" },
+        "300": { "$value": "#6F9BF8" },
+        "400": { "$value": "#4D82F5" },
+        "500": { "$value": "#2962FF", "$description": "Main CTA, links, active nav — ratio 4.6:1 on white" },
+        "600": { "$value": "#1E50D9" },
+        "700": { "$value": "#1A3EB3" },
+        "800": { "$value": "#142D8C" },
+        "900": { "$value": "#0E1F66", "$description": "Dark text on light bg — ratio 12:1 on white" }
+      },
+      "secondary": {
+        "50":  { "$value": "#E8F5E9" },
+        "100": { "$value": "#C8E6CA" },
+        "300": { "$value": "#7CB882" },
+        "500": { "$value": "#388E3C", "$description": "Check-in badge, success — ratio 4.5:1 on white" },
+        "700": { "$value": "#256427" },
+        "900": { "$value": "#13400F" }
+      },
+      "accent": {
+        "50":  { "$value": "#FFF8E1" },
+        "100": { "$value": "#FFECB3" },
+        "300": { "$value": "#FFD54F" },
+        "500": { "$value": "#FF8F00", "$description": "Alerts, pending state — ratio 3.2:1 (use on dark bg or large text)" },
+        "700": { "$value": "#E65100" },
+        "900": { "$value": "#BF360C" }
+      },
+      "neutral": {
+        "0":   { "$value": "#FFFFFF" },
+        "50":  { "$value": "#F7F9FC" },
+        "100": { "$value": "#EEF1F7" },
+        "200": { "$value": "#DDE2ED" },
+        "300": { "$value": "#C4CADA" },
+        "400": { "$value": "#9AA3B5" },
+        "500": { "$value": "#6B7691" },
+        "600": { "$value": "#495267" },
+        "700": { "$value": "#303649" },
+        "800": { "$value": "#1E2230" },
+        "900": { "$value": "#0F1218" }
+      }
+    },
+
+    "palette-b": {
+      "$description": "Corporativo Sóbrio — alternativa para contexto mais formal/hospitalar. Menos warmth, mais precision.",
+      "primary": {
+        "500": { "$value": "#1E3A5F", "$description": "ratio 9.1:1 on white" },
+        "700": { "$value": "#122540" }
+      },
+      "secondary": {
+        "500": { "$value": "#0277BD", "$description": "ratio 4.6:1 on white" },
+        "700": { "$value": "#01579B" }
+      },
+      "accent": {
+        "500": { "$value": "#00838F", "$description": "ratio 4.5:1 on white" }
+      }
+    },
+
+    "semantic": {
+      "$description": "Tokens semânticos — use ESTES nos componentes, nunca hex diretamente (SKILL.md §6: color-semantic).",
+
+      "brand-primary":          { "$value": "{color.palette-a.primary.500}" },
+      "brand-primary-dark":     { "$value": "{color.palette-a.primary.700}" },
+      "brand-primary-surface":  { "$value": "{color.palette-a.primary.50}" },
+      "on-brand-primary":       { "$value": "#FFFFFF" },
+
+      "brand-secondary":        { "$value": "{color.palette-a.secondary.500}" },
+      "brand-secondary-surface":{ "$value": "{color.palette-a.secondary.50}" },
+      "on-brand-secondary":     { "$value": "#FFFFFF" },
+
+      "success":                { "$value": "{color.palette-a.secondary.500}" },
+      "success-surface":        { "$value": "{color.palette-a.secondary.50}" },
+      "on-success":             { "$value": "#FFFFFF" },
+
+      "warning":                { "$value": "{color.palette-a.accent.700}" },
+      "warning-surface":        { "$value": "{color.palette-a.accent.50}" },
+      "on-warning":             { "$value": "#FFFFFF" },
+
+      "error":                  { "$value": "#B00020", "$description": "ratio 5.9:1 on white" },
+      "error-surface":          { "$value": "#FDECEA" },
+      "on-error":               { "$value": "#FFFFFF" },
+
+      "info":                   { "$value": "#0277BD" },
+      "info-surface":           { "$value": "#E1F5FE" },
+
+      "surface":                { "$value": "{color.palette-a.neutral.0}" },
+      "surface-alt":            { "$value": "{color.palette-a.neutral.50}" },
+      "surface-elevated":       { "$value": "{color.palette-a.neutral.0}" },
+
+      "on-surface":             { "$value": "{color.palette-a.neutral.900}" },
+      "on-surface-secondary":   { "$value": "{color.palette-a.neutral.600}" },
+      "on-surface-disabled":    { "$value": "{color.palette-a.neutral.400}" },
+
+      "outline":                { "$value": "{color.palette-a.neutral.300}" },
+      "outline-variant":        { "$value": "{color.palette-a.neutral.200}" },
+      "divider":                { "$value": "{color.palette-a.neutral.200}" },
+      "scrim":                  { "$value": "rgba(15, 18, 24, 0.50)", "$description": "Modal backdrop — SKILL.md §: scrim 40-60% black" },
+
+      "checkin-bg":             { "$value": "{color.palette-a.secondary.50}", "$description": "Background de card/badge checked-in" },
+      "checkin-border":         { "$value": "{color.palette-a.secondary.300}" },
+      "checkout-bg":            { "$value": "{color.palette-a.accent.50}", "$description": "Background de card/badge checked-out / pending" },
+      "checkout-border":        { "$value": "{color.palette-a.accent.300}" },
+      "pending-bg":             { "$value": "{color.palette-a.neutral.100}" },
+      "pending-border":         { "$value": "{color.palette-a.neutral.300}" },
+
+      "health-alert-bg":        { "$value": "#FFF8E1", "$description": "Banner de alerta de saúde — alta visibilidade" },
+      "health-alert-border":    { "$value": "#FFB300" },
+      "health-alert-icon":      { "$value": "#E65100" }
+    },
+
+    "high-contrast": {
+      "$description": "Variante alto contraste (WCAG AAA / ≥7:1). Ativar via ThemeMode ou preferência do usuário.",
+      "brand-primary":   { "$value": "#0030CC" },
+      "on-surface":      { "$value": "#000000" },
+      "surface":         { "$value": "#FFFFFF" },
+      "error":           { "$value": "#8B0000" },
+      "outline":         { "$value": "#000000" }
+    }
+  },
+
+  "typography": {
+    "$description": "Flutter: usar TextTheme do Material 3. Escala: 11/13/15/17/20/24/32 — SKILL.md §6: font-scale.",
+    "family": {
+      "base":    { "$value": "'Inter', 'Roboto', sans-serif", "$description": "Body, labels, captions" },
+      "display": { "$value": "'Nunito', 'Poppins', sans-serif", "$description": "Headlines, app name — mais amigável" }
+    },
+    "size": {
+      "xs":   { "$value": "11", "$unit": "sp", "$description": "Captions, badges, timestamps" },
+      "sm":   { "$value": "13", "$unit": "sp", "$description": "Helper text, chips" },
+      "md":   { "$value": "15", "$unit": "sp", "$description": "Body default — NUNCA abaixo de 14sp em mobile" },
+      "lg":   { "$value": "17", "$unit": "sp", "$description": "Body emphasis, list items" },
+      "xl":   { "$value": "20", "$unit": "sp", "$description": "Title medium, section headers" },
+      "2xl":  { "$value": "24", "$unit": "sp", "$description": "Headline small, modal titles" },
+      "3xl":  { "$value": "32", "$unit": "sp", "$description": "Display, splash screen" }
+    },
+    "weight": {
+      "regular":  { "$value": "400", "$description": "Body text" },
+      "medium":   { "$value": "500", "$description": "Labels, list items" },
+      "semibold": { "$value": "600", "$description": "Section headers, CTAs" },
+      "bold":     { "$value": "700", "$description": "Display, app name" }
+    },
+    "line-height": {
+      "tight":   { "$value": "1.2", "$description": "Headlines" },
+      "base":    { "$value": "1.5", "$description": "Body — SKILL.md §6: line-height 1.5-1.75" },
+      "relaxed": { "$value": "1.7", "$description": "Long-form help text" }
+    },
+    "letter-spacing": {
+      "tight":  { "$value": "-0.3", "$unit": "sp", "$description": "Display/headline only" },
+      "normal": { "$value": "0",    "$unit": "sp" },
+      "wide":   { "$value": "0.5", "$unit": "sp", "$description": "Captions, labels uppercase" }
+    }
+  },
+
+  "spacing": {
+    "$description": "Base 4dp — SKILL.md §5: 4/8dp spacing rhythm. Flutter: usar múltiplos de 4.",
+    "0":  { "$value": "0",  "$unit": "dp" },
+    "1":  { "$value": "4",  "$unit": "dp", "$description": "Internal padding micro" },
+    "2":  { "$value": "8",  "$unit": "dp", "$description": "Gap between inline elements" },
+    "3":  { "$value": "12", "$unit": "dp" },
+    "4":  { "$value": "16", "$unit": "dp", "$description": "Component internal padding (default)" },
+    "5":  { "$value": "20", "$unit": "dp" },
+    "6":  { "$value": "24", "$unit": "dp", "$description": "Section gap, card padding" },
+    "8":  { "$value": "32", "$unit": "dp", "$description": "Section separation" },
+    "10": { "$value": "40", "$unit": "dp" },
+    "12": { "$value": "48", "$unit": "dp", "$description": "Touch target min height — SKILL.md §2" },
+    "14": { "$value": "56", "$unit": "dp", "$description": "AppBar height" },
+    "16": { "$value": "64", "$unit": "dp" },
+    "20": { "$value": "80", "$unit": "dp" },
+    "24": { "$value": "96", "$unit": "dp" }
+  },
+
+  "radius": {
+    "none": { "$value": "0",    "$unit": "dp" },
+    "xs":   { "$value": "4",    "$unit": "dp", "$description": "Chips, badges" },
+    "sm":   { "$value": "8",    "$unit": "dp", "$description": "Inputs, small cards" },
+    "md":   { "$value": "12",   "$unit": "dp", "$description": "Cards default" },
+    "lg":   { "$value": "16",   "$unit": "dp", "$description": "Modais, bottom sheets" },
+    "xl":   { "$value": "24",   "$unit": "dp", "$description": "Large cards, hero elements" },
+    "full": { "$value": "9999", "$unit": "dp", "$description": "Pills, avatar, FAB" }
+  },
+
+  "shadow": {
+    "$description": "Flutter: usar BoxShadow. SKILL.md §4: elevation-consistent.",
+    "none": { "$value": "none" },
+    "sm":   { "$value": "0 1px 3px rgba(15,18,24,0.08), 0 1px 2px rgba(15,18,24,0.06)", "$description": "Cards resting" },
+    "md":   { "$value": "0 4px 12px rgba(15,18,24,0.10), 0 2px 4px rgba(15,18,24,0.06)", "$description": "Cards hover, dropdowns" },
+    "lg":   { "$value": "0 8px 24px rgba(15,18,24,0.12), 0 4px 8px rgba(15,18,24,0.08)", "$description": "Modais, FAB" },
+    "xl":   { "$value": "0 16px 48px rgba(15,18,24,0.16)", "$description": "Drawers, sheets de alta prioridade" }
+  },
+
+  "motion": {
+    "$description": "SKILL.md §7: duration 150-300ms, transform/opacity only, exit mais rápido que enter.",
+    "duration": {
+      "instant": { "$value": "0",   "$unit": "ms" },
+      "fast":    { "$value": "120", "$unit": "ms", "$description": "Ripple, press feedback" },
+      "base":    { "$value": "200", "$unit": "ms", "$description": "Micro-interações (toggle, chip)" },
+      "medium":  { "$value": "300", "$unit": "ms", "$description": "Modal enter, page transition" },
+      "slow":    { "$value": "400", "$unit": "ms", "$description": "Complex: wizard step, skeleton→content" }
+    },
+    "easing": {
+      "standard":  { "$value": "Curves.easeInOut",  "$description": "Transições simétricas" },
+      "enter":     { "$value": "Curves.easeOut",    "$description": "Elementos entrando na tela" },
+      "exit":      { "$value": "Curves.easeIn",     "$description": "Elementos saindo" },
+      "spring":    { "$value": "Curves.elasticOut", "$description": "FAB, success animation" },
+      "decelerate":{ "$value": "Curves.decelerate", "$description": "Bottom sheet slide-up" }
+    },
+    "exit-ratio": { "$value": "0.65", "$description": "Exit = 65% do duration de enter — SKILL.md §7: exit-faster-than-enter" }
+  },
+
+  "touch": {
+    "target-min":    { "$value": "48", "$unit": "dp", "$description": "WCAG 2.5.8 + Material 3 — SKILL.md §2: touch-target-size" },
+    "target-ideal":  { "$value": "56", "$unit": "dp", "$description": "CTA buttons, bottom nav items" },
+    "gap-min":       { "$value": "8",  "$unit": "dp", "$description": "Mínimo entre targets — SKILL.md §2: touch-spacing" }
+  },
+
+  "breakpoints": {
+    "$description": "SKILL.md §5: mobile-first breakpoints. Flutter: usar LayoutBuilder / MediaQuery.",
+    "xs":  { "$value": "320",  "$unit": "dp", "$description": "Minimum supported" },
+    "sm":  { "$value": "375",  "$unit": "dp", "$description": "Default phone design canvas" },
+    "md":  { "$value": "768",  "$unit": "dp", "$description": "Tablet portrait — adaptar layout" },
+    "lg":  { "$value": "1024", "$unit": "dp", "$description": "Tablet landscape / desktop small" },
+    "xl":  { "$value": "1440", "$unit": "dp", "$description": "Desktop large — max content width 720dp" }
+  },
+
+  "z-index": {
+    "$description": "SKILL.md §5: z-index-management — escala definida.",
+    "base":    { "$value": "0" },
+    "raised":  { "$value": "10",   "$description": "Cards hover" },
+    "sticky":  { "$value": "100",  "$description": "AppBar, BottomNav" },
+    "overlay": { "$value": "200",  "$description": "Drawers, bottom sheets" },
+    "modal":   { "$value": "300",  "$description": "Dialogs" },
+    "toast":   { "$value": "400",  "$description": "Snackbars, toasts" },
+    "critical":{ "$value": "1000", "$description": "Offline banner" }
+  },
+
+  "css-custom-properties": {
+    "$description": "Equivalente CSS para uso em contextos web ou Storybook. Importar este bloco em :root.",
+    "$value": "/* Kids Space — CSS Custom Properties */\n:root {\n  /* Brand */\n  --ks-primary: #2962FF;\n  --ks-primary-dark: #1A3EB3;\n  --ks-primary-surface: #E8F0FE;\n  --ks-secondary: #388E3C;\n  --ks-secondary-surface: #E8F5E9;\n  --ks-accent: #E65100;\n  --ks-accent-surface: #FFF8E1;\n  /* Semantic */\n  --ks-success: #388E3C;\n  --ks-warning: #E65100;\n  --ks-error: #B00020;\n  --ks-info: #0277BD;\n  /* Surface */\n  --ks-surface: #FFFFFF;\n  --ks-surface-alt: #F7F9FC;\n  --ks-on-surface: #0F1218;\n  --ks-on-surface-2: #495267;\n  --ks-on-surface-disabled: #9AA3B5;\n  --ks-outline: #C4CADA;\n  --ks-divider: #DDE2ED;\n  /* States */\n  --ks-checkin-bg: #E8F5E9;\n  --ks-checkout-bg: #FFF8E1;\n  --ks-health-alert-bg: #FFF8E1;\n  --ks-health-alert-border: #FFB300;\n  /* Spacing */\n  --ks-sp-1: 4px; --ks-sp-2: 8px; --ks-sp-3: 12px;\n  --ks-sp-4: 16px; --ks-sp-6: 24px; --ks-sp-8: 32px;\n  /* Radius */\n  --ks-radius-sm: 8px; --ks-radius-md: 12px;\n  --ks-radius-lg: 16px; --ks-radius-full: 9999px;\n  /* Touch */\n  --ks-touch-min: 48px;\n  /* Motion */\n  --ks-dur-base: 200ms; --ks-dur-medium: 300ms;\n  --ks-ease-enter: cubic-bezier(0, 0, 0.2, 1);\n  --ks-ease-exit: cubic-bezier(0.4, 0, 1, 1);\n}"
+  }
+}

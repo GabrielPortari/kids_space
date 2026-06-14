@@ -1,173 +1,75 @@
-// Serviço de colaboradores usando Firebase Auth e Firestore
-import 'dart:developer' as dev;
-import 'package:dio/dio.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:kids_space/model/collaborator.dart';
-import 'package:kids_space/service/base_service.dart';
+import 'dart:convert';
+import 'api_client.dart';
 
-class CollaboratorService extends BaseService {
-  final FirebaseAuth _auth;
-  final FirebaseFirestore _firestore;
+class CollaboratorService {
+  final ApiClient _api = ApiClient();
 
-  CollaboratorService({FirebaseAuth? auth, FirebaseFirestore? firestore})
-      : _auth = auth ?? FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
-
-  /// Tenta autenticar com Firebase Auth e retorna os dados do colaborador no Firestore
-  Future<Collaborator?> loginCollaborator(String email, String password) async {
-    try {
-      final cred = await _auth.signInWithEmailAndPassword(email: email, password: password);
-      final uid = cred.user?.uid;
-
-      if (uid != null) {
-        final doc = await _firestore.collection('collaborators').doc(uid).get();
-        if (doc.exists && doc.data() != null) {
-          final data = Map<String, dynamic>.from(doc.data()!);
-          data['id'] = doc.id;
-          return Collaborator.fromJson(data);
-        }
-      }
-
-      // fallback: try to find by email field
-      final query = await _firestore.collection('collaborators').where('email', isEqualTo: email).limit(1).get();
-      if (query.docs.isNotEmpty) {
-        final doc = query.docs.first;
-        final data = Map<String, dynamic>.from(doc.data());
-        data['id'] = doc.id;
-        return Collaborator.fromJson(data);
-      }
-      return null;
-    } catch (e) {
-      dev.log('CollaboratorService.loginCollaborator error: $e');
-      return null;
+  String? _extractNameFromBody(String body) {
+    final decoded = jsonDecode(body);
+    if (decoded is String) return decoded;
+    if (decoded is Map<String, dynamic>) {
+      final value = decoded['name'];
+      if (value is String) return value;
     }
+    return null;
   }
 
-  Future<Collaborator?> getCollaboratorById(String id) async {
-    try {
-      final response = await dio.get('/collaborator/$id');
-      if (response.statusCode == 200 && response.data != null) {
-        dynamic payload = response.data;
-        if (payload is Map<String, dynamic>) {
-          if (payload['data'] is Map<String, dynamic>) payload = payload['data'];
-          else if (payload['collaborator'] is Map<String, dynamic>) payload = payload['collaborator'];
-          else if (payload['result'] is Map<String, dynamic>) payload = payload['result'];
-        }
-
-        if (payload is Map<String, dynamic>) {
-          if (payload['id'] == null || (payload['id'] is String && (payload['id'] as String).isEmpty)) {
-            payload['id'] = id;
-            dev.log('CollaboratorService: injected id into payload', name: 'CollaboratorService');
-          }
-          return Collaborator.fromJson(payload);
-        }
-
-        try {
-          return Collaborator.fromJson(Map<String, dynamic>.from(payload));
-        } catch (e) {
-          dev.log('CollaboratorService.getCollaboratorById parse error: $e');
-        }
-        return null;
-      } else {
-        return null;
-      }
-    } catch (e) {
-      dev.log('CollaboratorService.getCollaboratorById error: $e');
-      return null;
+  Future<Map<String, dynamic>> create(Map<String, dynamic> payload) async {
+    final res = await _api.post('/v2/collaborators', payload);
+    if (res.statusCode == 201) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
     }
+    throw Exception('Failed to create collaborator: ${res.statusCode}');
   }
 
-  Future<List<Collaborator>> getCollaboratorsByCompanyId(String companyId) async {
-    try {
-      final response = await dio.get('/collaborator/company/$companyId');
-      if (response.statusCode != 200 && response.statusCode != 201) return [];
-      final data = response.data;
-      List<dynamic> items = [];
-      if (data is List) {
-        items = data;
-      } else if (data is Map<String, dynamic>) {
-        if (data['data'] is List) items = data['data'];
-        else if (data['collaborators'] is List) items = data['collaborators'];
-        else items = [data];
-      }
-
-      final List<Collaborator> list = items.map((e) {
-        if (e is Collaborator) return e;
-        if (e is Map<String, dynamic>) return Collaborator.fromJson(Map<String, dynamic>.from(e));
-        try {
-          return Collaborator.fromJson(Map<String, dynamic>.from(e));
-        } catch (_) {
-          return null;
-        }
-      }).whereType<Collaborator>().toList();
-      return list;
-    } on DioException catch (e) {
-      dev.log('CollaboratorService.getCollaboratorsByCompanyId DioException: ${e.response?.data ?? e.message}');
-      return [];
-    } catch (e) {
-      dev.log('CollaboratorService.getCollaboratorsByCompanyId error: $e');
-      return [];
+  Future<Map<String, dynamic>?> getById(String id) async {
+    final res = await _api.get('/v2/collaborators/$id');
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
     }
+    if (res.statusCode == 404) return null;
+    throw Exception('Failed to get collaborator: ${res.statusCode}');
   }
 
-  Future<bool> deleteCollaborator(String id) async {
-    try {
-      if (id.isEmpty) return false;
-      final response = await dio.delete('/collaborator/$id');
-      return response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204;
-    } on DioException catch (e) {
-      dev.log('CollaboratorService.deleteCollaborator DioException: ${e.response?.data ?? e.message}');
-      return false;
-    } catch (e) {
-      dev.log('CollaboratorService.deleteCollaborator error: $e');
-      return false;
+  Future<String?> getNameById(String collaboratorId) async {
+    final res = await _api.get('/v2/collaborators/$collaboratorId/name');
+    if (res.statusCode == 200) {
+      return _extractNameFromBody(res.body);
     }
+    if (res.statusCode == 404) return null;
+    throw Exception('Failed to get collaborator name: ${res.statusCode}');
   }
 
-  Future<bool> updateCollaborator(Collaborator collaborator) async {
-    try {
-      final id = collaborator.id;
-      if (id == null || id.isEmpty) return false;
-
-      final payload = Map<String, dynamic>.from(collaborator.toJson());
-      payload.removeWhere((k, v) => v == null);
-      payload.remove('id');
-      payload.remove('createdAt');
-      payload.remove('updatedAt');
-      payload.remove('companyId');
-
-      final response = await dio.put('/collaborator/$id', data: payload);
-      return response.statusCode == 200 || response.statusCode == 201;
-    } on DioException catch (e) {
-      dev.log('CollaboratorService.updateCollaborator DioException: ${e.response?.data ?? e.message}');
-      return false;
-    } catch (e) {
-      dev.log('CollaboratorService.updateCollaborator error: $e');
-      return false;
+  Future<Map<String, dynamic>?> getMe() async {
+    final res = await _api.get('/v2/collaborators/me');
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
     }
+    if (res.statusCode == 404) return null;
+    return null;
   }
 
-  Future<bool> createCollaborator(Collaborator collaborator) async {
-    try {
-      final payload = Map<String, dynamic>.from(collaborator.toJson());
-      // remove nulls
-      payload.removeWhere((k, v) => v == null || (v is String && v.trim().isEmpty));
-      // backend rejects certain properties on create
-      payload.remove('id');
-      payload.remove('createdAt');
-      payload.remove('updatedAt');
-      payload.remove('userType');
-      payload.remove('companyId');
+  Future<List<dynamic>> list({Map<String, String>? query}) async {
+    final res = await _api.get('/v2/collaborators');
+    if (res.statusCode == 200) return jsonDecode(res.body) as List<dynamic>;
+    throw Exception('Failed to list collaborators: ${res.statusCode}');
+  }
 
-      final response = await dio.post('/collaborator', data: payload);
-      return response.statusCode == 200 || response.statusCode == 201;
-    } on DioException catch (e) {
-      dev.log('CollaboratorService.createCollaborator DioException: ${e.response?.data ?? e.message}');
-      return false;
-    } catch (e) {
-      dev.log('CollaboratorService.createCollaborator error: $e');
-      return false;
+  Future<bool> delete(String id) async {
+    final res = await _api.delete('/v2/collaborators/$id');
+    if (res.statusCode == 204) return true;
+    if (res.statusCode == 404) return false;
+    throw Exception('Failed to delete collaborator: ${res.statusCode}');
+  }
+
+  Future<Map<String, dynamic>> update(
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
+    final res = await _api.patch('/v2/collaborators/$id', payload);
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
     }
+    throw Exception('Failed to update collaborator: ${res.statusCode}');
   }
 }

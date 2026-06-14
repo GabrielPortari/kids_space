@@ -1,20 +1,21 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:get_it/get_it.dart';
+import 'package:kids_space/controller/auth_controller.dart';
+import 'package:kids_space/controller/collaborator_controller.dart';
 import 'package:kids_space/controller/company_controller.dart';
 import 'package:kids_space/controller/child_controller.dart';
-import 'package:kids_space/controller/user_controller.dart';
-import 'package:kids_space/model/user.dart';
+import 'package:kids_space/controller/parent_controller.dart';
+import 'package:kids_space/controller/attendance_controller.dart';
+import 'package:kids_space/model/parent.dart';
 import 'package:kids_space/model/child.dart';
-import 'package:kids_space/util/string_utils.dart';
-import 'package:kids_space/view/design_system/app_text.dart';
-import 'package:kids_space/view/design_system/app_theme.dart';
-import 'package:kids_space/view/screens/profile_screen.dart';
-import 'package:skeletonizer/skeletonizer.dart';
-import 'package:kids_space/view/widgets/skeleton_list.dart';
+import 'package:kids_space/model/user_type.dart';
 import 'package:kids_space/util/localization_service.dart';
+import 'package:kids_space/util/string_utils.dart';
+import 'package:kids_space/view/screens/profile_screen.dart';
+import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
+import 'package:kids_space/view/widgets/skeleton_list.dart';
 
 class ChildrensScreen extends StatefulWidget {
   final bool onlyActive;
@@ -25,33 +26,79 @@ class ChildrensScreen extends StatefulWidget {
 }
 
 class _ChildrensScreenState extends State<ChildrensScreen> {
+  final AuthController _authController = GetIt.I.get<AuthController>();
+  final CollaboratorController _collaboratorController =
+      GetIt.I.get<CollaboratorController>();
   final CompanyController _companyController = GetIt.I.get<CompanyController>();
   final ChildController _childController = GetIt.I.get<ChildController>();
-  final UserController _userController = GetIt.I.get<UserController>();
+  final ParentController _parentController = GetIt.I.get<ParentController>();
+  final AttendanceController _attendanceController =
+      GetIt.I.get<AttendanceController>();
+
+  bool get _canManageChildren {
+    final role = _authController.role.toString().toLowerCase();
+    final userType = _collaboratorController.loggedCollaborator?.userType;
+    return role.contains('company') ||
+        role.contains('collaborator') ||
+        userType == UserType.company ||
+        userType == UserType.collaborator;
+  }
 
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
+  bool _pendingAttendanceSync = false;
+  bool _isLoadingActive = false;
   List<Child> _allChildren = [];
   List<Child> _filteredChildren = [];
-  Map<String, List<User>> _childrenResponsibles = {};
+  Map<String, List<Parent>> _childrenResponsibles = {};
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
     if (widget.onlyActive) {
-      _loadActiveChildrenWithResponsibles();
+      _attendanceController.addListener(_attendanceListener);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _loadActiveChildrenWithResponsibles();
+      });
     } else {
-      _onRefresh();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _onRefresh();
+      });
     }
   }
 
   @override
   void dispose() {
+    _attendanceController.removeListener(_attendanceListener);
     _debounce?.cancel();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _attendanceListener() {
+    if (!mounted || !widget.onlyActive || _pendingAttendanceSync) return;
+    _pendingAttendanceSync = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _pendingAttendanceSync = false;
+      if (!mounted || !widget.onlyActive) return;
+
+      // Recompute active children from existing controller state when
+      // attendance data changes. Deferring avoids setState during build.
+      final companyId = _companyController.company?.id;
+      final actives = _childController.activeCheckedInChildren(companyId);
+      actives.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
+      final respMap = _childController.getChildrenWithResponsibles(actives);
+
+      setState(() {
+        _allChildren = actives;
+        _filteredChildren = List.from(_allChildren);
+        _childrenResponsibles = respMap;
+      });
+    });
   }
 
   void _onSearchChanged() {
@@ -64,7 +111,9 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
           _filteredChildren = _allChildren.where((child) {
             final name = child.name?.toLowerCase() ?? '';
             final responsibles = _childrenResponsibles[child.id] ?? [];
-            final responsibleName = responsibles.isNotEmpty ? responsibles.first.name?.toLowerCase() ?? '' : '';
+            final responsibleName = responsibles.isNotEmpty
+                ? responsibles.first.name?.toLowerCase() ?? ''
+                : '';
             return name.contains(q) || responsibleName.contains(q);
           }).toList();
         });
@@ -76,41 +125,70 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   }
 
   Future<void> _onRefresh() async {
-    final companyId = _companyController.companySelected?.id;
+    final companyId = _companyController.company?.id;
     await _childController.refreshChildrenForCompany(companyId);
   }
 
   Future<void> _loadActiveChildrenWithResponsibles() async {
-    final companyId = _companyController.companySelected?.id;
-    if (companyId == null) {
+    if (mounted) {
       setState(() {
-        _allChildren = [];
-        _filteredChildren = [];
-        _childrenResponsibles = {};
+        _isLoadingActive = true;
       });
+    }
+    final companyId = _companyController.company?.id;
+    if (companyId == null) {
+      if (mounted) {
+        setState(() {
+          _allChildren = [];
+          _filteredChildren = [];
+          _childrenResponsibles = {};
+          _isLoadingActive = false;
+        });
+      }
       return;
     }
-
+    // ensure children cache is fresh
     await _childController.refreshChildrenForCompany(companyId);
+    // ensure attendance active list is loaded from API
+    try {
+      await _attendanceController.loadActiveCheckinsForCompany(companyId);
+    } catch (_) {}
 
     final actives = _childController.activeCheckedInChildren(companyId);
     actives.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
     final respMap = _childController.getChildrenWithResponsibles(actives);
 
-    setState(() {
-      _allChildren = actives;
-      _filteredChildren = List.from(_allChildren);
-      _childrenResponsibles = respMap;
-    });
+    if (mounted) {
+      setState(() {
+        _allChildren = actives;
+        _filteredChildren = List.from(_allChildren);
+        _childrenResponsibles = respMap;
+        _isLoadingActive = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final bool showAppBar = Navigator.canPop(context);
-    final double topSpacing = showAppBar ? 8.0 : 8 + MediaQuery.of(context).padding.top;
+    final double topSpacing = showAppBar
+        ? 8.0
+        : 8 + MediaQuery.of(context).padding.top;
 
     return Scaffold(
-      appBar: showAppBar ? AppBar(title: Text(widget.onlyActive ? 'Crianças ativas' : 'Crianças'), leading: Navigator.canPop(context) ? const BackButton() : null,) : null,
+      appBar: showAppBar
+          ? AppBar(
+              title: Text(widget.onlyActive ? 'Crianças ativas' : 'Crianças'),
+              leading: Navigator.canPop(context) ? const BackButton() : null,
+            )
+          : null,
+      floatingActionButton: (!widget.onlyActive && _canManageChildren)
+          ? FloatingActionButton(
+              onPressed: _onAddChild,
+              tooltip: translate('profile.edit_child'),
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -163,28 +241,46 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
       return Expanded(
         child: RefreshIndicator(
           onRefresh: () async => await _loadActiveChildrenWithResponsibles(),
-          child: Observer(builder: (_) {
-            if (_childController.refreshLoading) {
-                      return const SkeletonList(itemCount: 6);
-            }
+          child: Builder(
+            builder: (_) {
+              if (_isLoadingActive) {
+                return const SkeletonList(itemCount: 6);
+              }
 
-            if (_allChildren.isEmpty) {
-              return ListView(padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0), children: [
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24.0),
-                    child: Text(_searchController.text.isEmpty ? 'Nenhuma criança ativa' : 'Nenhuma criança encontrada', style: const TextStyle(color: Colors.grey, fontSize: 16)),
+              if (_allChildren.isEmpty) {
+                return ListView(
+                  padding: const EdgeInsets.only(
+                    top: 8.0,
+                    left: 8.0,
+                    right: 8.0,
                   ),
-                )
-              ]);
-            }
+                  children: [
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24.0),
+                        child: Text(
+                          _searchController.text.isEmpty
+                              ? 'Nenhuma criança ativa'
+                              : 'Nenhuma criança encontrada',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
 
-            return ListView.builder(
-              padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-              itemCount: _filteredChildren.length,
-              itemBuilder: (context, index) => _childTile(_filteredChildren[index]),
-            );
-          }),
+              return ListView.builder(
+                padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+                itemCount: _filteredChildren.length,
+                itemBuilder: (context, index) =>
+                    _childTile(_filteredChildren[index]),
+              );
+            },
+          ),
         ),
       );
     }
@@ -192,29 +288,209 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
     return Expanded(
       child: RefreshIndicator(
         onRefresh: () async => await _onRefresh(),
-        child: Observer(builder: (_) {
-          final filtered = _childController.filteredChildren;
+        child: AnimatedBuilder(
+          animation: _childController,
+          builder: (_, __) {
+            final filtered = _childController.filteredChildren;
 
-          if (_childController.refreshLoading) {
-            return _buildSkeletonList();
-          }
+            if (_childController.refreshLoading) {
+              return _buildSkeletonList();
+            }
 
-          if (filtered.isEmpty) {
-            return ListView(padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0), children: [
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24.0),
-                  child: Text(_searchController.text.isEmpty ? 'Nenhuma criança cadastrada' : 'Nenhuma criança encontrada', style: const TextStyle(color: Colors.grey, fontSize: 16)),
-                ),
-              )
-            ]);
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-            itemCount: _childController.filteredChildren.length,
-            itemBuilder: (context, index) => _childTile(_childController.filteredChildren[index]),
-          );
-        }),
+            if (filtered.isEmpty) {
+              return ListView(
+                padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+                children: [
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24.0),
+                      child: Text(
+                        _searchController.text.isEmpty
+                            ? 'Nenhuma criança cadastrada'
+                            : 'Nenhuma criança encontrada',
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+            final sorted = List<Child>.from(filtered)
+              ..sort((a, b) {
+                final aActive = (a.checkedIn ?? false) ? 0 : 1;
+                final bActive = (b.checkedIn ?? false) ? 0 : 1;
+                return aActive.compareTo(bActive);
+              });
+            return ListView.builder(
+              padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+              itemCount: sorted.length,
+              itemBuilder: (context, index) => _childTile(sorted[index]),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _onAddChild() async {
+    final companyId = _companyController.company?.id;
+
+    final personalFields = [
+      FieldDefinition(
+        key: 'name',
+        label: translate('profile.name'),
+        initialValue: null,
+        required: true,
+      ),
+      FieldDefinition(
+        key: 'email',
+        label: translate('profile.email'),
+        type: FieldType.email,
+        initialValue: null,
+      ),
+      FieldDefinition(
+        key: 'birthDate',
+        label: translate('profile.birth_date'),
+        type: FieldType.date,
+        initialValue: null,
+      ),
+      FieldDefinition(
+        key: 'phone',
+        label: translate('profile.phone'),
+        type: FieldType.phone,
+        initialValue: null,
+      ),
+      FieldDefinition(
+        key: 'document',
+        label: translate('profile.document'),
+        initialValue: null,
+      ),
+    ];
+
+    final personalRes = await showEditEntityBottomSheet(
+      context: context,
+      title: translate('children.add_title'),
+      fields: personalFields,
+    );
+    if (personalRes == null || !mounted) return;
+
+    final inherit = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(translate('profile.address_title')),
+        content: Text(translate('ui.inherit_address_question')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(translate('ui.no')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(translate('ui.yes')),
+          ),
+        ],
+      ),
+    );
+    if (inherit == null || !mounted) return;
+
+    Map<String, dynamic>? addressRes;
+    if (inherit == false) {
+      final addressFields = [
+        FieldDefinition(
+          key: 'address',
+          label: translate('profile.address'),
+          initialValue: null,
+        ),
+        FieldDefinition(
+          key: 'addressNumber',
+          label: translate('profile.address_number'),
+          initialValue: null,
+        ),
+        FieldDefinition(
+          key: 'addressComplement',
+          label: translate('profile.address_complement'),
+          initialValue: null,
+        ),
+        FieldDefinition(
+          key: 'neighborhood',
+          label: translate('profile.neighborhood'),
+          initialValue: null,
+        ),
+        FieldDefinition(
+          key: 'city',
+          label: translate('profile.city'),
+          initialValue: null,
+        ),
+        FieldDefinition(
+          key: 'state',
+          label: translate('profile.state'),
+          initialValue: null,
+        ),
+        FieldDefinition(
+          key: 'zipCode',
+          label: translate('profile.zip_code'),
+          initialValue: null,
+        ),
+      ];
+      addressRes = await showEditEntityBottomSheet(
+        context: context,
+        title: translate('profile.edit_address'),
+        fields: addressFields,
+      );
+      if (addressRes == null || !mounted) return;
+    }
+
+    final payload = <String, dynamic>{
+      'name': personalRes['name']?.toString(),
+      'email': personalRes['email']?.toString(),
+      'document': personalRes['document']?.toString(),
+      'contact': personalRes['phone']?.toString(),
+      'birthDate': personalRes['birthDate']?.toString(),
+      'companyId': companyId,
+      'parents': [],
+    };
+
+    if (inherit == false && addressRes != null) {
+      payload['address'] = {
+        'street': addressRes['address']?.toString(),
+        'number': addressRes['addressNumber']?.toString(),
+        'complement': addressRes['addressComplement']?.toString(),
+        'neighborhood': addressRes['neighborhood']?.toString(),
+        'city': addressRes['city']?.toString(),
+        'state': addressRes['state']?.toString(),
+        'zipcode': addressRes['zipCode']?.toString(),
+      };
+    }
+
+    bool success = false;
+    try {
+      final created = await _childController.createChild(payload);
+      success = created.id != null;
+    } catch (_) {
+      success = false;
+    }
+
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          success ? translate('common.success') : translate('common.error'),
+        ),
+        content: Text(
+          success
+              ? translate('children.created')
+              : translate('children.create_error'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(translate('buttons.ok')),
+          ),
+        ],
       ),
     );
   }
@@ -224,68 +500,118 @@ class _ChildrensScreenState extends State<ChildrensScreen> {
   }
 
   Widget _childTile(Child child) {
-    final firstResponsible = child.responsibleUserIds != null && child.responsibleUserIds!.isNotEmpty
-        ? _userController.getUserById(child.responsibleUserIds!.first)
+    final firstResponsible = child.parents != null && child.parents!.isNotEmpty
+        ? _parentController.getUserById(child.parents!.first)
         : null;
+    final isCheckedIn = child.checkedIn ?? false;
+    final hasHealth = child.healthInfo != null && !child.healthInfo!.isEmpty;
 
-    return Card(
+    return Padding(
       key: ValueKey(child.id),
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => 
-            ProfileScreen(selectedChild: child))
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 56,
-                child: Center(
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-                    child: TextBodyMedium(getInitials(child.name)),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => ProfileScreen(selectedChild: child)),
+          ),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFEEF1F7)),
+            ),
+            child: Row(
+              children: [
+                Stack(
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          child.name ?? '',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          overflow: TextOverflow.ellipsis,
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor:
+                          Theme.of(context).colorScheme.primaryContainer,
+                      child: Text(
+                        getInitials(child.name),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
-                        if (child.checkedIn ?? false)
-                          Container(
-                            margin: const EdgeInsets.only(left: 8),
-                            width: 10,
-                            height: 10,
-                            decoration: const BoxDecoration(
-                              color: success,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: 4),
-                    Text('Responsável: ${firstResponsible?.name ?? '-'}', style: const TextStyle(fontSize: 15)),
-                    Text('Telefone: ${firstResponsible?.phone ?? '-'}', style: const TextStyle(fontSize: 15, color: Colors.grey)),
+                    if (isCheckedIn)
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF388E3C),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              child.name ?? '—',
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF0F1218),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isCheckedIn)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF388E3C),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                'Presente',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          if (hasHealth) ...[
+                            const SizedBox(width: 4),
+                            const Icon(Icons.health_and_safety_rounded,
+                                size: 16, color: Color(0xFFE65100)),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Resp.: ${firstResponsible?.name ?? '—'}',
+                        style: const TextStyle(
+                            fontSize: 12, color: Color(0xFF9AA3B5)),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded,
+                    size: 18, color: Color(0xFFC4CADA)),
+              ],
+            ),
           ),
         ),
       ),

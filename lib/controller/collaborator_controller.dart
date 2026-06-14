@@ -1,133 +1,178 @@
-import 'dart:convert';
-import 'package:kids_space/service/collaborator_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:mobx/mobx.dart';
-import 'package:kids_space/model/collaborator.dart';
-// use secure storage via BaseController
-import 'base_controller.dart';
+import 'dart:convert';
+import '../service/collaborator_service.dart';
+import '../model/collaborator.dart';
+import 'company_controller.dart';
 
-part 'collaborator_controller.g.dart';
-
-class CollaboratorController = _CollaboratorController with _$CollaboratorController;
-
-abstract class _CollaboratorController extends BaseController with Store {
-  
-  final CollaboratorService _collaboratorService = GetIt.I<CollaboratorService>();
-  
-  @observable
-  Collaborator? loggedCollaborator;
-
-  @observable
-  Collaborator? selectedCollaborator;
-
-  @observable
-  ObservableList<Collaborator> collaborators = ObservableList<Collaborator>();
-
-  @observable
+class CollaboratorController extends ChangeNotifier {
+  final CollaboratorService _service = CollaboratorService();
+  Collaborator? _loggedCollaborator;
+  List<Collaborator> _collaborators = [];
   String collaboratorFilter = '';
+  bool refreshLoading = false;
+  String? lastError;
 
-  @computed
-  List<Collaborator> get filteredCollaborators {
-    final filter = collaboratorFilter.toLowerCase();
-    if (filter.isEmpty) return collaborators;
-    return collaborators.where((c) => (c.name?.toLowerCase().contains(filter) ?? false) || (c.email?.toLowerCase().contains(filter) ?? false)).toList();
+  Collaborator? get loggedCollaborator => _loggedCollaborator;
+
+  Future<Collaborator?> create(Map<String, dynamic> payload) async {
+    try {
+      final data = await _service.create(payload);
+      _loggedCollaborator = Collaborator.fromJson(data);
+      // add to cached list
+      final created = _loggedCollaborator;
+      if (created != null) {
+        _collaborators.insert(0, created);
+      }
+      lastError = null;
+      notifyListeners();
+      return _loggedCollaborator;
+    } catch (e) {
+      // capture error for UI
+      // ignore: avoid_print
+      print('CollaboratorController.create error: $e');
+      lastError = e.toString();
+      notifyListeners();
+      return null;
+    }
   }
 
-  @observable
-  bool refreshLoading = false;
+  List<Collaborator> get collaborators => _collaborators;
 
-  @action
+  List<Collaborator> get filteredCollaborators {
+    final q = collaboratorFilter.trim().toLowerCase();
+    if (q.isEmpty) return _collaborators;
+    return _collaborators.where((c) {
+      final name = c.name?.toLowerCase() ?? '';
+      final email = c.email?.toLowerCase() ?? '';
+      final doc = c.document?.toLowerCase() ?? '';
+      return name.contains(q) || email.contains(q) || doc.contains(q);
+    }).toList();
+  }
+
   Future<void> refreshCollaboratorsForCompany(String? companyId) async {
     refreshLoading = true;
-    if (companyId == null) {
-      collaborators.clear();
-      refreshLoading = false;
-      return;
-    }
-    final list = await _collaboratorService.getCollaboratorsByCompanyId(companyId);
-    collaborators
-      ..clear()
-      ..addAll(list);
-    refreshLoading = false;
-  }
-
-  /// Define o colaborador logado e persiste localmente
-  @action
-  setLoggedCollaborator(Collaborator? collaborator)  async{
-    loggedCollaborator = collaborator;
+    lastError = null;
+    notifyListeners();
     try {
-      if (collaborator != null) {
-        await secureStorage.write(key: 'loggedCollaborator', value: jsonEncode(collaborator.toJson()));
+      final data = await _service.list();
+      final list = data
+          .map((e) => Collaborator.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      if (companyId != null && companyId.isNotEmpty) {
+        _collaborators = list.where((c) => c.companyId == companyId).toList();
       } else {
-        await secureStorage.delete(key: 'loggedCollaborator');
+        _collaborators = list;
       }
-    } catch (_) {
-      // swallow storage errors silently; nothing actionable in UI
+    } catch (e) {
+      // capture error and expose to UI
+      // ignore: avoid_print
+      print('CollaboratorController.refreshCollaboratorsForCompany error: $e');
+      lastError = e.toString();
+      _collaborators = [];
+    } finally {
+      refreshLoading = false;
+      notifyListeners();
     }
   }
 
-  /// Define o colaborador selecionado para visualização (não altera o logado)
-  @action
-  Future<void> setSelectedCollaborator(Collaborator? collaborator) async {
-    selectedCollaborator = collaborator;
-  }
-
-  /// Limpa o colaborador logado e remove dos dados locais
-  @action
-  Future<void> clearLoggedCollaborator() async {
-    loggedCollaborator = null;
-    try {
-      await secureStorage.delete(key: 'loggedCollaborator');
-    } catch (_) {}
-  }
-
-  /// Carrega colaborador salvo localmente (se existir)
-  @action
-  Future<bool> loadLoggedCollaboratorFromPrefs() async {
-    try {
-      final jsonString = await secureStorage.read(key: 'loggedCollaborator');
-      if (jsonString != null && jsonString.isNotEmpty) {
-        loggedCollaborator = Collaborator.fromJson(jsonDecode(jsonString));
-        return true;
-      }
-    } catch (_) {}
-    loggedCollaborator = null;
-    return false;
-  }
-  
-  @action
-  Future<bool> deleteCollaborator(String? id) async {
-    if(id != null && id.isNotEmpty){
-      return _collaboratorService.deleteCollaborator(id);
-    } else {
-      return false;
-    }
-  }
-
-  /// Atualiza colaborador via serviço e mantém estado local consistente
-  @action
-  Future<bool> updateCollaborator(Collaborator collaborator) async {
-    final success = await _collaboratorService.updateCollaborator(collaborator);
-    if (success) {
-      // atualiza selected e logged se necessário
-      if (selectedCollaborator?.id == collaborator.id) {
-        selectedCollaborator = collaborator;
-      }
-      if (loggedCollaborator?.id == collaborator.id) {
-        await setLoggedCollaborator(collaborator);
-      }
-    }
-    return success;
-  }
-
-  /// Busca colaborador por id delegando ao serviço
   Future<Collaborator?> getCollaboratorById(String id) async {
-    return await _collaboratorService.getCollaboratorById(id);
+    final cached = _loggedCollaborator?.id == id ? _loggedCollaborator : null;
+    if (cached != null) return cached;
+    final res = await _service.getById(id);
+    if (res == null) return null;
+    final c = Collaborator.fromJson(res);
+    _loggedCollaborator = c;
+    notifyListeners();
+    return c;
   }
 
-  @action
-  Future<bool> createCollaborator(Collaborator collaborator) async {
-    final success = await _collaboratorService.createCollaborator(collaborator);
-    return success;
+  Future<String?> getCollaboratorNameById(String id) async {
+    final logged = _loggedCollaborator;
+    if (logged?.id == id &&
+        logged?.name != null &&
+        logged!.name!.trim().isNotEmpty) {
+      return logged.name;
+    }
+
+    try {
+      final cached = _collaborators.firstWhere((c) => c.id == id);
+      if (cached.name != null && cached.name!.trim().isNotEmpty) {
+        return cached.name;
+      }
+    } catch (_) {}
+
+    return await _service.getNameById(id);
+  }
+
+  /// Fetch the currently authenticated collaborator from the API (`/collaborators/me`).
+  Future<Collaborator?> getMe() async {
+    try {
+      final res = await _service.getMe();
+      if (res == null) return null;
+      final c = Collaborator.fromJson(res);
+      _loggedCollaborator = c;
+      lastError = null;
+      notifyListeners();
+      return c;
+    } catch (e) {
+      // ignore: avoid_print
+      print('CollaboratorController.getMe error: $e');
+      lastError = e.toString();
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<void> setLoggedCollaborator(Collaborator c) async {
+    _loggedCollaborator = c;
+    notifyListeners();
+    // If collaborator belongs to a company, ensure the CompanyController
+    // has the company loaded so the app can differentiate a "logged company"
+    // vs a "logged collaborator" context.
+    try {
+      final companyId = c.companyId;
+      if (companyId != null && companyId.isNotEmpty) {
+        final companyController = GetIt.I.get<CompanyController>();
+        await companyController.loadCompanyNameById(companyId);
+      }
+    } catch (_) {}
+  }
+
+  Future<bool> deleteCollaborator(String id) async {
+    final ok = await _service.delete(id);
+    if (ok) {
+      if (_loggedCollaborator?.id == id) {
+        _loggedCollaborator = null;
+      }
+      _collaborators.removeWhere((c) => c.id == id);
+      notifyListeners();
+    }
+    return ok;
+  }
+
+  Future<bool> updateCollaborator(Collaborator c) async {
+    if (c.id == null) return false;
+    // Build payload but remove server-managed/read-only fields that the API rejects
+    final payload = Map<String, dynamic>.from(c.toJson());
+    payload.remove('id');
+    payload.remove('createdAt');
+    payload.remove('updatedAt');
+    payload.remove('userType');
+    if (kDebugMode) {
+      // ignore: avoid_print
+      print(
+        'CollaboratorController.updateCollaborator payload=${jsonEncode(payload)}',
+      );
+    }
+    final res = await _service.update(c.id!, payload);
+    final updated = Collaborator.fromJson(Map<String, dynamic>.from(res));
+    if (_loggedCollaborator?.id == updated.id) {
+      _loggedCollaborator = updated;
+    }
+    final idx = _collaborators.indexWhere((x) => x.id == updated.id);
+    if (idx != -1) _collaborators[idx] = updated;
+    notifyListeners();
+    return true;
   }
 }

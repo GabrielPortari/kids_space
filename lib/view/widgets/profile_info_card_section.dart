@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:kids_space/view/design_system/app_text.dart';
 
 class ProfileInfoCardSection extends StatefulWidget {
   final String title;
   final List<MapEntry<String, String>> entries;
+  final IconData? icon;
 
-  const ProfileInfoCardSection({super.key, required this.title, required this.entries});
+  const ProfileInfoCardSection({
+    super.key,
+    required this.title,
+    required this.entries,
+    this.icon,
+  });
 
   @override
   State<ProfileInfoCardSection> createState() => _ProfileInfoCardSectionState();
@@ -16,62 +21,98 @@ class _ProfileInfoCardSectionState extends State<ProfileInfoCardSection> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final entries = widget.entries;
 
-    final firstRowWidget = entries.isEmpty
-        ? const SizedBox.shrink()
-        : Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: _InfoRow(entries.first.key, entries.first.value,
-                valueStyle: entries.first.key == 'ID' ? TextStyle(color: Theme.of(context).colorScheme.primary) : null),
-          );
-
-    final fullListWidget = entries.isEmpty
-        ? const SizedBox.shrink()
-        : ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
-            itemCount: entries.length,
-            itemBuilder: (context, index) {
-              final e = entries[index];
-              return _InfoRow(e.key, e.value,
-                  valueStyle: e.key == 'ID' ? TextStyle(color: Theme.of(context).colorScheme.primary) : null);
-            },
-            separatorBuilder: (context, index) => const Divider(height: 1),
-          );
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFEEF1F7)),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(child: TextHeaderSmall(widget.title)),
-                IconButton(
-                  icon: Icon(_collapsed ? Icons.expand_more : Icons.expand_less),
-                  onPressed: () => setState(() => _collapsed = !_collapsed),
-                ),
-              ],
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Header ───────────────────────────────────────────────────────
+          InkWell(
+            onTap: () => setState(() => _collapsed = !_collapsed),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+              child: Row(
+                children: [
+                  if (widget.icon != null) ...[
+                    Icon(widget.icon, size: 18, color: scheme.primary),
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF0F1218),
+                      ),
+                    ),
+                  ),
+                  AnimatedRotation(
+                    turns: _collapsed ? 0 : 0.5,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: const Color(0xFF9AA3B5),
+                      size: 20,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
-            AnimatedCrossFade(
-              firstChild: firstRowWidget,
-              secondChild: fullListWidget,
-              crossFadeState: _collapsed ? CrossFadeState.showFirst : CrossFadeState.showSecond,
-              duration: const Duration(milliseconds: 220),
-              firstCurve: Curves.easeInOut,
-              secondCurve: Curves.easeInOut,
-              sizeCurve: Curves.easeInOut,
-            ),
-          ],
-        ),
+          ),
+
+          // ── Divisor ───────────────────────────────────────────────────────
+          if (!_collapsed)
+            const Divider(height: 1, color: Color(0xFFEEF1F7)),
+
+          // ── Conteúdo ─────────────────────────────────────────────────────
+          AnimatedCrossFade(
+            duration: const Duration(milliseconds: 200),
+            firstCurve: Curves.easeInOut,
+            secondCurve: Curves.easeInOut,
+            sizeCurve: Curves.easeInOut,
+            crossFadeState: _collapsed
+                ? CrossFadeState.showFirst
+                : CrossFadeState.showSecond,
+            firstChild: const SizedBox.shrink(),
+            secondChild: entries.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      '—',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF9AA3B5),
+                      ),
+                    ),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: entries.indexed
+                          .expand((item) {
+                            final (i, e) = item;
+                            return [
+                              if (i > 0) const SizedBox(height: 12),
+                              _InfoRow(label: e.key, value: e.value),
+                            ];
+                          })
+                          .toList(),
+                    ),
+                  ),
+          ),
+        ],
       ),
     );
   }
@@ -80,22 +121,37 @@ class _ProfileInfoCardSectionState extends State<ProfileInfoCardSection> {
 class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
-  final TextStyle? valueStyle;
 
-  const _InfoRow(this.label, this.value, {this.valueStyle});
+  const _InfoRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          TextBodyMedium('$label:'),
-          const SizedBox(width: 8),
-          Expanded(child: TextBodyMedium(value, style: valueStyle)),
-        ],
-      ),
+    final textTheme = Theme.of(context).textTheme;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 120,
+          child: Text(
+            label,
+            style: textTheme.bodySmall?.copyWith(
+              color: const Color(0xFF9AA3B5),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value.isEmpty ? '—' : value,
+            style: textTheme.bodyMedium?.copyWith(
+              color: const Color(0xFF0F1218),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

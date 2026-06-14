@@ -1,158 +1,217 @@
+import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kids_space/controller/user_controller.dart';
-import 'package:mobx/mobx.dart';
-
-import '../model/child.dart';
 import '../service/child_service.dart';
-import '../model/user.dart';
-import 'base_controller.dart';
+import '../model/child.dart';
+import '../model/parent.dart';
+import 'attendance_controller.dart';
+import 'parent_controller.dart';
 
-part 'child_controller.g.dart';
-class ChildController = _ChildController with _$ChildController;
+class ChildController extends ChangeNotifier {
+  final ChildService _service = ChildService();
+  List<Child> _children = [];
 
-abstract class _ChildController extends BaseController with Store {
-  final ChildService _childService;
-  UserController get _userController => GetIt.I.get<UserController>();
-  _ChildController(this._childService);
-  
-  @observable
   String childFilter = '';
-  @computed
+  bool refreshLoading = false;
+  String? lastError;
+
+  List<Child> get children => _children;
+
   List<Child> get filteredChildren {
-    final filter = childFilter.toLowerCase();
-    if (filter.isEmpty) {
-      return children;
-    } else {
-      return children
-          .where((u) =>
-              (u.name?.toLowerCase().contains(filter) ?? false) ||
-              (u.email?.toLowerCase().contains(filter) ?? false) ||
-              (u.document?.toLowerCase().contains(filter) ?? false))
+    final q = childFilter.trim().toLowerCase();
+    if (q.isEmpty) return _children;
+    return _children.where((c) {
+      final name = c.name?.toLowerCase() ?? '';
+      final email = c.email?.toLowerCase() ?? '';
+      final doc = c.document?.toLowerCase() ?? '';
+      return name.contains(q) || email.contains(q) || doc.contains(q);
+    }).toList();
+  }
+
+  Future<void> refreshChildren() async {
+    try {
+      final data = await _service.list();
+      _children = data
+          .map((e) => Child.fromJson(Map<String, dynamic>.from(e)))
           .toList();
+      lastError = null;
+    } catch (e) {
+      // ignore: avoid_print
+      print('ChildController.refreshChildren error: $e');
+      lastError = e.toString();
+      _children = [];
     }
+    notifyListeners();
   }
 
-  // Retorna um mapa de childId para lista de responsáveis (User)
-  Map<String, List<User>> getChildrenWithResponsibles(List<Child> children) {
-    final Map<String, List<User>> result = {};
-    if (children.isEmpty) return result;
-    // build fast lookup for users by id
-    final Map<String, User> usersById = {};
-    for (final u in _userController.users) {
-      if (u.id != null) usersById[u.id!] = u;
-    }
+  Future<void> refreshChildrenForCompany(String? companyId) async {
+    refreshLoading = true;
+    notifyListeners();
+    try {
+      final data = await _service.list(
+        query: companyId != null && companyId.isNotEmpty
+            ? {'companyId': companyId}
+            : null,
+      );
+      final list = data
+          .map((e) => Child.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      // mark checkedIn based on attendance active checkins
+      final attendance = GetIt.I<AttendanceController>();
+      final activeIds = attendance.activeCheckins
+          .where((a) => a.childId != null)
+          .map((a) => a.childId!)
+          .toSet();
 
-    for (final child in children) {
-      final responsibleIds = child.responsibleUserIds;
-      if (responsibleIds == null || responsibleIds.isEmpty) continue;
-      for (final id in responsibleIds) {
-        final user = usersById[id];
-        if (user != null) result.putIfAbsent(child.id!, () => []).add(user);
+      final enriched = list
+          .map((c) => c.copyWith(checkedIn: activeIds.contains(c.id)))
+          .toList();
+
+      if (companyId != null && companyId.isNotEmpty) {
+        _children = enriched.where((c) => c.companyId == companyId).toList();
+      } else {
+        _children = enriched;
       }
+      lastError = null;
+    } catch (e) {
+      // capture errors and expose to UI
+      // ignore: avoid_print
+      print('ChildController.refreshChildrenForCompany error: $e');
+      lastError = e.toString();
+      _children = [];
+    } finally {
+      refreshLoading = false;
+      notifyListeners();
     }
-    return result;
-  }
-  
-  Map<String, List<User>> get activeChildrenWithResponsibles { 
-    final active = children.where((c) => c.checkedIn == true).toList();
-    return getChildrenWithResponsibles(active);
   }
 
-  // Atualiza uma criança (delegando ao serviço)
-  Future<bool> updateChild(Child? child) async{
-    if(child == null) return false;
-    return await _childService.updateChild(child);
+  Future<Child?> fetchChildById(String id) async {
+    final cached = _children.firstWhereOrNull((c) => c.id == id);
+    if (cached != null) return cached;
+    final res = await _service.getById(id);
+    if (res == null) return null;
+    final c = Child.fromJson(Map<String, dynamic>.from(res));
+    _children.add(c);
+    notifyListeners();
+    return c;
   }
 
-  /// Synchronous cache-first getter. Returns cached `Child` if present.
-  /// If not present, triggers a background fetch (`fetchChildById`) and returns null.
+  /// Synchronous cached lookup for a child by id. Returns null if not cached.
   Child? getChildById(String? id) {
     if (id == null) return null;
-    final local = getChildFromCache(id);
-    if (local != null) return local;
-    // Fire-and-forget fetch to populate cache for subsequent calls
-    fetchChildById(id);
-    return null;
+    return _children.firstWhereOrNull((c) => c.id == id);
   }
 
-  /// Async fetch that queries the service and updates local cache.
-  Future<Child?> fetchChildById(String? id) async {
-    if (id == null) return null;
-    final fetched = await _childService.getChildById(id);
-    if (fetched == null) return null;
-    // update cache using a map to ensure uniqueness (single assignment to observable)
-    final Map<String, Child> byId = {};
-    for (final c in children) {
-      if (c.id != null) byId[c.id!] = c;
+  /// Async lookup that fetches from server if not present in cache.
+  Future<Child?> getChildByIdAsync(String id) async => await fetchChildById(id);
+
+  Future<String?> getChildNameById(String id) async {
+    final cached = getChildById(id);
+    if (cached?.name != null && cached!.name!.trim().isNotEmpty) {
+      return cached.name;
     }
-    if (fetched.id != null) byId[fetched.id!] = fetched;
-    children = byId.values.toList();
-    return fetched;
+    return await _service.getNameById(id);
   }
 
-  /// Synchronous cache-only lookup. Returns null if not present locally.
-  Child? getChildFromCache(String? id) {
-    if (id == null) return null;
-    for (final c in children) {
-      if (c.id == id) return c;
+  Future<Child> createChild(Map<String, dynamic> payload) async {
+    final data = await _service.create(payload);
+    final child = Child.fromJson(data);
+    _children.add(child);
+    notifyListeners();
+    return child;
+  }
+
+  Future<bool> updateChild(Child c) async {
+    if (c.id == null) return false;
+    final payload = c.toJson();
+    final res = await _service.update(c.id!, payload);
+    final updated = Child.fromJson(Map<String, dynamic>.from(res));
+    final idx = _children.indexWhere((x) => x.id == updated.id);
+    if (idx != -1) _children[idx] = updated;
+    notifyListeners();
+    return true;
+  }
+
+  Future<bool> deleteChild(String id) async {
+    final ok = await _service.delete(id);
+    if (ok) {
+      _children.removeWhere((c) => c.id == id);
+      notifyListeners();
     }
-    return null;
+    return ok;
   }
 
-  // Expõe exclusão de criança delegando ao serviço
-  Future<bool> deleteChild(String? childId) async {
-    if (childId == null) return false;
-    return await _childService.deleteChild(childId);
-  }
-
-  /// Cria uma nova criança associada a um responsável (parentId).
-  /// Retorna true se sucesso.
-  Future<bool> registerChild(String parentId, Child child) async {
+  /// Assign one or more parents to a child via POST /v2/children/:childId/parents
+  /// Expects the service to accept { parentIds: [...] }
+  Future<bool> assignParentToChild(
+    String childId,
+    List<String> parentIds,
+  ) async {
     try {
-      final success = await _childService.registerChild(child, parentId);
-      if (success) {
-        // optional: add to cache local for immediate feedback (assign to trigger MobX)
-        children = [...children, child];
+      final res = await _service.assignParent(childId, parentIds);
+      // If the service returned the updated child, merge it; otherwise, update cache conservatively.
+      try {
+        final updated = Child.fromJson(Map<String, dynamic>.from(res));
+        final idx = _children.indexWhere((c) => c.id == updated.id);
+        if (idx != -1) {
+          _children[idx] = updated;
+        } else {
+          _children.add(updated);
+        }
+      } catch (_) {
+        // fallback: ensure parentIds are present in cached child
+        final idx = _children.indexWhere((c) => c.id == childId);
+        if (idx != -1) {
+          final c = _children[idx];
+          final parents = List<String>.from(c.parents ?? []);
+          for (final pid in parentIds) {
+            if (!parents.contains(pid)) parents.add(pid);
+          }
+          _children[idx] = c.copyWith(parents: parents);
+        }
       }
-      return success;
+      notifyListeners();
+      return true;
     } catch (e) {
+      // ignore: avoid_print
+      print('ChildController.assignParentToChild error: $e');
       return false;
     }
   }
 
-  @observable
-  bool refreshLoading = false;
-	@observable
-	List<Child> children = [];
-  // Busca crianças da empresa (delegando ao serviço)
-  Future<void> getChildrenByCompanyId(String? companyId) async {
-    if (companyId == null) return;
-    refreshLoading = true;
-    try {
-      final list = await _childService.getChildrenByCompanyId(companyId);
-      // deduplicate by id and assign to trigger MobX observers
-      final Map<String, Child> byId = {};
-      for (final c in list) {
-        if (c.id != null) byId[c.id!] = c;
-      }
-      final unique = byId.values.toList();
-      children = unique;
-    } finally {
-      refreshLoading = false;
-    }
-  }
-
-  /// Refresh children list for a company (keeps same behavior as getChildrenByCompanyId).
-  Future<void> refreshChildrenForCompany(String? companyId) async {
-    await getChildrenByCompanyId(companyId);
-  }
-
-  /// Returns the children currently marked as active for the given company.
+  /// Returns children that are currently checked-in for the given company
   List<Child> activeCheckedInChildren(String? companyId) {
     if (companyId == null) return [];
-    return children.where((c) => c.companyId == companyId && (c.checkedIn ?? false)).toList();
+    final attendance = GetIt.I<AttendanceController>();
+    final active = attendance.activeCheckins
+        .where((e) => e.checkOutTime == null && e.childId != null)
+        .map((e) => e.childId!)
+        .toSet();
+    return _children
+        .where(
+          (c) =>
+              c.id != null && active.contains(c.id) && c.companyId == companyId,
+        )
+        .toList();
   }
 
-  /// Compatibility wrapper used in some places expecting a "computed" style method.
-  List<Child> activeCheckedInChildrenComputed(String? companyId) => activeCheckedInChildren(companyId);
+  /// A computed-style variant used by some widgets for synchronous access
+  List<Child> activeCheckedInChildrenComputed(String? companyId) =>
+      activeCheckedInChildren(companyId);
+
+  /// Build a map childId -> list of Parent (responsibles) using cached parents
+  Map<String, List<Parent>> getChildrenWithResponsibles(List<Child> list) {
+    final parentCtrl = GetIt.I<ParentController>();
+    final Map<String, List<Parent>> map = {};
+    for (final c in list) {
+      final ids = c.parents ?? [];
+      final res = <Parent>[];
+      for (final id in ids) {
+        final p = parentCtrl.getUserById(id);
+        if (p != null) res.add(p);
+      }
+      map[c.id ?? ''] = res;
+    }
+    return map;
+  }
 }

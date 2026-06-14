@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:kids_space/controller/collaborator_controller.dart';
-import 'package:kids_space/model/base_user.dart';
 import '../../controller/auth_controller.dart';
-import '../../controller/company_controller.dart';
 import 'package:kids_space/util/localization_service.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -13,23 +10,41 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   final AuthController _authController = GetIt.I<AuthController>();
-  final CompanyController _companyController = GetIt.I<CompanyController>();
-  final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
+  late final AnimationController _animCtrl;
+  late final Animation<double> _fadeAnim;
 
   @override
   void initState() {
     super.initState();
+    _animCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _fadeAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
+    _animCtrl.forward();
     _startSplashFlow();
   }
 
+  @override
+  void dispose() {
+    _animCtrl.dispose();
+    super.dispose();
+  }
+
   Future<void> _startSplashFlow() async {
-    await _loadCompanies();
-    // Verifica sessão ao iniciar: se inválida, desloga e direciona para seleção de company
+    await _authController.loadFromStorage();
+    final hasSession = _authController.idToken != null;
+    if (!hasSession) {
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
+
     final valid = await _authController.ensureSessionValid();
     if (!valid) {
-      try { await _authController.logout(); } catch (_) {}
       if (!mounted) return;
       await showDialog<void>(
         context: context,
@@ -38,13 +53,15 @@ class _SplashScreenState extends State<SplashScreen> {
           title: Text(translate('splash.session_expired_title')),
           content: Text(translate('splash.session_expired_message')),
           actions: [
-            TextButton(
+            FilledButton(
               onPressed: () {
                 Navigator.of(c).pop();
-                Navigator.of(context).pushNamedAndRemoveUntil('/company_selection', (route) => false);
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil('/login', (_) => false);
               },
               child: Text(translate('buttons.ok')),
-            )
+            ),
           ],
         ),
       );
@@ -53,62 +70,88 @@ class _SplashScreenState extends State<SplashScreen> {
     await _checkLoggedUser();
   }
 
+  Future<void> _checkLoggedUser() async {
+    await _authController.checkLoggedUser();
+    if (!mounted) return;
+    final route = _authController.role == UserRole.company
+        ? '/company_screen'
+        : _authController.role == UserRole.collaborator
+        ? '/app_bottom_nav'
+        : '/login';
+    Navigator.pushReplacementNamed(context, route);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.child_care, size: 80),
-            const SizedBox(height: 24),
-            Text(
-              'Kids Space',
-            ),
-            const SizedBox(height: 16),
-            const CircularProgressIndicator(),
-          ],
+      backgroundColor: scheme.primary,
+      body: FadeTransition(
+        opacity: _fadeAnim,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Logo container com sombra suave sobre fundo primário
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 32,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Image.asset(
+                  'assets/images/kids_space_logo.jpg',
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => Icon(
+                    Icons.child_care_rounded,
+                    size: 64,
+                    color: scheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // App name
+              Text(
+                'Kids Space',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Gestão de presença infantil',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.75),
+                ),
+              ),
+              const SizedBox(height: 48),
+
+              // Loading indicator branco sobre fundo primário
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: Colors.white.withValues(alpha: 0.9),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
-  }
-
-  Future<void> _loadCompanies() async {
-    await _companyController.loadCompanies();
-  }
-
-  Future<void> _checkLoggedUser() async {
-    await _authController.checkLoggedUser();
-      // refresh collaborator from API to ensure latest fields (roles/userType, companyId, etc.)
-      var loggedCollaborator = _collaboratorController.loggedCollaborator;
-      try {
-        if (loggedCollaborator != null && loggedCollaborator.id != null) {
-          final refreshed = await _collaboratorController.getCollaboratorById(loggedCollaborator.id!);
-          if (refreshed != null) {
-            await _collaboratorController.setLoggedCollaborator(refreshed);
-            loggedCollaborator = refreshed;
-          }
-        }
-      } catch (e) {
-        // ignore: avoid_print
-      }
-    if (!mounted) return;
-    if (loggedCollaborator != null) {
-      final companyId = loggedCollaborator.companyId;
-      if (companyId != null) {
-        final company = _companyController.getCompanyById(companyId);
-        if (company != null) {
-          _companyController.selectCompany(company);
-          if (!mounted) return;
-          loggedCollaborator.userType == UserType.companyAdmin ? 
-          Navigator.pushReplacementNamed(context, '/admin_panel')
-          : Navigator.pushReplacementNamed(context, '/app_bottom_nav');
-          return;
-        }
-      }
-      Navigator.pushReplacementNamed(context, '/company_selection');
-      return;
-    }
-    Navigator.pushReplacementNamed(context, '/company_selection');
   }
 }

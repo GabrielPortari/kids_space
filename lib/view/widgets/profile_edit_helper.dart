@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:kids_space/controller/collaborator_controller.dart';
-import 'package:kids_space/controller/user_controller.dart';
+import 'package:kids_space/controller/parent_controller.dart';
 import 'package:kids_space/model/base_model.dart';
 import 'package:kids_space/model/collaborator.dart';
-import 'package:kids_space/model/user.dart';
+import 'package:kids_space/model/parent.dart';
 import 'package:kids_space/model/child.dart';
+import 'package:kids_space/model/address.dart';
 import 'package:kids_space/controller/child_controller.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
 import 'package:kids_space/view/widgets/edit_entity_bottom_sheet.dart';
+import 'package:kids_space/view/widgets/health_info_edit_bottom_sheet.dart';
 import 'package:kids_space/util/localization_service.dart';
 
 /// Helper that shows a choice modal to edit personal data or address and
 /// opens the generic `EditEntityBottomSheet` to apply changes.
 Future<void> showProfileEditDialogs(
   BuildContext context, {
-  User? user,
+  Parent? parent,
   Collaborator? collaborator,
   Child? child,
   ChildController? childController,
-  required UserController userController,
+  required ParentController userController,
   required CollaboratorController collaboratorController,
 }) async {
   final choice = await showModalBottomSheet<String?>(
@@ -27,70 +29,133 @@ Future<void> showProfileEditDialogs(
     builder: (_) => SafeArea(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(color: Theme.of(context).canvasColor, borderRadius: BorderRadius.circular(12)),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const SizedBox(height: 16),
-          Text(translate('profile.edit_user'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Divider(),
+        decoration: BoxDecoration(
+          color: Theme.of(context).canvasColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 16),
+            Text(
+              translate('profile.edit_user'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Divider(),
 
-          ListTile(
-            leading: const Icon(Icons.person),
-            title: Text(translate('profile.edit_personal')),
-            onTap: () => Navigator.of(context).pop('personal'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.home),
-            title: Text(translate('profile.edit_address')),
-            onTap: () => Navigator.of(context).pop('address'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.close, color: danger),
-            title: Text(translate('buttons.cancel')),
-            onTap: () => Navigator.of(context).pop(null),
-          ),
-        ]),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: Text(translate('profile.edit_personal')),
+              onTap: () => Navigator.of(context).pop('personal'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: Text(translate('profile.edit_address')),
+              onTap: () => Navigator.of(context).pop('address'),
+            ),
+            if (child != null && childController != null)
+              ListTile(
+                leading: const Icon(Icons.health_and_safety),
+                title: Text(translate('health_info.edit_title')),
+                onTap: () => Navigator.of(context).pop('health'),
+              ),
+            ListTile(
+              leading: const Icon(Icons.close, color: danger),
+              title: Text(translate('buttons.cancel')),
+              onTap: () => Navigator.of(context).pop(null),
+            ),
+          ],
+        ),
       ),
     ),
   );
 
   if (choice == 'personal') {
-    if (user != null || collaborator != null) {
-      await _editPersonal(context, user: user, collaborator: collaborator, userController: userController, collaboratorController: collaboratorController);
+    if (parent != null || collaborator != null) {
+      await _editPersonal(
+        context,
+        parent: parent,
+        collaborator: collaborator,
+        userController: userController,
+        collaboratorController: collaboratorController,
+      );
     } else if (child != null && childController != null) {
-      await _editChildPersonal(context, child: child, childController: childController);
+      await _editChildPersonal(
+        context,
+        child: child,
+        childController: childController,
+      );
     }
   } else if (choice == 'address') {
-    if (user != null || collaborator != null) {
-      await _editAddress(context, user: user, collaborator: collaborator, userController: userController, collaboratorController: collaboratorController);
+    if (parent != null || collaborator != null) {
+      await _editAddress(
+        context,
+        parent: parent,
+        collaborator: collaborator,
+        userController: userController,
+        collaboratorController: collaboratorController,
+      );
     } else if (child != null && childController != null) {
-      await _editChildAddress(context, child: child, childController: childController);
+      await _editChildAddress(
+        context,
+        child: child,
+        childController: childController,
+      );
+    }
+  } else if (choice == 'health') {
+    if (child != null && childController != null) {
+      await _editChildHealthInfo(
+        context,
+        child: child,
+        childController: childController,
+      );
     }
   }
 }
 
-Future<bool?> _confirmDialog(BuildContext context, String title, String content) {
+Future<bool?> _confirmDialog(
+  BuildContext context,
+  String title,
+  String content,
+) {
   return showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
       title: Text(title),
       content: Text(content),
       actions: [
-        TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(translate('buttons.cancel'))),
-        TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(translate('buttons.confirm'))),
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(false),
+          child: Text(translate('buttons.cancel')),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(true),
+          child: Text(translate('buttons.confirm')),
+        ),
       ],
     ),
   );
 }
 
-Future<void> _showResultDialog(BuildContext context, bool success, String successMsg, String errorMsg) {
+Future<void> _showResultDialog(
+  BuildContext context,
+  bool success,
+  String successMsg,
+  String errorMsg,
+) {
   return showDialog<void>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: Text(success ? translate('common.success') : translate('common.error')),
+      title: Text(
+        success ? translate('common.success') : translate('common.error'),
+      ),
       content: Text(success ? successMsg : errorMsg),
       actions: [
-        TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(translate('buttons.ok'))),
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: Text(translate('buttons.ok')),
+        ),
       ],
     ),
   );
@@ -98,29 +163,62 @@ Future<void> _showResultDialog(BuildContext context, bool success, String succes
 
 Future<void> _editPersonal(
   BuildContext context, {
-  User? user,
+  Parent? parent,
   Collaborator? collaborator,
-  required UserController userController,
+  required ParentController userController,
   required CollaboratorController collaboratorController,
 }) async {
-  if (user != null) {
-    final u = user;
+  if (parent != null) {
+    final u = parent;
     DateTime? parsedBirth = BaseModel.tryParseTimestamp(u.birthDate);
     final fields = [
-      FieldDefinition(key: 'name', label: translate('profile.name'), initialValue: u.name ?? '', required: true),
-      FieldDefinition(key: 'email', label: translate('profile.email'), type: FieldType.email, initialValue: u.email ?? '', required: true),
-      FieldDefinition(key: 'birthDate', label: translate('profile.birth_date'), type: FieldType.date, initialValue: parsedBirth),
-      FieldDefinition(key: 'phone', label: translate('profile.phone'), type: FieldType.phone, initialValue: u.phone ?? ''),
-      FieldDefinition(key: 'document', label: translate('profile.document'), initialValue: u.document ?? ''),
+      FieldDefinition(
+        key: 'name',
+        label: translate('profile.name'),
+        initialValue: u.name ?? '',
+        required: true,
+      ),
+      FieldDefinition(
+        key: 'email',
+        label: translate('profile.email'),
+        type: FieldType.email,
+        initialValue: u.email ?? '',
+        required: true,
+      ),
+      FieldDefinition(
+        key: 'birthDate',
+        label: translate('profile.birth_date'),
+        type: FieldType.date,
+        initialValue: parsedBirth,
+      ),
+      FieldDefinition(
+        key: 'phone',
+        label: translate('profile.phone'),
+        type: FieldType.phone,
+        initialValue: u.contact ?? '',
+      ),
+      FieldDefinition(
+        key: 'document',
+        label: translate('profile.document'),
+        initialValue: u.document ?? '',
+      ),
     ];
 
-    final res = await showEditEntityBottomSheet(context: context, title: translate('profile.edit_personal'), fields: fields);
+    final res = await showEditEntityBottomSheet(
+      context: context,
+      title: translate('profile.edit_personal'),
+      fields: fields,
+    );
     if (res != null) {
-      final confirmed = await _confirmDialog(context, translate('profile.confirm_change_title'), translate('profile.confirm_change_personal'));
+      final confirmed = await _confirmDialog(
+        context,
+        translate('profile.confirm_change_title'),
+        translate('profile.confirm_change_personal'),
+      );
       if (confirmed != true) return;
 
-      final updated = User(
-        childrenIds: u.childrenIds,
+      final updated = Parent(
+        children: u.children,
         userType: u.userType,
         name: res['name']?.toString() ?? u.name,
         email: res['email']?.toString() ?? u.email,
@@ -131,42 +229,66 @@ Future<void> _editPersonal(
           return u.birthDate;
         })(),
         document: res['document']?.toString() ?? u.document,
-        phone: res['phone']?.toString() ?? u.phone,
+        contact: res['phone']?.toString() ?? u.contact,
         address: u.address,
-        addressNumber: u.addressNumber,
-        addressComplement: u.addressComplement,
-        neighborhood: u.neighborhood,
-        city: u.city,
-        state: u.state,
-        zipCode: u.zipCode,
         companyId: u.companyId,
         id: u.id,
         createdAt: u.createdAt,
         updatedAt: DateTime.now(),
       );
       final success = await userController.updateUser(updated);
-      await _showResultDialog(context, success, translate('profile.personal_update_success'), translate('profile.personal_update_error'));
+      await _showResultDialog(
+        context,
+        success,
+        translate('profile.personal_update_success'),
+        translate('profile.personal_update_error'),
+      );
     }
   } else if (collaborator != null) {
     final c = collaborator;
     DateTime? parsedBirth = BaseModel.tryParseTimestamp(c.birthDate);
     final fields = [
-      FieldDefinition(key: 'name', label: translate('profile.name'), initialValue: c.name ?? '', required: true),
-      FieldDefinition(key: 'email', label: translate('profile.email'), type: FieldType.email, initialValue: c.email ?? '', required: true),
-      FieldDefinition(key: 'birthDate', label: translate('profile.birth_date'), type: FieldType.date, initialValue: parsedBirth),
-      FieldDefinition(key: 'phone', label: translate('profile.phone'), type: FieldType.phone, initialValue: c.phone ?? ''),
-      FieldDefinition(key: 'document', label: translate('profile.document'), initialValue: c.document ?? ''),
+      FieldDefinition(
+        key: 'name',
+        label: translate('profile.name'),
+        initialValue: c.name ?? '',
+        required: true,
+      ),
+      FieldDefinition(
+        key: 'birthDate',
+        label: translate('profile.birth_date'),
+        type: FieldType.date,
+        initialValue: parsedBirth,
+      ),
+      FieldDefinition(
+        key: 'phone',
+        label: translate('profile.phone'),
+        type: FieldType.phone,
+        initialValue: c.contact ?? '',
+      ),
+      FieldDefinition(
+        key: 'document',
+        label: translate('profile.document'),
+        initialValue: c.document ?? '',
+      ),
     ];
 
-    final res = await showEditEntityBottomSheet(context: context, title: translate('profile.edit_personal'), fields: fields);
+    final res = await showEditEntityBottomSheet(
+      context: context,
+      title: translate('profile.edit_personal'),
+      fields: fields,
+    );
     if (res != null) {
-      final confirmed = await _confirmDialog(context, translate('profile.confirm_change_title'), translate('profile.confirm_change_personal'));
+      final confirmed = await _confirmDialog(
+        context,
+        translate('profile.confirm_change_title'),
+        translate('profile.confirm_change_personal'),
+      );
       if (confirmed != true) return;
 
       final updated = Collaborator(
         userType: c.userType,
         name: res['name']?.toString() ?? c.name,
-        email: res['email']?.toString() ?? c.email,
         birthDate: (() {
           final v = res['birthDate'];
           if (v is DateTime) return v.toIso8601String();
@@ -174,87 +296,178 @@ Future<void> _editPersonal(
           return c.birthDate;
         })(),
         document: res['document']?.toString() ?? c.document,
-        phone: res['phone']?.toString() ?? c.phone,
+        contact: res['phone']?.toString() ?? c.contact,
         address: c.address,
-        addressNumber: c.addressNumber,
-        addressComplement: c.addressComplement,
-        neighborhood: c.neighborhood,
-        city: c.city,
-        state: c.state,
-        zipCode: c.zipCode,
         companyId: c.companyId,
         id: c.id,
         createdAt: c.createdAt,
         updatedAt: DateTime.now(),
       );
       final success = await collaboratorController.updateCollaborator(updated);
-      await _showResultDialog(context, success, translate('profile.personal_update_success'), translate('profile.personal_update_error'));
+      await _showResultDialog(
+        context,
+        success,
+        translate('profile.personal_update_success'),
+        translate('profile.personal_update_error'),
+      );
     }
   }
 }
 
 Future<void> _editAddress(
   BuildContext context, {
-  User? user,
+  Parent? parent,
   Collaborator? collaborator,
-  required UserController userController,
+  required ParentController userController,
   required CollaboratorController collaboratorController,
 }) async {
-  if (user != null) {
-    final u = user;
+  if (parent != null) {
+    final u = parent;
     final fields = [
-      FieldDefinition(key: 'address', label: translate('profile.address'), initialValue: u.address ?? ''),
-      FieldDefinition(key: 'addressNumber', label: translate('profile.address_number'), initialValue: u.addressNumber ?? ''),
-      FieldDefinition(key: 'addressComplement', label: translate('profile.address_complement'), initialValue: u.addressComplement ?? ''),
-      FieldDefinition(key: 'neighborhood', label: translate('profile.neighborhood'), initialValue: u.neighborhood ?? ''),
-      FieldDefinition(key: 'city', label: translate('profile.city'), initialValue: u.city ?? ''),
-      FieldDefinition(key: 'state', label: translate('profile.state'), initialValue: u.state ?? ''),
-      FieldDefinition(key: 'zipCode', label: translate('profile.zip_code'), initialValue: u.zipCode ?? ''),
+      FieldDefinition(
+        key: 'address',
+        label: translate('profile.address'),
+        initialValue: u.address?.address ?? '',
+      ),
+      FieldDefinition(
+        key: 'addressNumber',
+        label: translate('profile.address_number'),
+        initialValue: u.address?.number ?? '',
+      ),
+      FieldDefinition(
+        key: 'addressComplement',
+        label: translate('profile.address_complement'),
+        initialValue: u.address?.complement ?? '',
+      ),
+      FieldDefinition(
+        key: 'neighborhood',
+        label: translate('profile.neighborhood'),
+        initialValue: u.address?.neighborhood ?? '',
+      ),
+      FieldDefinition(
+        key: 'city',
+        label: translate('profile.city'),
+        initialValue: u.address?.city ?? '',
+      ),
+      FieldDefinition(
+        key: 'state',
+        label: translate('profile.state'),
+        initialValue: u.address?.state ?? '',
+      ),
+      FieldDefinition(
+        key: 'zipCode',
+        label: translate('profile.zip_code'),
+        initialValue: u.address?.zipcode ?? '',
+      ),
     ];
 
-    final res = await showEditEntityBottomSheet(context: context, title: translate('profile.edit_address'), fields: fields);
+    final res = await showEditEntityBottomSheet(
+      context: context,
+      title: translate('profile.edit_address'),
+      fields: fields,
+    );
     if (res != null) {
-      final confirmed = await _confirmDialog(context, translate('profile.confirm_change_title'), translate('profile.confirm_change_address'));
+      final confirmed = await _confirmDialog(
+        context,
+        translate('profile.confirm_change_title'),
+        translate('profile.confirm_change_address'),
+      );
       if (confirmed != true) return;
 
-      final updated = User(
-        childrenIds: u.childrenIds,
+      final updated = Parent(
+        children: u.children,
         userType: u.userType,
         name: u.name,
         email: u.email,
         birthDate: u.birthDate,
         document: u.document,
-        phone: u.phone,
-        address: res['address']?.toString() ?? u.address,
-        addressNumber: res['addressNumber']?.toString() ?? u.addressNumber,
-        addressComplement: res['addressComplement']?.toString() ?? u.addressComplement,
-        neighborhood: res['neighborhood']?.toString() ?? u.neighborhood,
-        city: res['city']?.toString() ?? u.city,
-        state: res['state']?.toString() ?? u.state,
-        zipCode: res['zipCode']?.toString() ?? u.zipCode,
+        contact: u.contact,
+        address: (() {
+          final any =
+              res['address'] != null ||
+              res['addressNumber'] != null ||
+              res['addressComplement'] != null ||
+              res['neighborhood'] != null ||
+              res['city'] != null ||
+              res['state'] != null ||
+              res['zipCode'] != null;
+          if (!any) return u.address;
+          return Address(
+            address: res['address']?.toString() ?? u.address?.address,
+            number: res['addressNumber']?.toString() ?? u.address?.number,
+            complement:
+                res['addressComplement']?.toString() ?? u.address?.complement,
+            neighborhood:
+                res['neighborhood']?.toString() ?? u.address?.neighborhood,
+            city: res['city']?.toString() ?? u.address?.city,
+            state: res['state']?.toString() ?? u.address?.state,
+            zipcode: res['zipCode']?.toString() ?? u.address?.zipcode,
+          );
+        })(),
         companyId: u.companyId,
         id: u.id,
         createdAt: u.createdAt,
         updatedAt: DateTime.now(),
       );
       final success = await userController.updateUser(updated);
-      await _showResultDialog(context, success, translate('profile.address_update_success'), translate('profile.address_update_error'));
+      await _showResultDialog(
+        context,
+        success,
+        translate('profile.address_update_success'),
+        translate('profile.address_update_error'),
+      );
     }
   } else if (collaborator != null) {
     final c = collaborator;
     final fields = [
-      FieldDefinition(key: 'address', label: translate('profile.address'), initialValue: c.address ?? ''),
-      FieldDefinition(key: 'addressNumber', label: translate('profile.address_number'), initialValue: c.addressNumber ?? ''),
-      FieldDefinition(key: 'addressComplement', label: translate('profile.address_complement'), initialValue: c.addressComplement ?? ''),
-      FieldDefinition(key: 'neighborhood', label: translate('profile.neighborhood'), initialValue: c.neighborhood ?? ''),
-      FieldDefinition(key: 'city', label: translate('profile.city'), initialValue: c.city ?? ''),
-      FieldDefinition(key: 'state', label: translate('profile.state'), initialValue: c.state ?? ''),
-      FieldDefinition(key: 'zipCode', label: translate('profile.zip_code'), initialValue: c.zipCode ?? ''),
+      FieldDefinition(
+        key: 'address',
+        label: translate('profile.address'),
+        initialValue: c.address?.address ?? '',
+      ),
+      FieldDefinition(
+        key: 'addressNumber',
+        label: translate('profile.address_number'),
+        initialValue: c.address?.number ?? '',
+      ),
+      FieldDefinition(
+        key: 'addressComplement',
+        label: translate('profile.address_complement'),
+        initialValue: c.address?.complement ?? '',
+      ),
+      FieldDefinition(
+        key: 'neighborhood',
+        label: translate('profile.neighborhood'),
+        initialValue: c.address?.neighborhood ?? '',
+      ),
+      FieldDefinition(
+        key: 'city',
+        label: translate('profile.city'),
+        initialValue: c.address?.city ?? '',
+      ),
+      FieldDefinition(
+        key: 'state',
+        label: translate('profile.state'),
+        initialValue: c.address?.state ?? '',
+      ),
+      FieldDefinition(
+        key: 'zipCode',
+        label: translate('profile.zip_code'),
+        initialValue: c.address?.zipcode ?? '',
+      ),
     ];
 
-    final res = await showEditEntityBottomSheet(context: context, title: 'Editar endereço', fields: fields);
+    final res = await showEditEntityBottomSheet(
+      context: context,
+      title: 'Editar endereço',
+      fields: fields,
+    );
     if (res != null) {
-      final confirmed = await _confirmDialog(context, 'Confirmar alteração', 'Deseja aplicar as alterações no endereço?');
+      final confirmed = await _confirmDialog(
+        context,
+        'Confirmar alteração',
+        'Deseja aplicar as alterações no endereço?',
+      );
       if (confirmed != true) return;
 
       final updated = Collaborator(
@@ -263,21 +476,41 @@ Future<void> _editAddress(
         email: c.email,
         birthDate: c.birthDate,
         document: c.document,
-        phone: c.phone,
-        address: res['address']?.toString() ?? c.address,
-        addressNumber: res['addressNumber']?.toString() ?? c.addressNumber,
-        addressComplement: res['addressComplement']?.toString() ?? c.addressComplement,
-        neighborhood: res['neighborhood']?.toString() ?? c.neighborhood,
-        city: res['city']?.toString() ?? c.city,
-        state: res['state']?.toString() ?? c.state,
-        zipCode: res['zipCode']?.toString() ?? c.zipCode,
+        contact: c.contact,
+        address: (() {
+          final any =
+              res['address'] != null ||
+              res['addressNumber'] != null ||
+              res['addressComplement'] != null ||
+              res['neighborhood'] != null ||
+              res['city'] != null ||
+              res['state'] != null ||
+              res['zipCode'] != null;
+          if (!any) return c.address;
+          return Address(
+            address: res['address']?.toString() ?? c.address?.address,
+            number: res['addressNumber']?.toString() ?? c.address?.number,
+            complement:
+                res['addressComplement']?.toString() ?? c.address?.complement,
+            neighborhood:
+                res['neighborhood']?.toString() ?? c.address?.neighborhood,
+            city: res['city']?.toString() ?? c.address?.city,
+            state: res['state']?.toString() ?? c.address?.state,
+            zipcode: res['zipCode']?.toString() ?? c.address?.zipcode,
+          );
+        })(),
         companyId: c.companyId,
         id: c.id,
         createdAt: c.createdAt,
         updatedAt: DateTime.now(),
       );
       final success = await collaboratorController.updateCollaborator(updated);
-      await _showResultDialog(context, success, 'Endereço atualizado com sucesso.', 'Falha ao atualizar endereço.');
+      await _showResultDialog(
+        context,
+        success,
+        'Endereço atualizado com sucesso.',
+        'Falha ao atualizar endereço.',
+      );
     }
   }
 }
@@ -295,36 +528,64 @@ Future<bool?> showChildEditDialogs(
     builder: (_) => SafeArea(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(color: Theme.of(context).canvasColor, borderRadius: BorderRadius.circular(12)),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const SizedBox(height: 16),
-          Text(translate('profile.edit_child'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Divider(),
-          ListTile(
-            leading: const Icon(Icons.person),
-            title: Text(translate('profile.edit_personal')),
-            onTap: () => Navigator.of(context).pop('personal'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.home),
-            title: Text(translate('profile.edit_address')),
-            onTap: () => Navigator.of(context).pop('address'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.close, color: danger),
-            title: Text(translate('buttons.cancel')),
-            onTap: () => Navigator.of(context).pop(null),
-          ),
-        ]),
+        decoration: BoxDecoration(
+          color: Theme.of(context).canvasColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 16),
+            Text(
+              translate('profile.edit_child'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Divider(),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: Text(translate('profile.edit_personal')),
+              onTap: () => Navigator.of(context).pop('personal'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: Text(translate('profile.edit_address')),
+              onTap: () => Navigator.of(context).pop('address'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.health_and_safety),
+              title: Text(translate('health_info.edit_title')),
+              onTap: () => Navigator.of(context).pop('health'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.close, color: danger),
+              title: Text(translate('buttons.cancel')),
+              onTap: () => Navigator.of(context).pop(null),
+            ),
+          ],
+        ),
       ),
     ),
   );
 
   if (choice == 'personal') {
-    return await _editChildPersonal(context, child: child, childController: childController);
+    return await _editChildPersonal(
+      context,
+      child: child,
+      childController: childController,
+    );
   } else if (choice == 'address') {
-    return await _editChildAddress(context, child: child, childController: childController);
+    return await _editChildAddress(
+      context,
+      child: child,
+      childController: childController,
+    );
+  } else if (choice == 'health') {
+    return await _editChildHealthInfo(
+      context,
+      child: child,
+      childController: childController,
+    );
   }
   return null;
 }
@@ -338,22 +599,55 @@ Future<bool?> _editChildPersonal(
   final c = child;
   DateTime? parsedBirth = BaseModel.tryParseTimestamp(c.birthDate);
   final fields = [
-    FieldDefinition(key: 'name', label: translate('profile.name'), initialValue: c.name ?? '', required: true),
-    FieldDefinition(key: 'email', label: 'Email', type: FieldType.email, initialValue: c.email ?? ''),
-    FieldDefinition(key: 'birthDate', label: 'Data de Nascimento', type: FieldType.date, initialValue: parsedBirth),
-    FieldDefinition(key: 'phone', label: 'Telefone', type: FieldType.phone, initialValue: c.phone ?? ''),
-    FieldDefinition(key: 'document', label: 'Documento', initialValue: c.document ?? ''),
+    FieldDefinition(
+      key: 'name',
+      label: translate('profile.name'),
+      initialValue: c.name ?? '',
+      required: true,
+    ),
+    FieldDefinition(
+      key: 'email',
+      label: 'Email',
+      type: FieldType.email,
+      initialValue: c.email ?? '',
+    ),
+    FieldDefinition(
+      key: 'birthDate',
+      label: 'Data de Nascimento',
+      type: FieldType.date,
+      initialValue: parsedBirth,
+    ),
+    FieldDefinition(
+      key: 'phone',
+      label: 'Telefone',
+      type: FieldType.phone,
+      initialValue: c.contact ?? '',
+    ),
+    FieldDefinition(
+      key: 'document',
+      label: 'Documento',
+      initialValue: c.document ?? '',
+    ),
   ];
 
-  final res = await showEditEntityBottomSheet(context: context, title: 'Editar dados pessoais', fields: fields);
+  final res = await showEditEntityBottomSheet(
+    context: context,
+    title: 'Editar dados pessoais',
+    fields: fields,
+  );
   if (res == null) return null;
 
-  final confirmed = await _confirmDialog(context, 'Confirmar alteração', 'Deseja aplicar as alterações nos dados pessoais?');
+  final confirmed = await _confirmDialog(
+    context,
+    'Confirmar alteração',
+    'Deseja aplicar as alterações nos dados pessoais?',
+  );
   if (confirmed != true) return null;
 
   final updated = Child(
-    responsibleUserIds: c.responsibleUserIds,
+    parents: c.parents,
     checkedIn: c.checkedIn,
+    // userType remains
     userType: c.userType,
     name: res['name']?.toString() ?? c.name,
     email: res['email']?.toString() ?? c.email,
@@ -364,14 +658,8 @@ Future<bool?> _editChildPersonal(
       return c.birthDate;
     })(),
     document: res['document']?.toString() ?? c.document,
-    phone: res['phone']?.toString() ?? c.phone,
+    contact: res['contact']?.toString() ?? c.contact,
     address: c.address,
-    addressNumber: c.addressNumber,
-    addressComplement: c.addressComplement,
-    neighborhood: c.neighborhood,
-    city: c.city,
-    state: c.state,
-    zipCode: c.zipCode,
     companyId: c.companyId,
     id: c.id,
     createdAt: c.createdAt,
@@ -379,7 +667,12 @@ Future<bool?> _editChildPersonal(
   );
 
   final success = await childController.updateChild(updated);
-  await _showResultDialog(context, success, 'Dados pessoais atualizados com sucesso.', 'Falha ao atualizar dados pessoais.');
+  await _showResultDialog(
+    context,
+    success,
+    'Dados pessoais atualizados com sucesso.',
+    'Falha ao atualizar dados pessoais.',
+  );
   return success;
 }
 
@@ -391,37 +684,88 @@ Future<bool?> _editChildAddress(
   if (child == null) return null;
   final c = child;
   final fields = [
-    FieldDefinition(key: 'address', label: 'Endereço', initialValue: c.address ?? ''),
-    FieldDefinition(key: 'addressNumber', label: 'Número', initialValue: c.addressNumber ?? ''),
-    FieldDefinition(key: 'addressComplement', label: 'Complemento', initialValue: c.addressComplement ?? ''),
-    FieldDefinition(key: 'neighborhood', label: 'Bairro', initialValue: c.neighborhood ?? ''),
-    FieldDefinition(key: 'city', label: 'Cidade', initialValue: c.city ?? ''),
-    FieldDefinition(key: 'state', label: 'Estado', initialValue: c.state ?? ''),
-    FieldDefinition(key: 'zipCode', label: 'CEP', initialValue: c.zipCode ?? ''),
+    FieldDefinition(
+      key: 'address',
+      label: 'Endereço',
+      initialValue: c.address?.address ?? '',
+    ),
+    FieldDefinition(
+      key: 'addressNumber',
+      label: 'Número',
+      initialValue: c.address?.number ?? '',
+    ),
+    FieldDefinition(
+      key: 'addressComplement',
+      label: 'Complemento',
+      initialValue: c.address?.complement ?? '',
+    ),
+    FieldDefinition(
+      key: 'neighborhood',
+      label: 'Bairro',
+      initialValue: c.address?.neighborhood ?? '',
+    ),
+    FieldDefinition(
+      key: 'city',
+      label: 'Cidade',
+      initialValue: c.address?.city ?? '',
+    ),
+    FieldDefinition(
+      key: 'state',
+      label: 'Estado',
+      initialValue: c.address?.state ?? '',
+    ),
+    FieldDefinition(
+      key: 'zipCode',
+      label: 'CEP',
+      initialValue: c.address?.zipcode ?? '',
+    ),
   ];
 
-  final res = await showEditEntityBottomSheet(context: context, title: 'Editar endereço', fields: fields);
+  final res = await showEditEntityBottomSheet(
+    context: context,
+    title: 'Editar endereço',
+    fields: fields,
+  );
   if (res == null) return null;
 
-  final confirmed = await _confirmDialog(context, 'Confirmar alteração', 'Deseja aplicar as alterações no endereço?');
+  final confirmed = await _confirmDialog(
+    context,
+    'Confirmar alteração',
+    'Deseja aplicar as alterações no endereço?',
+  );
   if (confirmed != true) return null;
 
   final updated = Child(
-    responsibleUserIds: c.responsibleUserIds,
+    parents: c.parents,
     checkedIn: c.checkedIn,
     userType: c.userType,
     name: c.name,
     email: c.email,
     birthDate: c.birthDate,
     document: c.document,
-    phone: c.phone,
-    address: res['address']?.toString() ?? c.address,
-    addressNumber: res['addressNumber']?.toString() ?? c.addressNumber,
-    addressComplement: res['addressComplement']?.toString() ?? c.addressComplement,
-    neighborhood: res['neighborhood']?.toString() ?? c.neighborhood,
-    city: res['city']?.toString() ?? c.city,
-    state: res['state']?.toString() ?? c.state,
-    zipCode: res['zipCode']?.toString() ?? c.zipCode,
+    contact: c.contact,
+    address: (() {
+      final any =
+          res['address'] != null ||
+          res['addressNumber'] != null ||
+          res['addressComplement'] != null ||
+          res['neighborhood'] != null ||
+          res['city'] != null ||
+          res['state'] != null ||
+          res['zipCode'] != null;
+      if (!any) return c.address;
+      return Address(
+        address: res['address']?.toString() ?? c.address?.address,
+        number: res['addressNumber']?.toString() ?? c.address?.number,
+        complement:
+            res['addressComplement']?.toString() ?? c.address?.complement,
+        neighborhood:
+            res['neighborhood']?.toString() ?? c.address?.neighborhood,
+        city: res['city']?.toString() ?? c.address?.city,
+        state: res['state']?.toString() ?? c.address?.state,
+        zipcode: res['zipCode']?.toString() ?? c.address?.zipcode,
+      );
+    })(),
     companyId: c.companyId,
     id: c.id,
     createdAt: c.createdAt,
@@ -429,6 +773,58 @@ Future<bool?> _editChildAddress(
   );
 
   final success = await childController.updateChild(updated);
-  await _showResultDialog(context, success, 'Endereço atualizado com sucesso.', 'Falha ao atualizar endereço.');
+  await _showResultDialog(
+    context,
+    success,
+    'Endereço atualizado com sucesso.',
+    'Falha ao atualizar endereço.',
+  );
+  return success;
+}
+
+Future<bool?> _editChildHealthInfo(
+  BuildContext context, {
+  Child? child,
+  required ChildController childController,
+}) async {
+  if (child == null) return null;
+
+  final result = await showHealthInfoEditBottomSheet(
+    context: context,
+    current: child.healthInfo,
+  );
+  if (result == null) return null;
+
+  final confirmed = await _confirmDialog(
+    context,
+    translate('profile.confirm_change_title'),
+    translate('health_info.confirm_change'),
+  );
+  if (confirmed != true) return null;
+
+  final updated = Child(
+    id: child.id,
+    createdAt: child.createdAt,
+    updatedAt: DateTime.now(),
+    name: child.name,
+    email: child.email,
+    birthDate: child.birthDate,
+    document: child.document,
+    contact: child.contact,
+    address: child.address,
+    companyId: child.companyId,
+    parents: child.parents,
+    checkedIn: child.checkedIn,
+    userType: child.userType,
+    healthInfo: result,
+  );
+
+  final success = await childController.updateChild(updated);
+  await _showResultDialog(
+    context,
+    success,
+    translate('health_info.update_success'),
+    translate('health_info.update_error'),
+  );
   return success;
 }

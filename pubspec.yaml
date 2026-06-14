@@ -2,7 +2,7 @@ name: kids_space
 description: "Despreocupando a vida dos pais e cuidando do futuro das crianças."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -34,6 +34,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  collection: ^1.18.0
   get_it: ^7.7.0
   shared_preferences: ^2.5.3
   mobx: ^2.5.0
@@ -46,9 +47,6 @@ dependencies:
   mask_text_input_formatter: ^2.3.0
   easy_localization: ^3.0.1
   fl_chart: 0.70.1
-  firebase_auth: ^4.4.0
-  firebase_core: ^2.13.0
-  cloud_firestore: ^4.5.0
   flutter_localizations:
     sdk: flutter
 
@@ -70,7 +68,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

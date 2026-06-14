@@ -1,251 +1,272 @@
-import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 
-import 'dart:developer' as dev;
 import 'package:get_it/get_it.dart';
-import 'package:kids_space/controller/collaborator_controller.dart';
-import 'package:kids_space/model/collaborator.dart';
-import 'package:kids_space/service/api_client.dart';
 import '../service/auth_service.dart';
-import 'base_controller.dart';
+import 'collaborator_controller.dart';
+import '../model/collaborator.dart';
+import 'company_controller.dart';
+import '../model/user_type.dart';
 
-/// AuthController — parte do padrão MVC.
-/// - Controller: expõe métodos que a View chama.
-/// - Usa `AuthService` para lógica de autenticação (Model/Service).
-class AuthController extends BaseController {
-  Timer? _tokenMonitorTimer;
-  bool _isRefreshing = false;
-  final Duration _monitorInterval = const Duration(seconds: 60);
+enum UserRole { company, collaborator, unknown }
 
-  final CollaboratorController _collaboratorController = GetIt.I<CollaboratorController>();
-  final AuthService _authService = GetIt.I<AuthService>();
+class AuthController extends ChangeNotifier {
+  AuthService get _service => GetIt.I<AuthService>();
+  static const _storage = FlutterSecureStorage();
+  String? _idToken;
+  String? _refreshToken;
+  UserRole _role = UserRole.unknown;
 
-  final _kIdTokenKey = 'idToken';
-  final _kRefreshTokenKey = 'refreshToken';
-  final _kLoggedCollaboratorKey = 'loggedCollaborator';
+  String? get idToken => _idToken;
 
-  AuthController() {
-    _startTokenMonitor();
+  UserRole _parseUserRole(String? role) {
+    final normalized = role?.trim().toLowerCase();
+    if (normalized == 'company') return UserRole.company;
+    if (normalized == 'collaborator') return UserRole.collaborator;
+    return UserRole.unknown;
   }
 
-  /// Tenta logar; retorna `true` se sucesso.
-  Future<bool> login(String email, String password) async {
-    final result = await _authService.login(email, password);
-
-    final idToken = result[_kIdTokenKey] as String?;
-    final refreshToken = result[_kRefreshTokenKey] as String?;
-    
-    String? userId = result['userId'] as String?;
-    // If backend didn't return userId, try to decode from JWT idToken
-    if ((userId == null || userId.isEmpty) && idToken != null) {
-      try {
-        final extracted = _extractUserIdFromJwt(idToken);
-        userId = extracted;
-      } catch (e) {
-        dev.log('AuthController.login -> failed to extract userId from token: $e', name: 'AuthController');
-      }
-    }
-    
-    if (idToken == null || refreshToken == null) return false;
-
-    await secureStorage.write(key: _kIdTokenKey, value: idToken);
-    await secureStorage.write(key: _kRefreshTokenKey, value: refreshToken);
-    // Ensure ApiClient provides the new token for subsequent requests (e.g., fetching collaborator)
-    ApiClient().tokenProvider = () async => await secureStorage.read(key: _kIdTokenKey);
-    ApiClient().refreshToken = () async => await this.refreshToken();
-
-    if (userId != null) {
-      dev.log('AuthController.login -> fetching collaborator for userId', name: 'AuthController', error: {'userId': userId});
-      final collaborator = await _collaboratorController.getCollaboratorById(userId);
-      dev.log('AuthController.login -> collaborator fetch result', name: 'AuthController', error: {'collaborator': collaborator?.toJson()});
-      if (collaborator != null) {
-        await secureStorage.write(key: _kLoggedCollaboratorKey, value: jsonEncode(collaborator.toJson()));
-        _collaboratorController.setLoggedCollaborator(collaborator);
-      }
-    } else {
-      dev.log('AuthController.login -> userId null in auth result', name: 'AuthController');
-    }
-
-    return true;
+  String _roleToStorage(UserRole role) {
+    if (role == UserRole.company) return 'company';
+    if (role == UserRole.collaborator) return 'collaborator';
+    return 'unknown';
   }
 
-  /// Faz logout local e remoto via `AuthService`.
-  Future<void> logout() async {
-    final token = await secureStorage.read(key: _kIdTokenKey);
-    if (token != null) {
-      final t = token.trim();
-      if (t.isNotEmpty && t.toLowerCase() != 'null') {
-        try {
-          await _authService.logout(t);
-        } catch (_) {}
-      }
+  Future<void> loadFromStorage() async {
+    _idToken = await _storage.read(key: 'idToken');
+    _refreshToken = await _storage.read(key: 'refreshToken');
+    final r = await _storage.read(key: 'userRole');
+    if (r != null) {
+      _role = _parseUserRole(r);
     }
-
-    await secureStorage.delete(key: _kIdTokenKey);
-    await secureStorage.delete(key: _kRefreshTokenKey);
-    await secureStorage.delete(key: _kLoggedCollaboratorKey);
-    _collaboratorController.loggedCollaborator = null;
-    ApiClient().tokenProvider = null;
-    ApiClient().refreshToken = null;
+    notifyListeners();
   }
 
-  Future<void> checkLoggedUser() async {
-    final token = await secureStorage.read(key: 'idToken');
-    final collaboratorJson = await secureStorage.read(key: _kLoggedCollaboratorKey);
-
-    dev.log('AuthController.checkLoggedUser -> loaded from storage', name: 'AuthController', error: {
-      'tokenPresent': token != null,
-      'collaboratorJsonPresent': collaboratorJson != null,
-      'collaboratorJson': collaboratorJson,
-    });
-
-    if (token == null) {
-      dev.log('AuthController.checkLoggedUser -> no token found in storage', name: 'AuthController');
-      return;
-    }
-
-    ApiClient().tokenProvider = () async => token;
-    ApiClient().refreshToken = () async => await refreshToken();
-
-    if (collaboratorJson != null) {
-      try {
-        final collaborator = Collaborator.fromJson(jsonDecode(collaboratorJson));
-        _collaboratorController.setLoggedCollaborator(collaborator);
-        dev.log('AuthController.checkLoggedUser -> set collaborator from storage', name: 'AuthController', error: {'id': collaborator.id});
-        return;
-      } catch (e) {
-        dev.log('AuthController.checkLoggedUser -> failed to parse stored collaborator: $e', name: 'AuthController');
-      }
-    }
-
-    // fallback: try to extract userId from token or from stored userId
-    String? userId = await secureStorage.read(key: 'userId');
-    if ((userId == null || userId.isEmpty)) {
-      final extracted = _extractUserIdFromJwt(token);
-      dev.log('AuthController.checkLoggedUser -> extracted userId from token', name: 'AuthController', error: {'extracted': extracted});
-      userId = extracted;
-      if (userId != null) await secureStorage.write(key: 'userId', value: userId);
-    }
-
-    if (userId != null) {
-      final collaborator = await _collaboratorController.getCollaboratorById(userId);
-      dev.log('AuthController.checkLoggedUser -> collaborator fetch by userId', name: 'AuthController', error: {'collaborator': collaborator?.toJson()});
-      if (collaborator != null) {
-        _collaboratorController.setLoggedCollaborator(collaborator);
-        await secureStorage.write(key: _kLoggedCollaboratorKey, value: jsonEncode(collaborator.toJson()));
-      }
-    } else {
-      dev.log('AuthController.checkLoggedUser -> no userId available to fetch collaborator', name: 'AuthController');
-    }
+  Future<void> saveTokens(String idToken, String refreshToken) async {
+    await _storage.write(key: 'idToken', value: idToken);
+    await _storage.write(key: 'refreshToken', value: refreshToken);
+    _idToken = idToken;
+    _refreshToken = refreshToken;
+    notifyListeners();
   }
 
-  void _startTokenMonitor() {
-    // Avoid multiple timers
-    _tokenMonitorTimer?.cancel();
-    _tokenMonitorTimer = Timer.periodic(_monitorInterval, (_) async {
-      try {
-        await _checkAndRefreshIfNeeded();
-      } catch (e, st) {
-        dev.log('AuthController._startTokenMonitor error: $e', name: 'AuthController', error: st);
-      }
-    });
-  }
-
-  Future<void> stopTokenMonitor() async {
-    _tokenMonitorTimer?.cancel();
-    _tokenMonitorTimer = null;
-  }
-
-  Future<void> _checkAndRefreshIfNeeded() async {
-    if (_isRefreshing) return;
+  Map<String, dynamic>? _parseJwtPayload(String token) {
     try {
-      final token = await secureStorage.read(key: _kIdTokenKey);
-      if (token == null) return;
-      if (!_isTokenExpired(token)) return;
-      _isRefreshing = true;
-      dev.log('AuthController._checkAndRefreshIfNeeded -> token expired, attempting refresh', name: 'AuthController');
-      final newId = await refreshToken();
-      if (newId != null) {
-        // refreshToken already writes tokens to storage; update ApiClient provider
-        ApiClient().tokenProvider = () async => await secureStorage.read(key: _kIdTokenKey);
-        dev.log('AuthController._checkAndRefreshIfNeeded -> refresh successful', name: 'AuthController');
-      } else {
-        dev.log('AuthController._checkAndRefreshIfNeeded -> refresh failed', name: 'AuthController');
-      }
-    } finally {
-      _isRefreshing = false;
-    }
-  }
-
-  /// Returns the currently stored id token (if any).
-  Future<String?> getIdToken() async {
-    return await secureStorage.read(key: _kIdTokenKey);
-  }
-
-  int? _extractExpFromJwt(String jwt) {
-    try {
-      final parts = jwt.split('.');
-      if (parts.length != 3) return null;
-      String payload = parts[1];
-      payload = base64Url.normalize(payload);
-      final decoded = utf8.decode(base64Url.decode(payload));
-      final map = jsonDecode(decoded) as Map<String, dynamic>;
-      final exp = map['exp'];
-      if (exp is int) return exp;
-      if (exp is String) return int.tryParse(exp);
-      return null;
-    } catch (e) {
-      dev.log('AuthController._extractExpFromJwt failed: $e', name: 'AuthController');
+      final parts = token.split('.');
+      if (parts.length < 2) return null;
+      final payload = parts[1];
+      String normalized = base64Url.normalize(payload);
+      final decoded = utf8.decode(base64Url.decode(normalized));
+      return jsonDecode(decoded) as Map<String, dynamic>?;
+    } catch (_) {
       return null;
     }
   }
 
-  bool _isTokenExpired(String jwt, {Duration buffer = const Duration(seconds: 60)}) {
-    final exp = _extractExpFromJwt(jwt);
-    if (exp == null) return true;
-    final expiry = DateTime.fromMillisecondsSinceEpoch(exp * 1000);
-    return DateTime.now().isAfter(expiry.subtract(buffer));
+  void _applyClaimsFromToken(String? token) {
+    if (token == null) return;
+    final payload = _parseJwtPayload(token);
+    if (payload == null) return;
+    // prefer explicit 'roles' claim, or fallback to 'role' or 'userType'
+    final claims = payload['roles'] ?? payload['role'] ?? payload['userType'];
+    if (claims is List && claims.isNotEmpty) {
+      final first = claims.first.toString().toLowerCase();
+      saveRole(_parseUserRole(first));
+    } else if (claims is String) {
+      saveRole(_parseUserRole(claims));
+    }
   }
 
-  /// Ensures token is valid: returns true if valid or refreshed, false otherwise.
-  Future<bool> ensureSessionValid() async {
-    final token = await secureStorage.read(key: _kIdTokenKey);
-    if (token == null) return false;
-    if (!_isTokenExpired(token)) return true;
-    final newId = await refreshToken();
-    return newId != null;
+  String? _asString(dynamic value) {
+    if (value == null) return null;
+    if (value is String) {
+      final v = value.trim();
+      return v.isEmpty ? null : v;
+    }
+    return value.toString();
   }
 
-  Future<String?> refreshToken() async {
-    final stored = await secureStorage.read(key: _kRefreshTokenKey);
-    if (stored == null) return null;
-    final response = await apiClient.dio.post('/auth/refresh-auth', data: {
-      'refreshToken': stored,
-    });
-    final newId = response.data['idToken'] as String?;
-    final newRefreshToken = response.data['refreshToken'] as String?;
-    if (newId != null && newRefreshToken != null) {
-      await secureStorage.write(key: _kIdTokenKey, value: newId);
-      await secureStorage.write(key: _kRefreshTokenKey, value: newRefreshToken);
-      return newId;
+  String? _extractCompanyId(Map<String, dynamic> payload) {
+    final direct = _asString(payload['companyId'] ?? payload['company_id']);
+    if (direct != null) return direct;
+
+    final company = payload['company'];
+    if (company is Map) {
+      final map = Map<String, dynamic>.from(company);
+      return _asString(map['id'] ?? map['companyId'] ?? map['company_id']);
     }
     return null;
   }
-  
-  String? _extractUserIdFromJwt(String jwt) {
-    try {
-      final parts = jwt.split('.');
-      if (parts.length != 3) return null;
-      String payload = parts[1];
-      // Normalize base64 (URL-safe)
-      payload = base64Url.normalize(payload);
-      final decoded = utf8.decode(base64Url.decode(payload));
-      final map = jsonDecode(decoded) as Map<String, dynamic>;
-      // common claim names: user_id (firebase), sub, uid, userId
-      return map['user_id'] as String? ?? map['sub'] as String? ?? map['uid'] as String? ?? map['userId'] as String?;
-    } catch (e) {
-      dev.log('AuthController._extractUserIdFromJwt failed: $e', name: 'AuthController');
+
+  Collaborator? _buildCollaboratorFromTokenClaims() {
+    if (_idToken == null) return null;
+    final payload = _parseJwtPayload(_idToken!);
+    if (payload == null) return null;
+
+    final id = _asString(payload['uid'] ?? payload['userId'] ?? payload['sub']);
+    final companyId = _extractCompanyId(payload);
+    final name = _asString(payload['name'] ?? payload['displayName']);
+    final email = _asString(payload['email']);
+    final role = _asString(payload['role'] ?? payload['userType']);
+
+    if (id == null && companyId == null && name == null && email == null) {
       return null;
     }
+
+    return Collaborator(
+      id: id,
+      companyId: companyId,
+      name: name,
+      email: email,
+      userType: userTypeFromString(role),
+    );
+  }
+
+  Future<void> saveRole(UserRole role) async {
+    _role = role;
+    notifyListeners();
+    await _storage.write(key: 'userRole', value: _roleToStorage(role));
+  }
+
+  Future<void> clearTokens() async {
+    await _storage.delete(key: 'idToken');
+    await _storage.delete(key: 'refreshToken');
+    _idToken = null;
+    _refreshToken = null;
+    notifyListeners();
+  }
+
+  Future<bool> login(String email, String password) async {
+    try {
+      final res = await _service.login(email, password);
+      final token = res['idToken'] as String?;
+      final refresh = res['refreshToken'] as String?;
+      // parse role from response body (v2 returns user object with role)
+      final roleStr = (res['user'] is Map)
+          ? (res['user']['role'] as String? ??
+                res['user']['userType'] as String?)
+          : null;
+      final parsedRole = _parseUserRole(roleStr);
+      if (token != null && refresh != null) {
+        await saveTokens(token, refresh);
+        _applyClaimsFromToken(token);
+        if (_role == UserRole.unknown) await saveRole(parsedRole);
+        // populate collaborator/company info after login
+        await checkLoggedUser();
+        return true;
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> signupCompany(Map<String, dynamic> payload) async {
+    try {
+      final res = await _service.signup(payload);
+      final token = res['idToken'] as String?;
+      final refresh = res['refreshToken'] as String?;
+      if (token != null && refresh != null) {
+        await saveTokens(token, refresh);
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      await _service.logout();
+    } catch (_) {}
+    await clearTokens();
+    await _storage.delete(key: 'userRole');
+    _role = UserRole.unknown;
+  }
+
+  Future<bool> ensureSessionValid() async {
+    if (_idToken == null) await loadFromStorage();
+    if (_idToken == null) return false;
+    try {
+      final payload = _parseJwtPayload(_idToken!);
+      if (payload != null && payload.containsKey('exp')) {
+        final exp = payload['exp'];
+        if (exp is int || exp is double || exp is String) {
+          final expInt = int.tryParse(exp.toString());
+          if (expInt != null) {
+            final expiry = DateTime.fromMillisecondsSinceEpoch(expInt * 1000);
+            final now = DateTime.now().toUtc();
+            // refresh if token expires within the next 60 seconds
+            if (expiry.isAfter(now.add(const Duration(seconds: 60)))) {
+              return true;
+            }
+          }
+        }
+      }
+      // token missing exp or about to expire -> try refresh
+      final newToken = await refreshToken();
+      if (newToken != null && newToken.isNotEmpty) return true;
+      // refresh failed: force logout
+      await logout();
+      return false;
+    } catch (e) {
+      // on any unexpected error, be conservative and logout
+      try {
+        await logout();
+      } catch (_) {}
+      return false;
+    }
+  }
+
+  Future<String?> getIdToken() async {
+    if (_idToken == null) await loadFromStorage();
+    return _idToken;
+  }
+
+  UserRole get role => _role;
+
+  Future<String?> refreshToken() async {
+    if (_refreshToken == null) await loadFromStorage();
+    if (_refreshToken == null) return null;
+    final res = await _service.refreshToken(_refreshToken!);
+    final newToken = res['idToken'] as String?;
+    if (newToken != null) {
+      await saveTokens(newToken, _refreshToken!);
+      // update role from refreshed token claims
+      _applyClaimsFromToken(newToken);
+      return newToken;
+    }
+    return null;
+  }
+
+  Future<void> checkLoggedUser() async {
+    await loadFromStorage();
+    if (_idToken == null) return;
+    try {
+      // Prefer token claims bootstrap to avoid hard dependency on /v2/collaborators/me.
+      final collabController = GetIt.I.get<CollaboratorController>();
+      if (_role == UserRole.collaborator) {
+        final tokenCollab = _buildCollaboratorFromTokenClaims();
+        if (tokenCollab != null) {
+          await collabController.setLoggedCollaborator(tokenCollab);
+        }
+      } else if (_role == UserRole.company) {
+        final co = GetIt.I.get<CompanyController>();
+        await co.loadMyCompany();
+      } else {
+        // unknown: try to infer from token claims or API
+        if (_idToken != null) _applyClaimsFromToken(_idToken);
+        if (_role == UserRole.collaborator) {
+          final tokenCollab = _buildCollaboratorFromTokenClaims();
+          if (tokenCollab != null) {
+            await collabController.setLoggedCollaborator(tokenCollab);
+          }
+        } else if (_role == UserRole.company) {
+          final co = GetIt.I.get<CompanyController>();
+          await co.loadMyCompany();
+        }
+      }
+    } catch (_) {}
   }
 }

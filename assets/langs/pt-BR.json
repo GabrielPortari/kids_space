@@ -1,10 +1,10 @@
 {
   "app_bottom_nav": {
     "home": "Inicio",
-    "users": "Usuários",
+    "parents": "Responsáveis",
     "reports": "Relatórios"
   },
-  "home":{
+  "home": {
     "company": "Empresa",
     "company_name": "Nome da Empresa",
     "collaborator": "Colaborador",
@@ -22,15 +22,19 @@
     "no_checkouts_registered": "Nenhum check-out registrado",
     "30_last_presence_log": "30 últimos registros de presença",
     "no_presence_records": "Nenhum registro de presença"
-  }
-  ,
+  },
   "profile": {
-    "name_placeholder": "-",
+    "name_placeholder": "{name_placeholder}",
+    "screen_title": "Perfil",
+    "profile_of": "Perfil de {name_placeholder}",
+    "delete": "Excluir",
+    "delete_success": "Operação concluída: {name} excluído.",
+    "delete_error": "Falha ao excluir {name}.",
     "user_type": {
-      "user": "Usuário",
       "company": "Empresa",
       "admin": "Administrador",
       "collaborator": "Colaborador",
+      "parent": "Responsável",
       "child": "Criança",
       "unknown": "Desconhecido"
     },
@@ -75,25 +79,17 @@
     "zip_code": "CEP",
     "id_label": "Id:"
   },
-  "profile": {
-    "screen_title": "Perfil",
-    "profile_of": "Perfil de {name_placeholder}",
-    "delete": "Excluir",
-    "delete_success": "Operação concluída: {name} excluído.",
-    "delete_error": "Falha ao excluir {name}."
-  },
   "buttons": {
     "confirm": "Confirmar",
     "ok": "OK",
     "cancel": "Cancelar",
-    "save": "Salvar"
-    ,"next": "Próximo"
+    "save": "Salvar",
+    "next": "Próximo"
   },
   "common": {
     "success": "Sucesso",
     "error": "Erro"
-  }
-  ,
+  },
   "attendance": {
     "search_child": "Buscar criança",
     "no_children_found": "Nenhuma criança encontrada",
@@ -108,13 +104,11 @@
     "notes_label": "Observações",
     "operation_success": "Operação concluída",
     "operation_error": "Operação cancelada/erro"
-  }
-  ,
+  },
   "splash": {
     "session_expired_title": "Sessão expirada",
     "session_expired_message": "Sua sessão expirou. Faça login novamente."
-  }
-,
+  },
   "users": {
     "title": "Usuários",
     "search": "Buscar usuário",
@@ -128,8 +122,7 @@
     "date_initial": "Data inicial",
     "date_final": "Data final",
     "type": "Tipo:",
-    "no_data": "Sem dados"
-    ,
+    "no_data": "Sem dados",
     "type_checkins_7d": "Check-ins (7d)",
     "type_checkins_period": "Check-ins por período",
     "type_distribution_by_collaborator": "Distribuição por colaborador",
@@ -139,13 +132,44 @@
   },
   "login": {
     "invalid_credentials": "Usuário ou senha inválidos!",
-    "title": "Login - {company}",
-    "welcome": "Bem-vindo {company}",
+    "title": "Login",
+    "welcome": "Bem-vindo",
     "email_label": "E-mail",
     "email_hint": "Digite seu e-mail",
+    "no_account": "Cadastre-se",
+    "forgot_password": "Esqueceu a senha?",
+    "enter_email": "Digite seu e-mail",
+    "forgot_sent": "Link de recuperação enviado (simulado)",
     "password_label": "Senha",
     "password_hint": "Digite sua senha",
     "login_button": "Entrar"
+  },
+  "register": {
+    "title": "Cadastro de Empresa",
+    "submit": "Cadastrar",
+    "success": "Empresa cadastrada com sucesso.",
+    "failed": "Falha ao cadastrar empresa.",
+    "password": "Senha"
+  },
+  "company": {
+    "name": "Nome",
+    "legal_name": "Razão social",
+    "cnpj": "CNPJ",
+    "address": "Endereço",
+    "number": "Número",
+    "complement": "Complemento",
+    "neighborhood": "Bairro",
+    "city": "Cidade",
+    "state": "Estado",
+    "zipcode": "CEP",
+    "contact": "Contato",
+    "email": "E-mail",
+    "update_success": "Dados da empresa atualizados com sucesso.",
+    "address_update_success": "Endereço da empresa atualizado com sucesso."
+  },
+  "validation": {
+    "required": "Campo obrigatório",
+    "password_length": "Senha deve ter pelo menos 6 caracteres"
   },
   "admin": {
     "exit_title": "Sair",
@@ -170,5 +194,36 @@
     "inherit_address_question": "Deseja herdar o endereço do responsável?",
     "yes": "Sim",
     "no": "Não"
+  },
+  "collaborators": {
+    "created": "Colaborador cadastrado com sucesso.",
+    "create_error": "Falha ao cadastrar colaborador."
+  },
+  "children": {
+    "created": "Criança cadastrada com sucesso.",
+    "create_error": "Falha ao cadastrar criança.",
+    "add_title": "Cadastrar criança"
+  },
+  "health_info": {
+    "title": "Cuidados médicos",
+    "no_data": "Nenhuma informação de saúde cadastrada.",
+    "edit_title": "Editar cuidados médicos",
+    "confirm_change": "Deseja aplicar as alterações nos cuidados médicos?",
+    "update_success": "Cuidados médicos atualizados com sucesso.",
+    "update_error": "Falha ao atualizar cuidados médicos.",
+    "dietary_restrictions": "Restrições alimentares",
+    "allergies": "Alergias",
+    "medical_conditions": "Condições médicas",
+    "fears_or_sensitivities": "Medos e sensibilidades",
+    "medications": "Medicamentos",
+    "medication": "Medicamento",
+    "add_medication": "Adicionar medicamento",
+    "remove_medication": "Remover medicamento",
+    "med_name": "Nome",
+    "med_dosage": "Dosagem",
+    "med_schedule": "Horário(s)",
+    "med_schedule_hint": "ex: 08h e 12h",
+    "pick_time": "Selecionar horário",
+    "add_item_hint": "Adicionar item..."
   }
 }

@@ -1,121 +1,116 @@
-import 'package:kids_space/model/attendance.dart';
-import 'package:kids_space/service/attendance_service.dart';
-import 'package:mobx/mobx.dart';
-import 'base_controller.dart';
+import 'package:flutter/foundation.dart';
+import '../service/attendance_service.dart';
+import '../model/attendance.dart';
 
-part 'attendance_controller.g.dart';
-
-class AttendanceController = _AttendanceController with _$AttendanceController;
-
-abstract class _AttendanceController extends BaseController with Store {
+class AttendanceController extends ChangeNotifier {
   final AttendanceService _service = AttendanceService();
+  List<Attendance> _events = [];
 
-  Future<bool> doCheckin(Attendance attendance) async {
-    final ok = await _service.doCheckin(attendance);
-    if (ok) {
-      final cid = attendance.companyId;
-      if (cid != null && cid.isNotEmpty) {
-        await loadActiveCheckinsForCompany(cid);
-        await loadLast10AttendancesForCompany(cid);
-        await loadLastCheckinAndCheckoutForCompany(cid);
-      }
-    }
-    return ok;
-  }
+  // Active checkins for current company
+  List<Attendance> activeCheckins = [];
+  // Last 10 events (logs)
+  List<Attendance> logEvents = [];
+  // Full list for company history screen
+  List<Attendance> companyEvents = [];
 
-  Future<bool> doCheckout(Attendance attendance) async {
-    final ok = await _service.doCheckout(attendance);
-    if (ok) {
-      final cid = attendance.companyId;
-      if (cid != null && cid.isNotEmpty) {
-        await loadActiveCheckinsForCompany(cid);
-        await loadLast10AttendancesForCompany(cid);
-        await loadLastCheckinAndCheckoutForCompany(cid);
-      }
-    }
-    return ok;
-  }
+  Attendance? lastCheckIn;
+  Attendance? lastCheckOut;
 
-  @observable
-  bool isLoadingEvents = false;
-  @observable
-  List<Attendance>? events = [];
-  /// Refresh all attendances for a company and populate `events` and `activeCheckins`.
-  Future<void> refreshAttendancesForCompany(String companyId) async {
-    isLoadingEvents = true;
-    try {
-      final list = await _service.getAttendancesByCompanyId(companyId);
-      events = list;
-    } finally {
-      isLoadingEvents = false;
-    }
-  }
-
-  /// Fetch attendances between optional date range (from/to ISO strings) and populate `events`.
-  @action
-  Future<List<Attendance>> getAttendancesBetween(String companyId, {DateTime? from, DateTime? to}) async {
-    isLoadingEvents = true;
-    try {
-      final fromS = from?.toIso8601String();
-      final toS = to?.toIso8601String();
-      final list = await _service.getAttendancesBetween(companyId, from: fromS, to: toS);
-      events = list;
-      return list;
-    } finally {
-      isLoadingEvents = false;
-    }
-  }
-
-
-  @observable
   bool isLoadingActiveCheckins = false;
-  @observable
-  List<Attendance>? activeCheckins = [];
+  bool isLoadingLogs = false;
+  bool isLoadingLastCheck = false;
+  bool isLoadingCompanyEvents = false;
 
-  @action
-  Future<void> loadActiveCheckinsForCompany(String companyId) async {
-    isLoadingActiveCheckins = true;
+  List<Attendance> get events => _events;
+
+  Future<void> refreshEvents() async {
+    final data = await _service.list();
+    _events = data
+        .map((e) => Attendance.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
+    notifyListeners();
+  }
+
+  Future<void> loadAllAttendancesForCompany(String companyId) async {
+    isLoadingCompanyEvents = true;
+    notifyListeners();
     try {
-      final list = await _service.getActiveCheckinsByCompanyId(companyId);
-      activeCheckins = list;
+      final data = await _service.list(query: {'companyId': companyId});
+      companyEvents = data
+          .map((e) => Attendance.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+    } finally {
+      isLoadingCompanyEvents = false;
+      notifyListeners();
+    }
+  }
+
+  Future<Attendance> checkin(Map<String, dynamic> payload) async {
+    final data = await _service.checkin(payload);
+    final ev = Attendance.fromJson(data);
+    _events.add(ev);
+    // keep active list in sync
+    activeCheckins.add(ev);
+    notifyListeners();
+    return ev;
+  }
+
+  Future<Attendance> checkout(Map<String, dynamic> payload) async {
+    final data = await _service.checkout(payload);
+    final ev = Attendance.fromJson(data);
+    _events.add(ev);
+    // remove from active if present
+    activeCheckins.removeWhere((a) => a.id == ev.id || a.childId == ev.childId);
+    notifyListeners();
+    return ev;
+  }
+
+  Future<void> loadActiveCheckinsForCompany(String? companyId) async {
+    isLoadingActiveCheckins = true;
+    notifyListeners();
+    try {
+      final data = await _service.getActiveCheckinsForCompany(
+        companyId: companyId,
+      );
+      activeCheckins = data
+          .map((e) => Attendance.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
     } finally {
       isLoadingActiveCheckins = false;
+      notifyListeners();
     }
   }
 
-  /// Load the last N attendances (default 10) and populate `logEvents`.
-  @observable
-  bool isLoadingLogs = false;
-  @observable
-  List<Attendance> logEvents = [];
-  @action
-  Future<void> loadLast10AttendancesForCompany(String companyId, {int limit = 10}) async {
+  Future<void> loadLast10AttendancesForCompany(String? companyId) async {
     isLoadingLogs = true;
+    notifyListeners();
     try {
-      final list = await _service.getLastAttendances(companyId, limit: limit);
-      logEvents = list;
+      final data = await _service.getLast10ForCompany(companyId: companyId);
+      logEvents = data
+          .map((e) => Attendance.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
     } finally {
       isLoadingLogs = false;
+      notifyListeners();
     }
   }
 
-
-  @observable
-  Attendance? lastCheckIn;
-  @observable
-  Attendance? lastCheckOut;
-  @observable
-  bool isLoadingLastCheck = false;
-  @action
-  Future<void> loadLastCheckinAndCheckoutForCompany(String companyId) async {
+  Future<void> loadLastCheckinAndCheckoutForCompany(String? companyId) async {
     isLoadingLastCheck = true;
+    notifyListeners();
     try {
-      final lastIn = await _service.getLastCheckin(companyId);
-      final lastOut = await _service.getLastCheckout(companyId);
-      lastCheckIn = lastIn;
-      lastCheckOut = lastOut;
+      final data = await _service.getLastCheckinAndCheckoutForCompany(
+        companyId: companyId,
+      );
+      lastCheckIn = data['lastCheckin'] != null
+          ? Attendance.fromJson(Map<String, dynamic>.from(data['lastCheckin']))
+          : null;
+      lastCheckOut = data['lastCheckout'] != null
+          ? Attendance.fromJson(Map<String, dynamic>.from(data['lastCheckout']))
+          : null;
     } finally {
       isLoadingLastCheck = false;
+      notifyListeners();
     }
   }
 }

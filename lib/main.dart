@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -7,35 +6,30 @@ import 'package:kids_space/service/api_client.dart';
 import 'package:kids_space/util/getit_factory.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kids_space/view/design_system/app_theme.dart';
-import 'package:kids_space/view/screens/admin_panel_screen.dart';
+import 'package:kids_space/view/screens/company_screen.dart';
+import 'package:kids_space/view/screens/company_dashboard_screen.dart';
 import 'package:kids_space/view/screens/childrens_screen.dart';
+import 'package:kids_space/view/screens/parents_screen.dart';
 import 'package:kids_space/view/screens/profile_screen.dart';
 import 'package:kids_space/view/screens/reports_screen.dart';
 import 'package:kids_space/view/widgets/app_bottom_nav.dart';
-import 'package:kids_space/view/screens/company_selection_screen.dart';
+// Company selection screen removed; navigation now goes to /login
 import 'package:kids_space/view/screens/home_screen.dart';
 import 'package:kids_space/view/screens/login_screen.dart';
+import 'package:kids_space/view/screens/register_company_screen.dart';
 import 'package:kids_space/view/screens/splash_screen.dart';
-import 'package:kids_space/view/screens/users_screen.dart';
 import 'package:kids_space/view/screens/collaborators_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
-  await Firebase.initializeApp(
-    options: FirebaseOptions(
-      apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '',
-      authDomain: dotenv.env['FIREBASE_AUTH_DOMAIN'] ?? '',
-      projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? '',
-      storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? '',
-      messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '',
-      appId: dotenv.env['FIREBASE_APP_ID'] ?? '',
-      measurementId: dotenv.env['FIREBASE_MEASUREMENT_ID'] ?? null,
-    ),
-  );
   setup(GetIt.I);
+  // register navigatorKey so services can perform global navigation (e.g., force logout)
+  if (!GetIt.I.isRegistered<GlobalKey<NavigatorState>>()) {
+    GetIt.I.registerSingleton<GlobalKey<NavigatorState>>(navigatorKey);
+  }
   ApiClient().init(
-    baseUrl: dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:3000',
+    baseUrl: const String.fromEnvironment('API_BASE_URL', defaultValue: 'http://10.0.2.2:3000'),
     tokenProvider: () async {
       final authController = GetIt.I<AuthController>();
       return await authController.getIdToken();
@@ -45,12 +39,17 @@ Future<void> main() async {
       return await authController.refreshToken();
     },
   );
+  try {
+    final authController = GetIt.I<AuthController>();
+    await authController.loadFromStorage();
+    await authController.checkLoggedUser();
+  } catch (_) {}
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('pt', 'BR'), Locale('en', 'US')],
       path: 'assets/langs',
       fallbackLocale: const Locale('pt', 'BR'),
-        child: Builder(builder: (context) => const MyApp()),
+      child: Builder(builder: (context) => const MyApp()),
     ),
   );
 }
@@ -87,9 +86,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   void _checkSessionOnResume() async {
+    await _authController.loadFromStorage();
+    if (_authController.idToken == null) {
+      return;
+    }
     final valid = await _authController.ensureSessionValid();
     if (!valid) {
-      try { await _authController.logout(); } catch (_) {}
       final ctx = navigatorKey.currentContext;
       if (ctx != null) {
         showDialog<void>(
@@ -102,10 +104,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               TextButton(
                 onPressed: () {
                   Navigator.of(c).pop();
-                  Navigator.of(ctx).pushNamedAndRemoveUntil('/company_selection', (route) => false);
+                  Navigator.of(
+                    ctx,
+                  ).pushNamedAndRemoveUntil('/login', (route) => false);
                 },
                 child: const Text('OK'),
-              )
+              ),
             ],
           ),
         );
@@ -133,15 +137,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       routes: {
         '/splash': (context) => const SplashScreen(),
         '/home': (context) => const HomeScreen(),
-        '/company_selection': (context) => const CompanySelectionScreen(),
         '/login': (context) => const LoginScreen(),
-        '/users': (context) => const UsersScreen(),
+        '/register_company': (context) => const RegisterCompanyScreen(),
+        '/parents': (context) => const ParentsScreen(),
         '/collaborators': (context) => const CollaboratorsScreen(),
         '/childrens': (context) => const ChildrensScreen(),
         '/app_bottom_nav': (context) => const AppBottomNav(),
         '/profile': (context) => const ProfileScreen(),
         '/reports': (context) => const ReportsScreen(),
-        '/admin_panel': (context) => const AdminPanelScreen(),
+        '/company_screen': (context) => const CompanyScreen(),
+        '/company_dashboard_screen': (context) =>
+            const CompanyDashboardScreen(),
       },
     );
   }
@@ -157,7 +163,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

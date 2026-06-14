@@ -1,44 +1,43 @@
-import 'dart:developer' as dev;
+import 'dart:convert';
+import 'api_client.dart';
 
-import '../model/company.dart';
-import 'base_service.dart';
+class CompanyService {
+  final ApiClient _api = ApiClient();
 
-class CompanyService extends BaseService {
-  
-  Future<List<Company>> getAllCompanies() async {
-    try{
-      final response = await dio.get('/companies');
-      final companiesData = response.data as List<dynamic>;
-      return companiesData.map((data) => Company.fromJson(data)).toList();
-    } catch (e) {
-      rethrow;
+  Future<Map<String, dynamic>> getMyCompany() async {
+    final res = await _api.get('/v2/companies/me');
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
     }
+    throw Exception('Failed to get company: ${res.statusCode}');
   }
 
-  Future<Company> getCompanyById(String id) async {
-    try{
-      final response = await dio.get('/companies/$id');
-      if (response.statusCode == 200 && response.data != null) {
-        dynamic payload = response.data;
-        if (payload is Map<String, dynamic>) {
-          if (payload['data'] is Map<String, dynamic>) payload = payload['data'];
-          else if (payload['company'] is Map<String, dynamic>) payload = payload['company'];
-          else if (payload['result'] is Map<String, dynamic>) payload = payload['result'];
-        }
-
-        if (payload is Map<String, dynamic>) {
-          if (payload['id'] == null || (payload['id'] is String && (payload['id'] as String).isEmpty)) {
-            payload['id'] = id;
-            dev.log('CompanyService: injected id into payload', name: 'CompanyService');
-          }
-          return Company.fromJson(payload);
-        }
-
-        return Company.fromJson(Map<String, dynamic>.from(payload));
-      }
-      throw Exception('Company not found');
-    } catch (e) {
-      rethrow;
+  Future<Map<String, dynamic>?> getById(String companyId) async {
+    final res = await _api.get('/v2/companies/$companyId');
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
     }
+    if (res.statusCode == 404) return null;
+    throw Exception('Failed to get company by id: ${res.statusCode}');
+  }
+
+  Future<String?> getNameById(String companyId) async {
+    final res = await _api.get('/v2/companies/$companyId/name');
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body) as Map<String, dynamic>;
+      return body['name'] as String?;
+    }
+    if (res.statusCode == 404) return null;
+    throw Exception('Failed to get company name by id: ${res.statusCode}');
+  }
+
+  Future<Map<String, dynamic>> updateMyCompany(
+    Map<String, dynamic> payload,
+  ) async {
+    final res = await _api.patch('/v2/companies/me', payload);
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
+    }
+    throw Exception('Failed to update company: ${res.statusCode}');
   }
 }

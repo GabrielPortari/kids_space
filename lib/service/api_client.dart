@@ -1,73 +1,152 @@
-import 'dart:developer' as developer;
-import 'package:dio/dio.dart';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:get_it/get_it.dart';
+import 'package:kids_space/controller/auth_controller.dart';
 
-// Cliente Dio reutilizável para a aplicação.
-// Use ApiClient().init(...) uma vez na inicialização (ou passe callbacks no construtor
-// de cada service que chamará ApiClient().init(...)).
+typedef TokenProvider = Future<String?> Function();
+typedef RefreshTokenProvider = Future<String?> Function();
+
 class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
   factory ApiClient() => _instance;
+  ApiClient._internal();
 
-  late final Dio dio;
+  late String baseUrl;
+  TokenProvider? tokenProvider;
+  RefreshTokenProvider? refreshTokenProvider;
 
-  Future<String?> Function()? tokenProvider;
-  Future<String?> Function()? refreshToken;
-
-  ApiClient._internal() {
-    dio = Dio();
+  void init({
+    required String baseUrl,
+    TokenProvider? tokenProvider,
+    RefreshTokenProvider? refreshToken,
+  }) {
+    this.baseUrl = baseUrl;
+    this.tokenProvider = tokenProvider;
+    this.refreshTokenProvider = refreshToken;
   }
 
-  /// Inicializa o cliente com `baseUrl` e callbacks opcionais para token/refresh.
-  void init({
-    String baseUrl = 'http://10.0.2.2:3000',
-    Future<String?> Function()? tokenProvider,
-    Future<String?> Function()? refreshToken,
-  }) {
-    this.tokenProvider = tokenProvider;
-    this.refreshToken = refreshToken;
+  Uri _uri(String path) =>
+      Uri.parse(path.startsWith('http') ? path : '$baseUrl$path');
 
-    dio.options = BaseOptions(
-      baseUrl: baseUrl,
-    );
+  Future<http.Response> get(String path, {Map<String, String>? headers}) async {
+    return _send('GET', path, null, headers);
+  }
 
-    dio.interceptors.clear();
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        developer.log('ApiClient onRequest ${options.method} ${options.path}', name: 'ApiClient');
-        try {
-          final token = tokenProvider == null ? null : await tokenProvider();
-          if (token != null) options.headers['Authorization'] = 'Bearer $token';
-        } catch (e) {
-          developer.log('ApiClient tokenProvider threw: $e', name: 'ApiClient');
-        }
-        handler.next(options);
-      },
-      onResponse: (response, handler) {
-        developer.log('ApiClient onResponse ${response.requestOptions.method} ${response.requestOptions.path} status=${response.statusCode}', name: 'ApiClient');
-        handler.next(response);
-      },
-      onError: (err, handler) async {
-        developer.log('ApiClient onError ${err.requestOptions.method} ${err.requestOptions.path} error=${err.message}', name: 'ApiClient', error: err);
-        if (err.response?.statusCode == 401 && refreshToken != null) {
-          developer.log('ApiClient received 401, attempting refresh', name: 'ApiClient');
-          try {
-            final newToken = await refreshToken();
-            if (newToken != null) {
-              final requestOptions = err.requestOptions;
-              requestOptions.headers['Authorization'] = 'Bearer $newToken';
-              try {
-                final response = await dio.fetch(requestOptions);
-                return handler.resolve(response);
-              } catch (retryErr) {
-                developer.log('ApiClient retry after refresh failed: $retryErr', name: 'ApiClient');
-              }
+  Future<http.Response> post(
+    String path,
+    dynamic body, {
+    Map<String, String>? headers,
+  }) async {
+    return _send('POST', path, body, headers);
+  }
+
+  Future<http.Response> patch(
+    String path,
+    dynamic body, {
+    Map<String, String>? headers,
+  }) async {
+    return _send('PATCH', path, body, headers);
+  }
+
+  Future<http.Response> delete(
+    String path, {
+    Map<String, String>? headers,
+  }) async {
+    return _send('DELETE', path, null, headers);
+  }
+
+  Future<http.Response> _rawDispatch(
+    String method,
+    Uri uri,
+    Map<String, String> headers,
+    dynamic body,
+  ) async {
+    switch (method) {
+      case 'GET':
+        return http.get(uri, headers: headers);
+      case 'POST':
+        return http.post(uri, headers: headers, body: jsonEncode(_cleanBody(body)));
+      case 'PATCH':
+        return http.patch(uri, headers: headers, body: jsonEncode(_cleanBody(body)));
+      case 'DELETE':
+        return http.delete(uri, headers: headers);
+      default:
+        throw UnsupportedError('Method not supported: $method');
+    }
+  }
+
+  Future<http.Response> _send(
+    String method,
+    String path,
+    dynamic body,
+    Map<String, String>? headers,
+  ) async {
+    final uri = _uri(path);
+    final token = tokenProvider == null ? null : await tokenProvider!();
+    final allHeaders = <String, String>{'Content-Type': 'application/json'};
+    if (headers != null) allHeaders.addAll(headers);
+    if (token != null && token.isNotEmpty) {
+      allHeaders['Authorization'] = 'Bearer $token';
+    }
+
+    var res = await _rawDispatch(method, uri, allHeaders, body);
+
+    if (res.statusCode == 401 && refreshTokenProvider != null) {
+      final newToken = await refreshTokenProvider!();
+      if (newToken != null && newToken.isNotEmpty) {
+        allHeaders['Authorization'] = 'Bearer $newToken';
+        res = await _rawDispatch(method, uri, allHeaders, body);
+      }
+    }
+
+    if (res.statusCode == 401) {
+      try {
+        if (GetIt.I.isRegistered<AuthController>()) {
+          final auth = GetIt.I.get<AuthController>();
+          // Ask AuthController to validate session (may attempt refresh).
+          final valid = await auth.ensureSessionValid();
+          if (!valid) {
+            await auth.clearTokens();
+            if (GetIt.I.isRegistered<GlobalKey<NavigatorState>>()) {
+              final key = GetIt.I.get<GlobalKey<NavigatorState>>();
+              key.currentState?.pushNamedAndRemoveUntil(
+                '/login',
+                (route) => false,
+              );
             }
-          } catch (e) {
-            developer.log('ApiClient refreshToken threw: $e', name: 'ApiClient');
+          }
+        } else {
+          // No AuthController available — perform redirect as fallback
+          if (GetIt.I.isRegistered<GlobalKey<NavigatorState>>()) {
+            final key = GetIt.I.get<GlobalKey<NavigatorState>>();
+            key.currentState?.pushNamedAndRemoveUntil(
+              '/login',
+              (route) => false,
+            );
           }
         }
-        handler.next(err);
-      },
-    ));
+      } catch (_) {}
+    }
+
+    return res;
+  }
+
+  dynamic _cleanBody(dynamic input) {
+    if (input == null) return null;
+    if (input is String) return input;
+    if (input is num || input is bool) return input;
+    if (input is List) {
+      return input.map(_cleanBody).where((e) => e != null).toList();
+    }
+    if (input is Map) {
+      final Map<String, dynamic> out = {};
+      input.forEach((k, v) {
+        final cleaned = _cleanBody(v);
+        if (cleaned != null) out[k] = cleaned;
+      });
+      return out;
+    }
+    return input;
   }
 }
